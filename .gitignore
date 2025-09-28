@@ -161,3 +161,6 @@ services/speech_analysis/*.pyc
 # Agents
 agents/__pycache__/
 agents/venv/
+
+# MCP Configuration (Claude Code internal use only)
+.mcp.json
