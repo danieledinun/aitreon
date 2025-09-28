@@ -226,7 +226,7 @@ export class KnowledgeBaseService {
         }
       }
 
-      // GraphRAG sync has been removed - content is available for vector search
+      // traditional RAG sync has been removed - content is available for vector search
 
       console.log(`🎉 Knowledge base processing complete! ${result.processedVideos} videos, ${result.totalChunks} chunks`)
       return result

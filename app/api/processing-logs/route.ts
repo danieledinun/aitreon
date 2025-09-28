@@ -76,13 +76,13 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Helper function to add logs (can be imported in other files)
-export async function addProcessingLog(userId: string, message: string) {
+// Helper function to add logs (used internally)
+async function addProcessingLog(userId: string, message: string) {
   if (!processingLogs[userId]) {
     processingLogs[userId] = []
   }
   processingLogs[userId].push(`${new Date().toLocaleTimeString()}: ${message}`)
-  
+
   if (processingLogs[userId].length > 50) {
     processingLogs[userId] = processingLogs[userId].slice(-50)
   }

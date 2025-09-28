@@ -291,7 +291,7 @@ async function processContentSync(
         transcriptsExtracted++
         segmentsProcessed += result.segments_count || 0
 
-        // Stage 3: GraphRAG and Supabase Processing
+        // Stage 3: traditional RAG and Supabase Processing
         try {
           // Get user ID for logging
           let userId: string | undefined
@@ -319,7 +319,7 @@ async function processContentSync(
                   'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                  message: `🎥 Processing video for GraphRAG and Supabase: ${videoTitles[vId] || vId} (${vId})`,
+                  message: `🎥 Processing video for traditional RAG and Supabase: ${videoTitles[vId] || vId} (${vId})`,
                   userId: userId
                 })
               })
@@ -328,7 +328,7 @@ async function processContentSync(
             }
           }
 
-          await processTranscriptForGraphRAG(creatorId, vId, result, videoTitles[vId])
+          await processTranscriptForRAG(creatorId, vId, result, videoTitles[vId])
           
           // Add completion log
           if (userId) {
@@ -340,7 +340,7 @@ async function processContentSync(
                   'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                  message: `✅ Video processed for GraphRAG and Supabase: ${videoTitles[vId] || vId} (${vId})`,
+                  message: `✅ Video processed for traditional RAG and Supabase: ${videoTitles[vId] || vId} (${vId})`,
                   userId: userId
                 })
               })
@@ -348,9 +348,9 @@ async function processContentSync(
               console.warn('Failed to create completion processing log:', logError)
             }
           }
-        } catch (graphragError) {
-          console.error('GraphRAG processing failed for video', vId, graphragError)
-          errors.push(`GraphRAG processing failed for ${vId}: ${graphragError instanceof Error ? graphragError.message : 'Unknown error'}`)
+        } catch (ragError) {
+          console.error('traditional RAG processing failed for video', vId, ragError)
+          errors.push(`traditional RAG processing failed for ${vId}: ${ragError instanceof Error ? ragError.message : 'Unknown error'}`)
         }
       } else {
         errors.push(`Transcript extraction failed for ${vId}: ${result.message || 'Unknown error'}`)
@@ -404,7 +404,7 @@ async function processContentSync(
   }
 }
 
-async function processTranscriptForGraphRAG(
+async function processTranscriptForRAG(
   creatorId: string,
   videoId: string,
   transcriptResult: any,
@@ -414,7 +414,7 @@ async function processTranscriptForGraphRAG(
     return
   }
 
-  // Create segments text for GraphRAG
+  // Create segments text for traditional RAG
   const segmentsText = transcriptResult.segments
     .map((segment: any) => {
       const timestamp = `[${Math.floor(segment.start / 60)}:${String(Math.floor(segment.start % 60)).padStart(2, '0')}]`
@@ -432,10 +432,10 @@ Transcript:
 ${segmentsText}`
 
   try {
-    // Store transcript data to GraphRAG memory using internal API
-    console.log(`📝 Adding video ${videoId} to GraphRAG memory system`)
+    // Store transcript data to traditional RAG memory using internal API
+    console.log(`📝 Adding video ${videoId} to traditional RAG memory system`)
     
-    console.log(`📝 Transcript content prepared for GraphRAG:`)
+    console.log(`📝 Transcript content prepared for traditional RAG:`)
     console.log(`   - Video Title: ${videoTitle}`)
     console.log(`   - Creator ID: ${creatorId}`)
     console.log(`   - Content Length: ${episodeContent.length} characters`)
@@ -459,10 +459,10 @@ ${segmentsText}`
       console.warn('Could not get user ID for logging:', err)
     }
     
-    // Call internal GraphRAG API
+    // Call internal traditional RAG API
     try {
       const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
-      const graphragResponse = await fetch(`${baseUrl}/api/graphrag/memory/add`, {
+      const ragResponse = await fetch(`${baseUrl}/api/rag/memory/add`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -478,12 +478,12 @@ ${segmentsText}`
         })
       })
       
-      if (graphragResponse.ok) {
-        const graphragResult = await graphragResponse.json()
-        console.log(`✅ Video ${videoId} successfully added to GraphRAG: ${graphragResult.message}`)
+      if (ragResponse.ok) {
+        const ragResult = await ragResponse.json()
+        console.log(`✅ Video ${videoId} successfully added to traditional RAG: ${ragResult.message}`)
         
         // Add processing log for AI learning status component
-        if (userId && graphragResult.episode_id) {
+        if (userId && ragResult.episode_id) {
           try {
             const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
             await fetch(`${baseUrl}/api/processing-logs`, {
@@ -492,7 +492,7 @@ ${segmentsText}`
                 'Content-Type': 'application/json'
               },
               body: JSON.stringify({
-                message: `✅ Episode queued for MCP GraphRAG processing: YouTube Video: ${videoTitle} (ID: ${graphragResult.episode_id})`,
+                message: `✅ Episode queued for MCP traditional RAG processing: YouTube Video: ${videoTitle} (ID: ${ragResult.episode_id})`,
                 userId: userId
               })
             })
@@ -503,18 +503,18 @@ ${segmentsText}`
         }
 
         // Video processed successfully - no additional queue processing needed
-        console.log(`✅ Video ${videoId} processed directly by production GraphRAG service`)
+        console.log(`✅ Video ${videoId} processed directly by production traditional RAG service`)
       } else {
-        const graphragError = await graphragResponse.json()
-        console.error(`❌ Failed to add video ${videoId} to GraphRAG: ${graphragError.error}`)
+        const ragError = await ragResponse.json()
+        console.error(`❌ Failed to add video ${videoId} to traditional RAG: ${ragError.error}`)
         // Don't fail the entire process - just log the error
       }
-    } catch (graphragError) {
-      console.error(`❌ GraphRAG API error for video ${videoId}:`, graphragError)
+    } catch (ragError) {
+      console.error(`❌ traditional RAG API error for video ${videoId}:`, ragError)
       // Don't fail the entire process - just log the error
     }
     
-    console.log(`✅ Video ${videoId} processed and queued for GraphRAG`)
+    console.log(`✅ Video ${videoId} processed and queued for traditional RAG`)
 
     // Also store in database for tracking using Supabase
     let video: any
@@ -704,10 +704,10 @@ ${segmentsText}`
       console.warn(`⚠️ No transcript segments found for video ${videoId}, skipping chunking`)
     }
 
-    console.log(`✅ Processed video ${videoId} for both GraphRAG and Supabase`)
+    console.log(`✅ Processed video ${videoId} for both traditional RAG and Supabase`)
 
   } catch (error) {
-    console.error(`❌ Failed to process video ${videoId} for GraphRAG:`, error)
+    console.error(`❌ Failed to process video ${videoId} for traditional RAG:`, error)
     throw error
   }
 }

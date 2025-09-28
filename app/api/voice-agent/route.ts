@@ -3,7 +3,6 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { db } from '@/lib/database'
 import { EnhancedRAGService } from '@/lib/enhanced-rag-service'
-import { GraphRAGService } from '@/lib/graphrag-service'
 
 export async function POST(request: NextRequest) {
   try {
@@ -52,42 +51,15 @@ export async function POST(request: NextRequest) {
                            query.includes('together') ||
                            query.includes('compared to')
     
-    const isGraphRagAvailable = await GraphRAGService.isAvailable()
-    const useGraphRag = isGraphRagAvailable && queryComplexity
+    console.log('🔍 Voice Agent using Enhanced RAG system')
 
-    console.log('🧠 Voice Agent RAG Selection:', { 
-      useGraphRag, 
-      isGraphRagAvailable, 
-      queryComplexity,
-      system: useGraphRag ? 'GraphRAG' : 'Traditional RAG'
-    })
-
-    let ragResponse
-
-    if (useGraphRag) {
-      console.log('🧠 Voice Agent using GraphRAG system')
-      
-      // Use GraphRAG service
-      const graphragResponse = await GraphRAGService.generateResponse(
+    // Generate AI response using Enhanced RAG service
+    const ragResponse = await EnhancedRAGService.generateResponse(
         creatorId,
         creatorWithRelations.displayName,
         query,
         [] // No conversation history for voice
       )
-
-      // Convert to legacy format for compatibility
-      ragResponse = GraphRAGService.convertToLegacyFormat(graphragResponse)
-    } else {
-      console.log('🔍 Voice Agent using Enhanced RAG system')
-
-      // Generate AI response using Enhanced RAG service
-      ragResponse = await EnhancedRAGService.generateResponse(
-        creatorId,
-        creatorWithRelations.displayName,
-        query,
-        [] // No conversation history for voice
-      )
-    }
 
     // Clean text for voice synthesis (remove citations and markdown)
     let cleanText = ragResponse.response

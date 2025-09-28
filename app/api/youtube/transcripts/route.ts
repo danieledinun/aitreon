@@ -2,14 +2,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import { spawn } from 'child_process'
 import { join } from 'path'
 
-// Helper function to add transcript to GraphRAG memory
-async function addTranscriptToGraphRAG(videoId: string, transcriptResult: TranscriptResult) {
+// Helper function to add transcript to RAG memory
+async function addTranscriptToRAG(videoId: string, transcriptResult: TranscriptResult) {
   try {
     if (!transcriptResult.success || !transcriptResult.segments) {
       return // Skip if transcript extraction failed
     }
 
-    console.log(`🧠 Adding transcript to GraphRAG memory for video: ${videoId}`)
+    console.log(`🧠 Adding transcript to RAG memory for video: ${videoId}`)
     
     // Format transcript content with timestamps
     const transcriptContent = transcriptResult.segments
@@ -27,12 +27,12 @@ Transcript Quality: ${transcriptResult.is_generated ? 'Auto-generated' : 'Manual
 Transcript:
 ${transcriptContent}`
 
-    // Skip GraphRAG integration for direct transcript calls
-    // The sync-content route handles GraphRAG integration properly with creator context
-    console.log(`ℹ️ Skipping GraphRAG integration for direct transcript call - video ${videoId}`)
-    return // Skip GraphRAG for standalone transcript calls
+    // Skip RAG integration for direct transcript calls
+    // The sync-content route handles RAG integration properly with creator context
+    console.log(`ℹ️ Skipping RAG integration for direct transcript call - video ${videoId}`)
+    return // Skip RAG for standalone transcript calls
   } catch (error) {
-    console.error(`❌ Failed to add transcript to GraphRAG memory for video ${videoId}:`, error)
+    console.error(`❌ Failed to add transcript to RAG memory for video ${videoId}:`, error)
     throw error
   }
 }
@@ -150,14 +150,14 @@ export async function POST(request: NextRequest) {
           }
         })
 
-        // Add successful transcripts to GraphRAG memory
+        // Add successful transcripts to RAG memory
         for (const [videoId, transcriptResult] of Object.entries(result)) {
           if (transcriptResult.success) {
             try {
-              await addTranscriptToGraphRAG(videoId, transcriptResult)
+              await addTranscriptToRAG(videoId, transcriptResult)
             } catch (error) {
-              console.error(`❌ Failed to add transcript to GraphRAG for video ${videoId}:`, error)
-              // Don't fail the batch if individual GraphRAG additions fail
+              console.error(`❌ Failed to add transcript to RAG for video ${videoId}:`, error)
+              // Don't fail the batch if individual RAG additions fail
             }
           }
         }
@@ -171,12 +171,12 @@ export async function POST(request: NextRequest) {
         if (result.success) {
           result.processing_date = new Date().toISOString()
           
-          // Add to GraphRAG memory if transcript was successfully fetched
+          // Add to RAG memory if transcript was successfully fetched
           try {
-            await addTranscriptToGraphRAG(videoIds, result)
+            await addTranscriptToRAG(videoIds, result)
           } catch (error) {
-            console.error(`❌ Failed to add transcript to GraphRAG for video ${videoIds}:`, error)
-            // Don't fail the request if GraphRAG addition fails
+            console.error(`❌ Failed to add transcript to RAG for video ${videoIds}:`, error)
+            // Don't fail the request if RAG addition fails
           }
         }
       }

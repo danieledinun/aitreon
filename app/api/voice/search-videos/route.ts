@@ -52,12 +52,12 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // Use GraphRAG service to find most relevant videos based on query
-    console.log(`🧠 Using GraphRAG to search for videos matching: "${query}"`)
-    const graphResults = await RAGService.searchWithGraphRAG(creatorId, query, limit * 2)
-    
-    // Format GraphRAG results as citations for compatibility
-    const citations = graphResults.map((result, index) => ({
+    // Use RAG service to find most relevant videos based on query
+    console.log(`🧠 Using RAG to search for videos matching: "${query}"`)
+    const ragResults = await RAGService.searchWithContext(creatorId, query, limit * 2)
+
+    // Format RAG results as citations for compatibility
+    const citations = ragResults.map((result, index) => ({
       videoId: result.videoId,
       videoTitle: result.videoTitle,
       videoUrl: result.videoUrl,
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
       relevanceScore: result.relevanceScore || (1 - (index * 0.05)) // Decreasing relevance
     }))
     
-    // Calculate confidence based on GraphRAG results
+    // Calculate confidence based on traditional RAG results
     const confidence = citations.length > 0 
       ? citations.reduce((sum, c) => sum + (c.relevanceScore || 0.5), 0) / citations.length 
       : 0
