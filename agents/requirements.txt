@@ -1,0 +1,9 @@
+livekit
+livekit-agents[voices]
+livekit-plugins-elevenlabs
+livekit-plugins-openai
+openai>=1.0.0
+elevenlabs
+python-dotenv
+aiohttp
+asyncio

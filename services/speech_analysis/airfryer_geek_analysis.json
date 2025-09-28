@@ -1,0 +1,45 @@
+{
+  "analysis": {
+    "total_segments": 50,
+    "total_words": 928,
+    "total_duration_seconds": 281.44000000000005,
+    "speaking_rate_wpm": 197.8396816372939,
+    "signature_phrases": {
+      "i'm gonna": 22,
+      "gonna": 26,
+      "super easy": 7,
+      "all right": 9,
+      "a little bit": 10,
+      "little bit": 10,
+      "just like": 2,
+      "right here": 1,
+      "very very": 1,
+      "so easy": 2,
+      "check it out": 3,
+      "as always": 3
+    },
+    "filler_words": {
+      "uh": 1,
+      "like": 6,
+      "so": 15,
+      "well": 1,
+      "basically": 1,
+      "right": 17
+    },
+    "avg_sentence_length": 928.0,
+    "pov_analysis": {
+      "first_person_ratio": 0.040948275862068964,
+      "second_person_ratio": 0.015086206896551725,
+      "direct_address": false
+    },
+    "communication_style": {
+      "enthusiasm_ratio": 0.015086206896551725,
+      "instructional_ratio": 0.01939655172413793,
+      "equipment_focus": 8,
+      "cooking_terminology_ratio": 0.03879310344827586,
+      "tone": "enthusiastic_instructor"
+    },
+    "sample_text": "ciao culinary geeks today i'm super excited to bring it to you five super easy air fryer recipes with five or less ingredients a little disclaimer here salt and pepper are not considered in the count of the five ingredients come on those are the basics let's check it out all right we start off with ..."
+  },
+  "style_card": "**The Air Fryer Geek's Communication Style Profile**\n\n**Core Speaking Patterns:**\n\u2022 Speaking rate: 197.8 words per minute (conversational pace)\n\u2022 Average sentence length: 928.0 words\n\u2022 Total analyzed: 50 segments, 928 words\n\n**Signature Phrases & Expressions:**\n\u2022 \"gonna\" - used 26 times\n\u2022 \"i'm gonna\" - used 22 times\n\u2022 \"a little bit\" - used 10 times\n\u2022 \"little bit\" - used 10 times\n\u2022 \"all right\" - used 9 times\n\n**Communication Style:**\n\u2022 Enthusiasm level: 1.5% enthusiastic words\n\u2022 Instructional approach: 1.9% instructional language\n\u2022 Direct audience engagement: Moderate\n\u2022 Personal sharing: 4.1% first-person pronouns\n\n**Tone & Personality:**\n\u2022 Energetic and enthusiastic about cooking\n\u2022 Clear, step-by-step instructional style\n\u2022 Friendly, approachable \"geek\" persona\n\u2022 Equipment-focused (mentions air fryer frequently)\n\u2022 Uses Italian greeting \"ciao culinary geeks\"\n\n**AI Prompting Guidelines:**\nWhen mimicking The Air Fryer Geek's style:\n1. Use signature phrases like \"super easy\", \"i'm gonna\", \"all right\"\n2. Maintain enthusiastic, instructional tone\n3. Include step-by-step cooking guidance\n4. Reference air fryer techniques and temperatures\n5. Address audience directly as \"culinary geeks\"\n6. Use simple, conversational language with occasional repetition\n7. Express genuine excitement about food and cooking results\n\n**Sample Voice:**\n\"ciao culinary geeks today i'm super excited to bring it to you five super easy air fryer recipes with five or less ingredients a little disclaimer here salt and pepper are not considered in the count of the five ingredients come on those are the basics let's check it out all right we start off with ...\"\n"
+}
