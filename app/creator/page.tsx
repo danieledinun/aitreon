@@ -1,7 +1,7 @@
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { redirect } from 'next/navigation'
-import { db } from '@/lib/database'
+import { createClient } from '@supabase/supabase-js'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -47,49 +47,98 @@ export default async function CreatorDashboard() {
     redirect('/auth/signin')
   }
 
+  // Initialize Supabase client
+  function getSupabaseClient() {
+    return createClient(
+      process.env.SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+  }
+
   // Get comprehensive user data with real analytics
   console.log('🔍 User Debug - Session email:', session.user.email)
 
-  const user = await db.user.findUnique({
-    where: { email: session.user.email },
-    include: {
-      subscriptions: {
-        where: { status: 'ACTIVE' },
-        include: {
-          creator: {
-            select: {
-              id: true,
-              username: true,
-              display_name: true,
-              bio: true,
-              profile_image: true,
-              youtube_channel_url: true,
-              is_active: true
-            }
-          }
-        }
-      }
-    }
-  })
+  const supabase = getSupabaseClient()
+
+  // Get user data
+  const { data: user } = await supabase
+    .from('users')
+    .select('*')
+    .eq('email', session.user.email)
+    .single()
+
+  // Get user's active subscriptions with creator data
+  let userSubscriptions = []
+  if (user?.id) {
+    const { data: subscriptions } = await supabase
+      .from('subscriptions')
+      .select(`
+        *,
+        creator:creators(
+          id,
+          username,
+          display_name,
+          bio,
+          profile_image,
+          youtube_channel_url,
+          is_active
+        )
+      `)
+      .eq('user_id', user.id)
+      .eq('status', 'ACTIVE')
+
+    userSubscriptions = subscriptions || []
+  }
+
+  // Add subscriptions to user object for compatibility
+  const userWithSubscriptions = {
+    ...user,
+    subscriptions: userSubscriptions
+  }
 
   // Separately fetch creator record using proper userId relationship
   let creator = null
   if (user?.id) {
-    creator = await db.creator.findUnique({
-      where: { userId: user.id },
-      include: {
-        ai_config: true,
-        voice_settings: true,
-        suggested_questions: true,
+    // Get creator data with related tables
+    const { data: creatorData } = await supabase
+      .from('creators')
+      .select(`
+        *,
+        ai_config:ai_configs(*),
+        voice_settings:voice_settings(*),
+        suggested_questions:creator_suggested_questions(*)
+      `)
+      .eq('user_id', user.id)
+      .single()
+
+    if (creatorData) {
+      // Get counts separately as Supabase doesn't support _count like Prisma
+      const [subscriptionsCount, videosCount, chatSessionsCount] = await Promise.all([
+        supabase
+          .from('subscriptions')
+          .select('*', { count: 'exact', head: true })
+          .eq('creator_id', creatorData.id)
+          .eq('status', 'ACTIVE'),
+        supabase
+          .from('videos')
+          .select('*', { count: 'exact', head: true })
+          .eq('creator_id', creatorData.id)
+          .eq('is_processed', true),
+        supabase
+          .from('chat_sessions')
+          .select('*', { count: 'exact', head: true })
+          .eq('creator_id', creatorData.id)
+      ])
+
+      creator = {
+        ...creatorData,
         _count: {
-          select: {
-            subscriptions: { where: { status: 'ACTIVE' } },
-            videos: { where: { is_processed: true } },
-            chat_sessions: true
-          }
+          subscriptions: subscriptionsCount.count || 0,
+          videos: videosCount.count || 0,
+          chat_sessions: chatSessionsCount.count || 0
         }
       }
-    })
+    }
   }
   
   console.log('🔍 User Debug - User found:', !!user)
