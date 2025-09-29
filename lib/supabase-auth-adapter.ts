@@ -1,13 +1,13 @@
-import type { Adapter } from "@next-auth/adapters"
+import type { Adapter } from "next-auth/adapters"
 import { supabase } from './supabase'
 
 export function SupabaseAdapter(): Adapter {
   return {
-    async createUser(user) {
+    async createUser(user: any) {
       console.log('🔧 Supabase adapter createUser:', user)
       try {
         // First check if user already exists with this email
-        const existingUser = await this.getUserByEmail(user.email!)
+        const existingUser = await this.getUserByEmail?.(user.email!)
         if (existingUser) {
           console.log('🔄 User already exists, returning existing user:', existingUser.id)
           return existingUser
@@ -28,7 +28,7 @@ export function SupabaseAdapter(): Adapter {
           // If we get a unique constraint error, try to fetch the existing user
           if (error.code === '23505') {
             console.log('🔄 Unique constraint error, fetching existing user')
-            const existingUser = await this.getUserByEmail(user.email!)
+            const existingUser = await this.getUserByEmail?.(user.email!)
             if (existingUser) return existingUser
           }
           throw error
@@ -48,7 +48,7 @@ export function SupabaseAdapter(): Adapter {
       }
     },
 
-    async getUser(id) {
+    async getUser(id: any) {
       console.log('🔧 Supabase adapter getUser:', id)
       try {
         const { data, error } = await supabase
@@ -74,7 +74,7 @@ export function SupabaseAdapter(): Adapter {
       }
     },
 
-    async getUserByEmail(email) {
+    async getUserByEmail(email: any) {
       console.log('🔧 Supabase adapter getUserByEmail:', email)
       try {
         const { data, error } = await supabase
@@ -100,7 +100,7 @@ export function SupabaseAdapter(): Adapter {
       }
     },
 
-    async getUserByAccount({ providerAccountId, provider }) {
+    async getUserByAccount({ providerAccountId, provider }: any) {
       console.log('🔧 Supabase adapter getUserByAccount:', { provider, providerAccountId })
       try {
         const { data, error } = await supabase
@@ -136,7 +136,7 @@ export function SupabaseAdapter(): Adapter {
       }
     },
 
-    async updateUser(user) {
+    async updateUser(user: any) {
       console.log('🔧 Supabase adapter updateUser:', user.id)
       try {
         const { data, error } = await supabase
@@ -167,7 +167,7 @@ export function SupabaseAdapter(): Adapter {
       }
     },
 
-    async deleteUser(userId) {
+    async deleteUser(userId: any) {
       console.log('🔧 Supabase adapter deleteUser:', userId)
       try {
         const { error } = await supabase
@@ -183,7 +183,7 @@ export function SupabaseAdapter(): Adapter {
       }
     },
 
-    async linkAccount(account) {
+    async linkAccount(account: any) {
       console.log('🔧 Supabase adapter linkAccount:', { provider: account.provider })
       try {
         // Remove refresh_token_expires_in since it's not in our schema
@@ -230,7 +230,7 @@ export function SupabaseAdapter(): Adapter {
       }
     },
 
-    async unlinkAccount({ providerAccountId, provider }) {
+    async unlinkAccount({ providerAccountId, provider }: any) {
       console.log('🔧 Supabase adapter unlinkAccount:', { provider, providerAccountId })
       try {
         const { error } = await supabase
@@ -247,7 +247,7 @@ export function SupabaseAdapter(): Adapter {
       }
     },
 
-    async createSession({ sessionToken, userId, expires }) {
+    async createSession({ sessionToken, userId, expires }: any) {
       console.log('🔧 Supabase adapter createSession:', { userId })
       try {
         const { data, error } = await supabase
@@ -275,7 +275,7 @@ export function SupabaseAdapter(): Adapter {
       }
     },
 
-    async getSessionAndUser(sessionToken) {
+    async getSessionAndUser(sessionToken: any) {
       console.log('🔧 Supabase adapter getSessionAndUser:', sessionToken ? 'token provided' : 'no token')
       try {
         const { data, error } = await supabase
@@ -322,7 +322,7 @@ export function SupabaseAdapter(): Adapter {
       }
     },
 
-    async updateSession({ sessionToken, ...session }) {
+    async updateSession({ sessionToken, ...session }: any) {
       console.log('🔧 Supabase adapter updateSession:', sessionToken ? 'token provided' : 'no token')
       try {
         const { data, error } = await supabase
@@ -349,7 +349,7 @@ export function SupabaseAdapter(): Adapter {
       }
     },
 
-    async deleteSession(sessionToken) {
+    async deleteSession(sessionToken: any) {
       console.log('🔧 Supabase adapter deleteSession:', sessionToken ? 'token provided' : 'no token')
       try {
         const { error } = await supabase
@@ -365,7 +365,7 @@ export function SupabaseAdapter(): Adapter {
       }
     },
 
-    async createVerificationToken({ identifier, expires, token }) {
+    async createVerificationToken({ identifier, expires, token }: any) {
       console.log('🔧 Supabase adapter createVerificationToken:', identifier)
       try {
         // Note: We don't have a verification_tokens table in the current schema
@@ -378,7 +378,7 @@ export function SupabaseAdapter(): Adapter {
       }
     },
 
-    async useVerificationToken({ identifier, token }) {
+    async useVerificationToken({ identifier, token }: any) {
       console.log('🔧 Supabase adapter useVerificationToken:', identifier)
       try {
         // Note: We don't have a verification_tokens table in the current schema

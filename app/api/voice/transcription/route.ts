@@ -41,8 +41,8 @@ export async function POST(request: NextRequest) {
     if (!chatSession) {
       chatSession = await db.chatSession.create({
         data: {
-          userId: session.user.id,
-          creatorId: creatorId,
+          user_id: session.user.id,
+          creator_id: creatorId,
         }
       })
       console.log('📝 Created new chat session:', chatSession.id)

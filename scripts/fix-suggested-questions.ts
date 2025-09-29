@@ -42,10 +42,9 @@ async function fixSuggestedQuestions() {
   try {
     // Use the database service upsert method
     await db.creatorSuggestedQuestions.upsert({
-      where: { creator_id: creatorId },
+      where: { creatorId: creatorId },
       update: {
-        questions: JSON.stringify(airFryerQuestions),
-        updated_at: new Date().toISOString()
+        questions: JSON.stringify(airFryerQuestions)
       },
       create: {
         creator_id: creatorId,

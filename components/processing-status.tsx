@@ -260,7 +260,7 @@ export default function ProcessingStatus({ creatorName }: ProcessingStatusProps)
           <Button 
             onClick={resetAndReconnect}
             disabled={resettingTokens || processing || refreshingToken}
-            variant="destructive"
+            variant="outline"
             size="sm"
           >
             {resettingTokens ? (

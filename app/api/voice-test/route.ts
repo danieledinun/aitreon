@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { db } from '@/lib/database'
+import { createClient } from '@/lib/supabase'
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,28 +18,38 @@ export async function POST(request: NextRequest) {
 
     console.log('🧪 Voice Test API:', { query, creatorId })
 
+    const supabase = createClient()
+
     // Get creator info for voice settings
-    const creator = await db.creator.findUnique({
-      where: { id: creatorId },
-      include: { voiceSettings: true }
-    })
+    const { data: creator } = await supabase
+      .from('creator')
+      .select('*')
+      .eq('id', creatorId)
+      .single()
+
+    // Get voice settings separately
+    const { data: voiceSettings } = await supabase
+      .from('voice_settings')
+      .select('*')
+      .eq('creator_id', creatorId)
+      .single()
 
     if (!creator) {
       return NextResponse.json({ error: 'Creator not found' }, { status: 404 })
     }
 
     // Simple test response
-    const testResponse = `Hello! I'm ${creator.display_name || creator.displayName}. You asked: "${query}". This is a test voice response to check if the TTS is working properly.`
+    const testResponse = `Hello! I'm ${creator.display_name || creator.display_name}. You asked: "${query}". This is a test voice response to check if the TTS is working properly.`
 
     // Generate TTS audio if voice settings are available
     let audioData = null
     const elevenLabsApiKey = process.env.ELEVENLABS_API_KEY
     
-    if ((creator.voiceSettings?.is_enabled || creator.voiceSettings?.isEnabled) && (creator.voiceSettings.elevenlabs_voice_id || creator.voiceSettings.elevenlabsVoiceId) && elevenLabsApiKey) {
-      console.log('🎵 Generating TTS with voice ID:', creator.voiceSettings.elevenlabs_voice_id || creator.voiceSettings.elevenlabsVoiceId)
-      
+    if (voiceSettings?.is_enabled && voiceSettings?.elevenlabs_voice_id && elevenLabsApiKey) {
+      console.log('🎵 Generating TTS with voice ID:', voiceSettings.elevenlabs_voice_id)
+
       try {
-        const ttsResponse = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${creator.voiceSettings.elevenlabs_voice_id || creator.voiceSettings.elevenlabsVoiceId}`, {
+        const ttsResponse = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceSettings.elevenlabs_voice_id}`, {
           method: 'POST',
           headers: {
             'Accept': 'audio/mpeg',
@@ -78,10 +88,10 @@ export async function POST(request: NextRequest) {
       cleanText: testResponse,
       audioData,
       audioFormat: 'audio/mpeg',
-      hasCustomVoice: !!(creator.voiceSettings?.elevenlabs_voice_id || creator.voiceSettings?.elevenlabsVoiceId),
+      hasCustomVoice: !!voiceSettings?.elevenlabs_voice_id,
       metadata: {
-        creatorName: creator.display_name || creator.displayName,
-        voiceEnabled: creator.voiceSettings?.is_enabled || creator.voiceSettings?.isEnabled || false,
+        creatorName: creator.display_name,
+        voiceEnabled: voiceSettings?.is_enabled || false,
         timestamp: new Date().toISOString()
       }
     })

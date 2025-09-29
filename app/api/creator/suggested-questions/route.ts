@@ -35,8 +35,7 @@ export async function GET(request: NextRequest) {
       
       // Get basic stats for debugging
       const creator = await db.creator.findUnique({
-        where: { id: creatorId },
-        select: { display_name: true, bio: true }
+        where: { id: creatorId }
       })
 
       const videoCount = await db.video.count({

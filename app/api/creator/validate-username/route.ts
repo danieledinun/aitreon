@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
         .eq('email', session.user.email)
         .single()
 
-      if (existingUser?.creators?.length > 0) {
+      if (existingUser?.creators && existingUser.creators.length > 0) {
         const existingCreator = existingUser.creators[0]
         return NextResponse.json({
           available: false,

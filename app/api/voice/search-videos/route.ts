@@ -25,15 +25,6 @@ export async function POST(request: NextRequest) {
           not: null
         }
       },
-      select: {
-        id: true,
-        youtubeId: true,
-        title: true,
-        description: true,
-        thumbnail: true,
-        duration: true,
-        publishedAt: true
-      },
       orderBy: {
         publishedAt: 'desc'
       },
@@ -54,7 +45,7 @@ export async function POST(request: NextRequest) {
 
     // Use RAG service to find most relevant videos based on query
     console.log(`🧠 Using RAG to search for videos matching: "${query}"`)
-    const ragResults = await RAGService.searchWithContext(creatorId, query, limit * 2)
+    const ragResults = await RAGService.searchFallback(creatorId, query, limit * 2)
 
     // Format RAG results as citations for compatibility
     const citations = ragResults.map((result, index) => ({
@@ -80,11 +71,11 @@ export async function POST(request: NextRequest) {
       .slice(0, limit)
       .map((citation, index) => {
         // Match by YouTube ID instead of database ID
-        const matchingVideo = videos.find(v => citation.videoUrl && citation.videoUrl.includes(v.youtubeId))
+        const matchingVideo = videos.find(v => citation.videoUrl && citation.videoUrl.includes(v.youtube_id))
         
         return {
           videoId: citation.videoId || 'unknown',
-          youtubeId: matchingVideo?.youtubeId || citation.videoId || 'unknown', // Use matched video or fallback to citation.videoId
+          youtubeId: matchingVideo?.youtube_id || citation.videoId || 'unknown', // Use matched video or fallback to citation.videoId
           videoTitle: citation.videoTitle,
           startTime: citation.startTime,
           endTime: citation.endTime,
@@ -101,7 +92,7 @@ export async function POST(request: NextRequest) {
     // Get all available video titles for agent awareness
     const availableVideoTitles = videos.map(v => ({
       id: v.id,
-      youtubeId: v.youtubeId,
+      youtubeId: v.youtube_id,
       title: v.title,
       description: v.description?.slice(0, 200) || ''
     }))
@@ -156,15 +147,6 @@ export async function GET(request: NextRequest) {
           not: null
         }
       },
-      select: {
-        id: true,
-        youtubeId: true,
-        title: true,
-        description: true,
-        thumbnail: true,
-        duration: true,
-        publishedAt: true
-      },
       orderBy: {
         publishedAt: 'desc'
       },
@@ -175,13 +157,13 @@ export async function GET(request: NextRequest) {
       success: true,
       videos: videos.map(video => ({
         id: video.id,
-        youtubeId: video.youtubeId,
+        youtubeId: video.youtube_id,
         title: video.title,
         description: video.description?.slice(0, 200) || '',
         thumbnail: video.thumbnail,
         duration: video.duration,
-        publishedAt: video.publishedAt,
-        videoUrl: `https://www.youtube.com/watch?v=${video.youtubeId}`
+        publishedAt: video.published_at,
+        videoUrl: `https://www.youtube.com/watch?v=${video.youtube_id}`
       })),
       totalCount: videos.length,
       creatorId

@@ -88,11 +88,19 @@ export class ContentProcessor {
   private static async processVideo(creatorId: string, video: any) {
     // Check if video already exists
     const existingVideo = await db.video.findUnique({
-      where: { youtubeId: video.id },
-      include: { chunks: true }
+      where: { youtubeId: video.id }
     })
 
-    if (existingVideo && existingVideo.chunks.length > 0) {
+    // Check if video has chunks
+    let hasChunks = false
+    if (existingVideo) {
+      const chunks = await db.contentChunk.findMany({
+        where: { videoId: existingVideo.id }
+      })
+      hasChunks = chunks.length > 0
+    }
+
+    if (existingVideo && hasChunks) {
       console.log(`⏭️  Video already processed: ${video.title}`)
       return
     }
@@ -108,32 +116,39 @@ export class ContentProcessor {
     const videoUrl = `https://www.youtube.com/watch?v=${video.id}`
 
     // Create or update video record
-    const videoRecord = await db.video.upsert({
-      where: { youtubeId: video.id },
-      update: {
-        title: video.title,
-        description: video.description,
-        thumbnail: video.thumbnail,
-        duration,
-        publishedAt: new Date(video.publishedAt),
-        transcript,
-        isProcessed: true,
-      },
-      create: {
-        creatorId,
-        youtubeId: video.id,
-        title: video.title,
-        description: video.description,
-        thumbnail: video.thumbnail,
-        duration,
-        publishedAt: new Date(video.publishedAt),
-        transcript,
-        isProcessed: true,
-      }
-    })
+    let videoRecord
+    if (existingVideo) {
+      videoRecord = await db.video.update({
+        where: { id: existingVideo.id },
+        data: {
+          title: video.title,
+          description: video.description,
+          thumbnail: video.thumbnail,
+          duration,
+          published_at: new Date(video.publishedAt),
+          transcript: transcript.segments.map(s => s.text).join(' '),
+          is_processed: true,
+        }
+      })
+    } else {
+      videoRecord = await db.video.create({
+        data: {
+          creator_id: creatorId,
+          youtube_id: video.id,
+          title: video.title,
+          description: video.description,
+          thumbnail: video.thumbnail,
+          duration,
+          published_at: new Date(video.publishedAt),
+          transcript: transcript.segments.map(s => s.text).join(' '),
+          is_processed: true,
+        }
+      })
+    }
 
     // Process transcript into smart chunks
-    const chunks = this.createSmartChunks(transcript, video.title, videoUrl)
+    const transcriptText = transcript.segments.map(s => s.text).join(' ')
+    const chunks = this.createSmartChunks(transcriptText, video.title, videoUrl)
     
     // Generate embeddings for chunks
     const chunksWithEmbeddings = await this.generateEmbeddings(chunks)

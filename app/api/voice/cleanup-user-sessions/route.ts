@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ 
       success: true, 
       message: 'Cleanup attempted, proceeding with new call',
-      error: error.message 
+      error: error instanceof Error ? error.message : String(error) 
     })
   }
 }

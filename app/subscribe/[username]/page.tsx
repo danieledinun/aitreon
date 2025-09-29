@@ -28,12 +28,10 @@ export default async function SubscribePage({ params }: SubscribePageProps) {
     notFound()
   }
 
-  const existingSubscription = await db.subscription.findUnique({
+  const existingSubscription = await db.subscription.findFirst({
     where: {
-      user_id_creator_id: {
-        user_id: session.user.id,
-        creator_id: creator.id
-      }
+      user_id: session.user.id,
+      creator_id: creator.id
     }
   })
 
@@ -47,10 +45,10 @@ export default async function SubscribePage({ params }: SubscribePageProps) {
         <div className="bg-white rounded-lg shadow-lg p-8">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-4">
-              Support {creator.display_name || creator.displayName}
+              Support {creator.display_name}
             </h1>
             <p className="text-gray-600">
-              Get unlimited access to chat with the AI version of {creator.display_name || creator.displayName}
+              Get unlimited access to chat with the AI version of {creator.display_name}
             </p>
           </div>
 
@@ -84,13 +82,13 @@ export default async function SubscribePage({ params }: SubscribePageProps) {
               <span className="text-2xl font-bold">$5/month</span>
             </div>
             <p className="text-sm text-gray-600">
-              You can cancel anytime. {Math.round((1 - creator.commissionRate) * 100)}% goes directly to {creator.displayName}.
+              You can cancel anytime. {Math.round((1 - creator.commission_rate) * 100)}% goes directly to {creator.display_name}.
             </p>
           </div>
 
           <SubscriptionForm 
             creatorId={creator.id}
-            creatorName={creator.displayName}
+            creatorName={creator.display_name}
             userId={session.user.id}
           />
         </div>

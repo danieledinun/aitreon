@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
     console.error('❌ Error ending voice session:', error)
     return NextResponse.json({ 
       error: 'Failed to end voice session',
-      details: error.message 
+      details: error instanceof Error ? error.message : String(error) 
     }, { status: 500 })
   }
 }

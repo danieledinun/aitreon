@@ -45,7 +45,7 @@ async function processCreatorVideosWithSemanticChunking(creatorId: string) {
         DEEPINFRA_API_KEY: process.env.DEEPINFRA_API_KEY
       }
 
-      const command = `node scripts/create-chunks-from-transcripts.js video ${video.youtubeId}`
+      const command = `node scripts/create-chunks-from-transcripts.js video ${video.youtube_id}`
       console.log(`📝 Running: ${command}`)
 
       const { stdout, stderr } = await execPromise(command, {
@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
 
     // Get the creator profile for this user
     const creator = await db.creator.findUnique({
-      where: { user_id: session.user.id }
+      where: { userId: session.user.id }
     })
 
     if (!creator) {
@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
     // Get the user's access token
     const account = await db.account.findFirst({
       where: {
-        user_id: session.user.id,
+        userId: session.user.id,
         provider: 'google'
       }
     })
@@ -190,7 +190,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Start knowledge base processing with quota-conscious limits
-    console.log(`🧠 Starting manual knowledge base processing for creator: ${creator.displayName}`)
+    console.log(`🧠 Starting manual knowledge base processing for creator: ${creator.display_name}`)
     console.log(`🔑 Using access token (length: ${accessToken.length})`)
     console.log(`⏰ Token expires at: ${account.expires_at ? new Date(account.expires_at * 1000) : 'unknown'}`)
     
@@ -249,7 +249,7 @@ export async function GET(request: NextRequest) {
     }
 
     const creator = await db.creator.findUnique({
-      where: { user_id: session.user.id }
+      where: { userId: session.user.id }
     })
 
     if (!creator) {
@@ -259,13 +259,6 @@ export async function GET(request: NextRequest) {
     // Get video processing statistics
     const videos = await db.video.findMany({
       where: { creator_id: creator.id },
-      select: {
-        id: true,
-        title: true,
-        is_processed: true,
-        synced_to_graph_rag: true,
-        created_at: true
-      }
     })
 
     const stats = {

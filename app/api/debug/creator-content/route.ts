@@ -15,12 +15,6 @@ export async function GET(request: NextRequest) {
     // Get creator info
     const creator = await db.creator.findUnique({
       where: { id: creatorId },
-      select: { 
-        display_name: true, 
-        bio: true,
-        youtube_channel_id: true,
-        username: true
-      }
     })
 
     if (!creator) {
@@ -33,13 +27,6 @@ export async function GET(request: NextRequest) {
         creator_id: creatorId,
         is_processed: true 
       },
-      select: { 
-        id: true,
-        title: true, 
-        description: true,
-        published_at: true,
-        duration: true
-      },
       orderBy: { published_at: 'desc' },
       take: 10
     })
@@ -48,15 +35,6 @@ export async function GET(request: NextRequest) {
     const chunks = await db.contentChunk.findMany({
       where: {
         video: { creator_id: creatorId }
-      },
-      select: {
-        content: true,
-        metadata: true,
-        video: {
-          select: {
-            title: true
-          }
-        }
       },
       orderBy: { created_at: 'desc' },
       take: 20

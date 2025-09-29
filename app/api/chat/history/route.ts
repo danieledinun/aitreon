@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     // Fetch chat sessions for this user and creator
     const chatSessions = await db.chatSession.findMany({
       where: {
-        user_id: session.user.id,
+        userId: session.user.id,
         creator_id: creatorId,
       },
       orderBy: { updated_at: 'desc' },

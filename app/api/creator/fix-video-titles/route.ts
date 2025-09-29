@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Creator not found' }, { status: 404 })
     }
 
-    console.log(`🔧 Starting video title fix for creator: ${creator.displayName}`)
+    console.log(`🔧 Starting video title fix for creator: ${creator.display_name}`)
 
     // Get videos with problematic titles or specific video
     const { videoId, fixAll } = await request.json()
@@ -66,10 +66,10 @@ export async function POST(request: NextRequest) {
     // Process each video
     for (const video of videosToFix) {
       try {
-        console.log(`🔄 Fixing title for video: ${video.youtubeId} (current: "${video.title}")`)
+        console.log(`🔄 Fixing title for video: ${video.youtube_id} (current: "${video.title}")`)
 
         // Use Python script to get correct metadata
-        const command = `./scripts/transcript_env/bin/python scripts/youtube_transcript_extractor.py metadata ${video.youtubeId}`
+        const command = `./scripts/transcript_env/bin/python scripts/youtube_transcript_extractor.py metadata ${video.youtube_id}`
         const { stdout, stderr } = await execAsync(command)
 
         if (stderr) {
@@ -94,25 +94,25 @@ export async function POST(request: NextRequest) {
 
           results.fixedVideos++
           results.fixedTitles.push({
-            youtubeId: video.youtubeId,
+            youtubeId: video.youtube_id,
             oldTitle,
             newTitle: metadata.title
           })
 
-          console.log(`✅ Fixed title for ${video.youtubeId}: "${oldTitle}" → "${metadata.title}"`)
+          console.log(`✅ Fixed title for ${video.youtube_id}: "${oldTitle}" → "${metadata.title}"`)
         } else if (metadata.success) {
-          console.log(`ℹ️ Title already correct for ${video.youtubeId}: "${video.title}"`)
+          console.log(`ℹ️ Title already correct for ${video.youtube_id}: "${video.title}"`)
         } else {
           const errorMsg = `Failed to get metadata: ${metadata.message || 'Unknown error'}`
-          results.errors.push(`${video.youtubeId}: ${errorMsg}`)
-          console.log(`❌ Error for ${video.youtubeId}: ${errorMsg}`)
+          results.errors.push(`${video.youtube_id}: ${errorMsg}`)
+          console.log(`❌ Error for ${video.youtube_id}: ${errorMsg}`)
         }
 
         // Small delay between requests to be respectful
         await new Promise(resolve => setTimeout(resolve, 1000))
 
       } catch (error) {
-        const errorMsg = `Error processing ${video.youtubeId}: ${error instanceof Error ? error.message : error}`
+        const errorMsg = `Error processing ${video.youtube_id}: ${error instanceof Error ? error.message : error}`
         results.errors.push(errorMsg)
         console.error(`❌ ${errorMsg}`)
       }
@@ -161,13 +161,6 @@ export async function GET(request: NextRequest) {
           { title: { equals: '' } },
           { title: { equals: null } }
         ]
-      },
-      select: {
-        id: true,
-        youtubeId: true,
-        title: true,
-        createdAt: true,
-        isProcessed: true
       },
       orderBy: {
         createdAt: 'desc'

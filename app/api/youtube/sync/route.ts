@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
         if (transcriptResult.success) {
           console.log(`✅ Got transcript for ${videoId} in ${transcriptResult.language}`)
           segments = transcriptResult.segments || []
-          transcriptText = segments.map(s => s.text).join(' ')
+          transcriptText = segments.map((s: any) => s.text).join(' ')
         } else {
           console.warn(`⚠️ No transcript available for ${videoId}:`, transcriptResult.error)
         }
@@ -138,7 +138,7 @@ export async function POST(request: NextRequest) {
           console.log(`📝 Creating semantic chunks from ${segments.length} transcript segments for video ${videoRecord.id}`)
 
           // Convert segments to required format for semantic chunking
-          const transcriptSegments = segments.map(segment => ({
+          const transcriptSegments = segments.map((segment: any) => ({
             start: segment.start || 0,
             end: segment.end || (segment.start + segment.duration) || 0,
             duration: segment.duration || 0,

@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
     // Generate AI response using Enhanced RAG service
     const ragResponse = await EnhancedRAGService.generateResponse(
         creatorId,
-        creatorWithRelations.displayName,
+        creatorWithRelations.display_name,
         query,
         [] // No conversation history for voice
       )
@@ -79,11 +79,11 @@ export async function POST(request: NextRequest) {
 
     // Generate TTS audio if voice settings are available
     let audioData = null
-    if (creatorWithRelations.voiceSettings?.isEnabled && creatorWithRelations.voiceSettings.elevenlabsVoiceId) {
+    if (creatorWithRelations.voiceSettings?.is_enabled && creatorWithRelations.voiceSettings.elevenlabs_voice_id) {
       try {
         const elevenLabsApiKey = process.env.ELEVENLABS_API_KEY
         if (elevenLabsApiKey) {
-          const ttsResponse = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${creatorWithRelations.voiceSettings.elevenlabsVoiceId}`, {
+          const ttsResponse = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${creatorWithRelations.voiceSettings.elevenlabs_voice_id}`, {
             method: 'POST',
             headers: {
               'Accept': 'audio/mpeg',
@@ -122,8 +122,8 @@ export async function POST(request: NextRequest) {
       audioFormat: 'audio/mpeg',
       citations: ragResponse.citations,
       metadata: {
-        creatorName: creatorWithRelations.displayName,
-        hasCustomVoice: !!creatorWithRelations.voiceSettings?.elevenlabsVoiceId,
+        creatorName: creatorWithRelations.display_name,
+        hasCustomVoice: !!creatorWithRelations.voiceSettings?.elevenlabs_voice_id,
         roomName,
         timestamp: new Date().toISOString()
       }
@@ -161,9 +161,9 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       status: 'ready',
-      creatorName: creator.displayName,
-      hasVoiceClone: !!voiceSettings?.elevenlabsVoiceId,
-      voiceEnabled: voiceSettings?.isEnabled || false,
+      creatorName: creator.display_name,
+      hasVoiceClone: !!voiceSettings?.elevenlabs_voice_id,
+      voiceEnabled: voiceSettings?.is_enabled || false,
       capabilities: [
         'text_response',
         'citation_support',

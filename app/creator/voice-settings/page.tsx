@@ -37,7 +37,11 @@ export default async function VoiceSettingsPage() {
   // Attach voice settings to creator object for compatibility
   const creatorWithVoiceSettings = {
     ...creator,
-    voiceSettings: voiceSettings
+    displayName: creator.display_name, // Map database field to component interface
+    voiceSettings: voiceSettings ? {
+      isEnabled: voiceSettings.is_enabled,
+      elevenlabsVoiceId: voiceSettings.elevenlabs_voice_id
+    } : null
   }
 
   return <VoiceCloneInterface creator={creatorWithVoiceSettings} />

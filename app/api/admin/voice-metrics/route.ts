@@ -15,7 +15,7 @@ const JWT_SECRET = process.env.NEXTAUTH_SECRET || 'admin-secret-key'
 
 interface VoiceMetrics {
   room_name: string
-  user_id: string
+  userId: string
   session_start: string
   session_duration: number
   total_turns: number

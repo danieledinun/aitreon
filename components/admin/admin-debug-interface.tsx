@@ -60,7 +60,7 @@ export default function AdminDebugInterface({ creators, adminEmail }: AdminDebug
   const [voiceLoading, setVoiceLoading] = useState(false)
   
   // Voice metrics states
-  const [voiceMetrics, setVoiceMetrics] = useState(null)
+  const [voiceMetrics, setVoiceMetrics] = useState<any>(null)
   const [metricsLoading, setMetricsLoading] = useState(false)
   const [metricsError, setMetricsError] = useState('')
 
@@ -770,7 +770,7 @@ export default function AdminDebugInterface({ creators, adminEmail }: AdminDebug
                           
                           {voiceMetrics.sessions && voiceMetrics.sessions.length > 0 ? (
                             <div className="space-y-3 max-h-96 overflow-y-auto">
-                              {voiceMetrics.sessions.slice(0, 20).map((session, idx) => (
+                              {voiceMetrics.sessions.slice(0, 20).map((session: any, idx: number) => (
                                 <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                                   <div className="flex-1">
                                     <div className="text-sm font-medium">

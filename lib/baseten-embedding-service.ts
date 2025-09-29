@@ -12,17 +12,19 @@ export interface BasetenEmbeddingOptions {
 }
 
 export interface BasetenEmbeddingResponse {
-  object: 'list'
-  data: Array<{
+  object?: 'list'
+  data?: Array<{
     object: 'embedding'
     index: number
     embedding: number[]
   }>
-  model: string
+  model?: string
   usage?: {
     prompt_tokens: number
     total_tokens: number
   }
+  embedding?: number[]
+  [key: string]: any
 }
 
 export class BasetenEmbeddingService {
@@ -30,7 +32,7 @@ export class BasetenEmbeddingService {
 
   // Model endpoints from environment variables
   private static getModelEndpoint(model: string): string | null {
-    const endpoints = {
+    const endpoints: { [key: string]: string | undefined } = {
       'bge-embedding-icl': process.env.BASETEN_BGE_ENDPOINT,
       'qwen3-8b-embedding': process.env.BASETEN_QWEN_ENDPOINT,
       'mixedbread-embed-large-v1': process.env.BASETEN_MIXEDBREAD_ENDPOINT,
@@ -150,9 +152,10 @@ export class BasetenEmbeddingService {
       console.error(`❌ Error generating embedding with ${model}:`, error)
 
       // Check if this is a scale-down error that can be retried
-      const isScaledDown = error.message?.includes('deactivated') ||
-                          error.message?.includes('not found') ||
-                          error.message?.includes('cold start')
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      const isScaledDown = errorMessage.includes('deactivated') ||
+                          errorMessage.includes('not found') ||
+                          errorMessage.includes('cold start')
 
       if (isScaledDown && retries > 1) {
         console.log(`🔄 Baseten scaled down, triggering auto-scale up (${retries} retries left)...`)
@@ -275,7 +278,7 @@ export class BasetenEmbeddingService {
   /**
    * Get fallback model for resilience
    */
-  private static getFallbackModel(currentModel: string): string {
+  private static getFallbackModel(currentModel: string): 'bge-embedding-icl' | 'mixedbread-embed-large-v1' | 'nomic-embed-code' | 'qwen3-8b-embedding' {
     const fallbackOrder = {
       'qwen3-8b-embedding': 'bge-embedding-icl',
       'bge-embedding-icl': 'qwen3-8b-embedding',
@@ -283,7 +286,7 @@ export class BasetenEmbeddingService {
       'nomic-embed-code': 'bge-embedding-icl'
     }
 
-    return fallbackOrder[currentModel as keyof typeof fallbackOrder] || 'bge-embedding-icl'
+    return (fallbackOrder[currentModel as keyof typeof fallbackOrder] || 'bge-embedding-icl') as 'bge-embedding-icl' | 'mixedbread-embed-large-v1' | 'nomic-embed-code' | 'qwen3-8b-embedding'
   }
 
   /**

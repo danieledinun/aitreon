@@ -167,9 +167,9 @@ export class YouTubeService {
         subscriberCount: channel.statistics?.subscriberCount || '0',
         viewCount: channel.statistics?.viewCount || '0',
         videoCount: channel.statistics?.videoCount || '0',
-        customUrl: channel.snippet?.customUrl,
-        country: channel.snippet?.country,
-        joinedDate: channel.snippet?.publishedAt,
+        customUrl: channel.snippet?.customUrl || undefined,
+        country: channel.snippet?.country || undefined,
+        joinedDate: channel.snippet?.publishedAt || undefined,
       }
     } catch (error) {
       console.error('Error fetching channel stats:', error)
@@ -217,7 +217,7 @@ export class YouTubeService {
           const videosResponse = await rateLimiter.throttle(() =>
             authenticatedYoutube.videos.list({
               part: ['snippet', 'contentDetails'], // Removed 'statistics', 'localizations' to save quota
-              id: videoIds,
+              id: videoIds as string[],
             })
           )
 
@@ -233,10 +233,10 @@ export class YouTubeService {
               publishedAt: video.snippet?.publishedAt || '',
               duration: video.contentDetails?.duration || '',
               viewCount: '0', // Skip view count during discovery
-              language: video.snippet?.defaultAudioLanguage || video.snippet?.defaultLanguage,
-              categoryId: video.snippet?.categoryId,
+              language: video.snippet?.defaultAudioLanguage || video.snippet?.defaultLanguage || undefined,
+              categoryId: video.snippet?.categoryId || undefined,
               tags: video.snippet?.tags?.slice(0, 5) || [], // Limit tags to save space
-              defaultLanguage: video.snippet?.defaultLanguage,
+              defaultLanguage: video.snippet?.defaultLanguage || undefined,
               hasAutoCaption: false, // Will check during processing only
               hasManualCaption: false, // Will check during processing only
               captionLanguages: [], // Will populate during processing only
@@ -280,12 +280,11 @@ export class YouTubeService {
       const playlistResponse = await authenticatedYoutube.playlistItems.list({
         part: ['snippet', 'contentDetails'],
         playlistId: uploadsPlaylistId,
-        maxResults,
-        order: 'date',
+        maxResults
       })
 
-      const videoIds = playlistResponse.data.items?.map(item => item.contentDetails?.videoId).filter(Boolean) || []
-      
+      const videoIds = (playlistResponse.data.items?.map(item => item.contentDetails?.videoId).filter(Boolean) || []) as string[]
+
       if (videoIds.length === 0) return []
 
       // Get detailed video information
@@ -294,7 +293,7 @@ export class YouTubeService {
         id: videoIds,
       })
 
-      return videosResponse.data.items?.map(video => ({
+      return (videosResponse.data.items?.map(video => ({
         id: video.id!,
         title: video.snippet?.title || '',
         description: video.snippet?.description || '',
@@ -302,7 +301,7 @@ export class YouTubeService {
         publishedAt: video.snippet?.publishedAt || '',
         duration: video.contentDetails?.duration || '',
         viewCount: video.statistics?.viewCount || '0',
-      })) || []
+      })) || []) as YouTubeVideo[]
     } catch (error) {
       console.error('Error fetching user videos:', error)
       return []
@@ -342,8 +341,8 @@ export class YouTubeService {
         maxResults,
       })
 
-      const videoIds = response.data.items?.map(item => item.id?.videoId).filter(Boolean) || []
-      
+      const videoIds = (response.data.items?.map(item => item.id?.videoId).filter(Boolean) || []) as string[]
+
       if (videoIds.length === 0) return []
 
       const videosResponse = await youtube.videos.list({
@@ -351,7 +350,7 @@ export class YouTubeService {
         id: videoIds,
       })
 
-      return videosResponse.data.items?.map(video => ({
+      return (videosResponse.data.items?.map(video => ({
         id: video.id!,
         title: video.snippet?.title || '',
         description: video.snippet?.description || '',
@@ -359,7 +358,7 @@ export class YouTubeService {
         publishedAt: video.snippet?.publishedAt || '',
         duration: video.contentDetails?.duration || '',
         viewCount: video.statistics?.viewCount || '0',
-      })) || []
+      })) || []) as YouTubeVideo[]
     } catch (error) {
       console.error('Error fetching channel videos:', error)
       return []
@@ -435,16 +434,16 @@ export class YouTubeService {
       console.log(`🔍 Raw transcript type: ${typeof rawTranscript}`)
       console.log(`🔍 Raw transcript constructor: ${rawTranscript?.constructor?.name}`)
       console.log(`🔍 Is Blob: ${rawTranscript instanceof Blob}`)
-      console.log(`🔍 Has text method: ${typeof rawTranscript?.text === 'function'}`)
+      console.log(`🔍 Has text method: ${typeof (rawTranscript as any)?.text === 'function'}`)
       
       // Handle different response types from YouTube API
       let transcriptText: string
-      if (rawTranscript && typeof rawTranscript.text === 'function') {
+      if (rawTranscript && typeof (rawTranscript as any).text === 'function') {
         console.log(`🔧 Converting response with .text() method for video: ${videoId}`)
-        transcriptText = await rawTranscript.text()
+        transcriptText = await (rawTranscript as any).text()
       } else if (rawTranscript instanceof Blob) {
         console.log(`🔧 Converting Blob to text for video: ${videoId}`)
-        transcriptText = await rawTranscript.text()
+        transcriptText = await (rawTranscript as any).text()
       } else if (typeof rawTranscript === 'string') {
         console.log(`🔧 Using string response for video: ${videoId}`)
         transcriptText = rawTranscript

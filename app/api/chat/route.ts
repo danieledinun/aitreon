@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
       const { data: newSession, error: sessionError } = await supabase
         .from('chat_sessions')
         .insert({
-          user_id: session.user.id,
+          userId: session.user.id,
           creator_id: creatorId
         })
         .select()
@@ -202,7 +202,7 @@ export async function POST(request: NextRequest) {
       const { error: insertError } = await supabase
         .from('daily_usage')
         .insert({
-          user_id: session.user.id,
+          userId: session.user.id,
           creator_id: creatorId,
           date: todayStr,
           message_count: 1

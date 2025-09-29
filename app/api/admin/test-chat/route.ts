@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     // Generate AI response using the Enhanced RAG service with reranking
     const ragResponse = await EnhancedRAGService.generateResponse(
       creatorId,
-      creator.displayName,
+      creator.display_name,
       message,
       [] // No conversation history for testing
     )

@@ -79,7 +79,7 @@ export class EnhancedRAGService {
           keywordMatches = searchResults.length
         }
       } catch (vectorError) {
-        console.log(`⚠️ Vector search error, using BM25 fallback:`, vectorError.message)
+        console.log(`⚠️ Vector search error, using BM25 fallback:`, vectorError instanceof Error ? vectorError.message : String(vectorError))
         searchResults = await this.getBM25Fallback(creatorId, userQuery, 15)
         keywordMatches = searchResults.length
       }
@@ -130,7 +130,7 @@ export class EnhancedRAGService {
           finalResults = searchResults.slice(0, 8)
         }
       } catch (rerankError) {
-        console.log(`⚠️ Reranking failed, using original results:`, rerankError.message)
+        console.log(`⚠️ Reranking failed, using original results:`, rerankError instanceof Error ? rerankError.message : String(rerankError))
         finalResults = searchResults.slice(0, 8)
       }
 
@@ -147,7 +147,7 @@ export class EnhancedRAGService {
         endTime: result.end_time,
         relevanceScore: result.similarity_score || 0.8,
         rerankScore: result.rerank_score,
-        chunkLevel: (result.rerank_score ? 'reranked' : (vectorMatches > 0 ? 'vector' : 'retrieval')) as const
+        chunkLevel: result.rerank_score ? 'reranked' as const : (vectorMatches > 0 ? 'vector' as const : 'retrieval' as const)
       }))
 
       // Step 4: Generate AI response

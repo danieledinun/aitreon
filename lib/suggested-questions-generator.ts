@@ -21,12 +21,7 @@ export class SuggestedQuestionsGenerator {
 
       // Get creator info
       const creator = await db.creator.findUnique({
-        where: { id: creatorId },
-        select: { 
-          display_name: true, 
-          bio: true,
-          youtube_channel_id: true 
-        }
+        where: { id: creatorId }
       })
 
       if (!creator) {
@@ -36,16 +31,11 @@ export class SuggestedQuestionsGenerator {
 
       // Get recent video topics and titles
       const videos = await db.video.findMany({
-        where: { 
-          creator_id: creatorId,
-          is_processed: true 
+        where: {
+          creatorId: creatorId,
+          isProcessed: true
         },
-        select: { 
-          title: true, 
-          description: true,
-          published_at: true
-        },
-        orderBy: { published_at: 'desc' },
+        orderBy: { publishedAt: 'desc' },
         take: 20 // Use recent videos
       })
 
@@ -58,15 +48,6 @@ export class SuggestedQuestionsGenerator {
       const chunks = await db.contentChunk.findMany({
         where: {
           video: { creator_id: creatorId }
-        },
-        select: {
-          content: true,
-          metadata: true,
-          video: {
-            select: {
-              title: true
-            }
-          }
         },
         orderBy: { created_at: 'desc' },
         take: 50 // Sample of recent chunks
@@ -281,7 +262,7 @@ Make each question feel like it came from someone who watches their content regu
         basedOn: Array.isArray(q.basedOn) ? q.basedOn : []
       }))
 
-      console.log('✅ Generated specific questions:', processedQuestions.map(q => q.question))
+      console.log('✅ Generated specific questions:', processedQuestions.map((q: any) => q.question))
 
       return processedQuestions
 
@@ -308,7 +289,7 @@ Make each question feel like it came from someone who watches their content regu
     const simpleQuestions: SuggestedQuestion[] = []
     
     // Generate topic-based questions
-    topTopics.forEach(topic => {
+    topTopics.forEach((topic: any) => {
       simpleQuestions.push({
         question: `What's your approach to ${topic}?`,
         category: topic.toLowerCase().replace(/\s+/g, '_'),
@@ -318,7 +299,7 @@ Make each question feel like it came from someone who watches their content regu
     })
     
     // Generate expertise-based questions  
-    topExpertise.forEach(expertise => {
+    topExpertise.forEach((expertise: any) => {
       simpleQuestions.push({
         question: `Can you explain your ${expertise} methodology?`,
         category: 'methodology',
@@ -339,10 +320,7 @@ Make each question feel like it came from someone who watches their content regu
 
       const cached = await db.creatorSuggestedQuestions.findFirst({
         where: {
-          creator_id: creatorId,
-          created_at: {
-            gte: today
-          }
+          creatorId: creatorId
         }
       })
 
@@ -357,14 +335,13 @@ Make each question feel like it came from someone who watches their content regu
 
       // Cache the results
       await db.creatorSuggestedQuestions.upsert({
-        where: { creator_id: creatorId },
+        where: { creatorId: creatorId },
         update: {
-          questions: JSON.stringify(questions),
-          updated_at: new Date()
+          questions: JSON.stringify(questions)
         },
         create: {
           creator_id: creatorId,
-          questions: JSON.stringify(questions),
+          questions: JSON.stringify(questions)
         }
       })
 
@@ -457,7 +434,7 @@ Make each question feel like it came from someone who watches their content regu
     
     // Delete existing cache
     await db.creatorSuggestedQuestions.deleteMany({
-      where: { creator_id: creatorId }
+      where: { creatorId: creatorId }
     })
 
     // Generate fresh questions

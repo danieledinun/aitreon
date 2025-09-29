@@ -187,27 +187,6 @@ export function VideoListModal({ videos, trigger, creator }: VideoListModalProps
             <p className="text-sm text-blue-700">🧠 Loading agent brain contents...</p>
           </div>
         )}
-        
-        {graphragData && (
-          <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Database className="h-5 w-5 text-green-600" />
-                <div>
-                  <h4 className="text-sm font-medium text-green-900">Agent Brain Contents</h4>
-                  <p className="text-xs text-green-700">
-                    {videoList.length} videos • {graphragData.stats.total_episodes} knowledge episodes
-                  </p>
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="text-lg font-bold text-green-900">{videoList.length}</div>
-                <p className="text-xs text-green-700">Videos in Brain</p>
-              </div>
-            </div>
-          </div>
-        )}
-        
         <Separator />
         
         {/* Video List */}
@@ -279,16 +258,15 @@ export function VideoListModal({ videos, trigger, creator }: VideoListModalProps
                       
                       {/* Actions */}
                       <div className="flex items-center gap-1">
-                        <Button variant="ghost" size="sm" asChild>
-                          <a 
-                            href={`https://youtube.com/watch?v=${video.youtubeId}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="p-2"
-                          >
+                        <a
+                          href={`https://youtube.com/watch?v=${video.youtubeId}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <Button variant="ghost" size="sm" className="p-2">
                             <ExternalLink className="h-3 w-3" />
-                          </a>
-                        </Button>
+                          </Button>
+                        </a>
                         
                         {/* Remove button - only show for videos with transcripts */}
                         {video.transcript && (
@@ -411,15 +389,15 @@ export function CompactVideoList({ videos, maxItems = 3, showViewAll = true, cre
                 {new Date(lastSyncedVideo.createdAt).toLocaleDateString()}
               </p>
             </div>
-            <Button variant="ghost" size="sm" asChild>
-              <a 
-                href={`https://youtube.com/watch?v=${lastSyncedVideo.youtubeId}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
+            <a
+              href={`https://youtube.com/watch?v=${lastSyncedVideo.youtubeId}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Button variant="ghost" size="sm">
                 <ExternalLink className="h-3 w-3" />
-              </a>
-            </Button>
+              </Button>
+            </a>
           </div>
         </div>
       )}
@@ -458,15 +436,15 @@ export function CompactVideoList({ videos, maxItems = 3, showViewAll = true, cre
                   statusInfo.status === 'processing' ? 'text-orange-600' : 
                   'text-gray-400'
                 }`} />
-                <Button variant="ghost" size="sm" asChild>
-                  <a 
-                    href={`https://youtube.com/watch?v=${video.youtubeId}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
+                <a
+                  href={`https://youtube.com/watch?v=${video.youtubeId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Button variant="ghost" size="sm">
                     <ExternalLink className="h-3 w-3" />
-                  </a>
-                </Button>
+                  </Button>
+                </a>
               </div>
             </div>
           )

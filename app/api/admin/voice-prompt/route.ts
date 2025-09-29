@@ -66,8 +66,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       baseInstructions,
       completePrompt,
-      creatorName: creator.displayName,
-      hasAiConfig: !!creator.aiConfig
+      creatorName: creator.display_name,
+      hasAiConfig: !!creator.ai_config
     })
 
   } catch (error) {
@@ -126,8 +126,8 @@ function buildVoiceSystemPrompt(creator: any, baseInstructions: string): string 
   // Simulate the same logic as the Python agent
   let completePrompt = baseInstructions
 
-  if (creator.aiConfig) {
-    const config = creator.aiConfig
+  if (creator.ai_config) {
+    const config = creator.ai_config
     
     // Add personality traits
     let personalityNotes = []

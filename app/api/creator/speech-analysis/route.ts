@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
               success: true,
               message: 'Speech pattern analysis completed successfully',
               data: {
-                styleCard: styleCard
+                styleCard: styleCard || undefined
               }
             }
           } else {

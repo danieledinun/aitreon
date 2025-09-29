@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
         departureTimeout: 300, // 5 minutes before participant is removed after disconnect
         metadata: JSON.stringify({
           creatorId,
-          creatorName: creator.displayName,
+          creatorName: creator.display_name,
           createdAt: new Date().toISOString()
         })
       })
@@ -80,10 +80,11 @@ export async function POST(request: NextRequest) {
       console.log('✅ Created new LiveKit room:', roomName)
     } catch (error: any) {
       // Room might already exist, which is fine
-      if (!error.message?.includes('already exists')) {
-        console.error('❌ Failed to create LiveKit room:', error)
-      } else {
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      if (errorMessage.includes('already exists')) {
         console.log('ℹ️ Room already exists:', roomName)
+      } else {
+        console.error('❌ Failed to create LiveKit room:', error)
       }
     }
 
@@ -102,20 +103,18 @@ export async function POST(request: NextRequest) {
         if (!hasAgent) {
           console.log('🤖 Dispatching AI agent to voice call room:', roomName)
           // Dispatch with specific metadata to avoid duplicates
-          await agentDispatch.createDispatch(roomName, {
-            metadata: JSON.stringify({
-              roomName,
-              dispatchedAt: Date.now(),
-              preventDuplicates: true
-            })
-          })
+          await agentDispatch.createDispatch(roomName, JSON.stringify({
+            roomName,
+            dispatchedAt: Date.now(),
+            preventDuplicates: true
+          }))
           console.log('✅ AI agent dispatched successfully to room:', roomName)
         } else {
           console.log('ℹ️ AI agent already present in room:', roomName)
         }
       } catch (dispatchError) {
         console.error('❌ Failed to dispatch AI agent:', dispatchError)
-        console.error('❌ Dispatch error details:', dispatchError.message)
+        console.error('❌ Dispatch error details:', dispatchError instanceof Error ? dispatchError.message : String(dispatchError))
         // Don't fail the token generation if agent dispatch fails
       }
     }
@@ -156,7 +155,7 @@ export async function POST(request: NextRequest) {
       metadata: {
         isCreator,
         creatorId,
-        creatorName: creator.displayName
+        creatorName: creator.display_name
       }
     })
 

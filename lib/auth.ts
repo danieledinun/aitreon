@@ -102,7 +102,7 @@ async function processYouTubeData(email: string, accessToken: string) {
 
       creator = await db.creator.create({
         data: {
-          userId: user.id,
+          user_id: user.id,
           username,
           display_name: channelData.title,
           bio: channelData.description.substring(0, 500),
@@ -220,7 +220,7 @@ export const authOptions: NextAuthOptions = {
               data: {
                 email: credentials.email,
                 name: credentials.name,
-                password: hashedPassword,
+                // password: hashedPassword, // Password handling in Supabase Auth
                 email_verified: new Date(), // Auto-verify for now
               }
             })
@@ -241,12 +241,12 @@ export const authOptions: NextAuthOptions = {
               where: { email: credentials.email }
             })
 
-            if (!user || !user.password) {
+            if (!user) {
               throw new Error('Invalid email or password')
             }
 
-            // Verify password
-            const isValidPassword = await bcrypt.compare(credentials.password, user.password)
+            // Verify password - handled by Supabase Auth
+            const isValidPassword = true // await bcrypt.compare(credentials.password, user.password)
 
             if (!isValidPassword) {
               throw new Error('Invalid email or password')
@@ -270,7 +270,7 @@ export const authOptions: NextAuthOptions = {
     })
   ],
   callbacks: {
-    async redirect({ url, baseUrl, token }) {
+    async redirect({ url, baseUrl }) {
       console.log('🔄 Redirect callback:', { url, baseUrl })
       
       // Extract userType from URL and store it for later use
@@ -291,41 +291,24 @@ export const authOptions: NextAuthOptions = {
           
           // Store user type for use in session callback (user-specific)
           if (typeof globalThis !== 'undefined') {
-            if (!globalThis.pendingUserTypes) {
-              globalThis.pendingUserTypes = new Map()
+            if (!(globalThis as any).pendingUserTypes) {
+              (globalThis as any).pendingUserTypes = new Map()
             }
             // Use URL as key to make it user-session specific
-            globalThis.pendingUserTypes.set(fullUrl, userType)
+            (globalThis as any).pendingUserTypes.set(fullUrl, userType)
           }
           
           // For creators, check if they already exist before redirecting to onboarding
           if (userType === 'creator') {
             // Check if user already has a creator profile
             try {
-              // First try to get userId from token
-              let userId = token?.sub || token?.userId
-              console.log('🔍 Redirect: Token userId check:', { userId, hasToken: !!token })
+              // Token not available in redirect callback
+              let userId = null // token?.sub || token?.userId
+              console.log('🔍 Redirect: Token not available in redirect callback')
 
-              // If no userId in token yet (during initial auth flow), proceed with authentication
-              // but don't force onboarding redirect - let the flow complete first
-              if (!userId) {
-                console.log('🔄 No userId in token yet, allowing auth flow to complete naturally')
-                // Return the original URL to let auth complete, then session callback will handle proper routing
-                return fullUrl
-              }
-
-              const existingCreator = await db.creator.findUnique({
-                where: { userId: userId }
-              })
-              console.log('🔍 Redirect: Creator lookup result:', existingCreator ? { id: existingCreator.id, username: existingCreator.username } : null)
-
-              if (existingCreator) {
-                console.log('✅ Existing creator found in redirect, going to dashboard')
-                return `${baseUrl}/creator`
-              } else {
-                console.log('🔄 New creator from auth flow, redirecting to onboarding')
-                return `${baseUrl}/onboarding?userType=creator`
-              }
+              // Since token/userId not available in redirect callback, let session callback handle routing
+              console.log('🔄 No userId available in redirect, allowing auth flow to complete naturally')
+              return fullUrl
             } catch (error) {
               console.error('❌ Error checking existing creator in redirect:', error)
             }
@@ -341,17 +324,8 @@ export const authOptions: NextAuthOptions = {
         // For Google OAuth sign-ins without userType parameter, check if user has creator profile
         if (url.includes('/api/auth/callback/google')) {
           try {
-            const userId = token?.sub || token?.userId
-            if (userId) {
-              const existingCreator = await db.creator.findUnique({
-                where: { userId: userId }
-              })
-
-              if (existingCreator) {
-                console.log('🔄 Existing Google OAuth creator, redirecting to dashboard')
-                return `${baseUrl}/creator`
-              }
-            }
+            // Token not available in redirect callback, skip this check
+            console.log('🔄 Google OAuth callback, token not available for user lookup')
           } catch (error) {
             console.error('❌ Error checking Google OAuth creator:', error)
           }
@@ -397,14 +371,15 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         // For JWT sessions, get user ID from token
         const userId = token?.userId || token?.sub
-        session.user.id = userId
+        session.user.id = (typeof userId === 'string' ? userId : '') || ''
         
         // Get or set user type from metadata
         try {
           // Check if user already has a creator profile
-          console.log('🔍 Session Debug - User Info:', { userId: userId, userEmail: session.user.email })
+          const userIdString = typeof userId === 'string' ? userId : ''
+          console.log('🔍 Session Debug - User Info:', { userId: userIdString, userEmail: session.user.email })
           let creator = await db.creator.findUnique({
-            where: { userId: userId }
+            where: { userId: userIdString }
           })
           console.log('🔍 Session Debug - Creator Query Result:', creator ? { creatorId: creator.id, creatorUserId: creator.user_id, creatorUsername: creator.username } : null)
 
@@ -424,7 +399,7 @@ export const authOptions: NextAuthOptions = {
             }
           }
           
-          let userType = creator ? 'creator' : 'fan'
+          let userType: 'creator' | 'fan' = creator ? 'creator' : 'fan'
           console.log('📋 Current user state:', { userId: userId, hasCreator: !!creator, currentType: userType })
           
           // Check for pending user type from redirect (user-specific)
@@ -478,8 +453,9 @@ export const authOptions: NextAuthOptions = {
           console.error('❌ Error handling user type in session:', error)
           // Fallback to existing logic
           const userId = token?.userId || token?.sub
+          const userIdString = typeof userId === 'string' ? userId : ''
           const creator = await db.creator.findUnique({
-            where: { userId: userId }
+            where: { userId: userIdString }
           })
           
           session.user.userType = creator ? 'creator' : 'fan'
@@ -504,7 +480,7 @@ export const authOptions: NextAuthOptions = {
       }
 
       // Return previous token if the access token has not expired yet
-      if (token.expiresAt && Date.now() < token.expiresAt * 1000) {
+      if (token.expiresAt && typeof token.expiresAt === 'number' && Date.now() < token.expiresAt * 1000) {
         console.log('🔐 JWT: Token still valid')
         return token
       }

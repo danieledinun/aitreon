@@ -12,9 +12,9 @@ export default async function ExplorePage() {
   // Get users and subscription counts separately
   const creatorsWithData = await Promise.all(
     creators.map(async (creator) => {
-      const user = await db.user.findUnique({ where: { id: creator.userId } })
+      const user = await db.user.findUnique({ where: { id: creator.user_id } })
       const subscriptions = await db.subscription.findMany({
-        where: { creatorId: creator.id, status: 'ACTIVE' }
+        where: { creator_id: creator.id, status: 'ACTIVE' }
       })
       
       return {
@@ -80,23 +80,23 @@ export default async function ExplorePage() {
               <div key={creator.id} className="card p-6 hover:shadow-lg transition-all duration-300">
                 <div className="text-center mb-6">
                   <div className="relative w-20 h-20 mx-auto mb-4">
-                    {creator.user.image ? (
+                    {creator.user?.image ? (
                       <img
                         src={creator.user.image}
-                        alt={creator.displayName}
+                        alt={creator.display_name}
                         className="w-20 h-20 rounded-full object-cover"
                       />
                     ) : (
                       <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
                         <span className="text-white text-xl font-bold">
-                          {creator.displayName.charAt(0)}
+                          {creator.display_name?.charAt(0)}
                         </span>
                       </div>
                     )}
                   </div>
                   
                   <h3 className="text-xl font-bold text-gray-900 mb-1">
-                    {creator.displayName}
+                    {creator.display_name}
                   </h3>
                   <p className="text-gray-600 text-sm mb-3">@{creator.username}</p>
                   

@@ -80,7 +80,7 @@ export default async function CreatorDashboard() {
       include: {
         ai_config: true,
         voice_settings: true,
-        creator_suggested_questions: true,
+        suggested_questions: true,
         _count: {
           select: {
             subscriptions: { where: { status: 'ACTIVE' } },
@@ -99,18 +99,18 @@ export default async function CreatorDashboard() {
   console.log('🔍 User Debug - Creator Username:', creator?.username)
   console.log('🔍 User Debug - AI Config:', !!creator?.ai_config)
   console.log('🔍 User Debug - Voice Settings:', !!creator?.voice_settings)
-  console.log('🔍 User Debug - Suggested Questions:', !!creator?.creator_suggested_questions)
+  console.log('🔍 User Debug - Suggested Questions:', !!creator?.suggested_questions)
   console.log('🔍 User Debug - Session email being queried:', session.user.email)
 
   // Get real analytics data for creators
   let totalMessages = 0
-  let recentChatSessions = []
+  let recentChatSessions: any[] = []
   let totalChatSessionsCount = 0
   let engagementData = { rate: 0, responseTime: 0, userSatisfaction: 0 }
   let sentimentData = { positive: 0, negative: 0, neutral: 0, total: 0 }
-  let topActiveUsers = []
+  let topActiveUsers: any[] = []
 
-  const userSubscriptions = user?.subscriptions || []
+  const userSubscriptions = (user as any)?.subscriptions || []
 
   // Check session data as fallback
   console.log('🔍 Session Debug - Full session:', JSON.stringify(session, null, 2))
@@ -176,7 +176,7 @@ export default async function CreatorDashboard() {
       
       recentChatSessions = chatSessions
       totalChatSessionsCount = allChatSessions.length
-      totalMessages = allChatSessions.reduce((sum, session) => sum + (session.messages?.length || 0), 0)
+      totalMessages = allChatSessions.reduce((sum, session) => sum + ((session as any).messages?.length || 0), 0)
       
       console.log('📊 Analytics Debug - Recent sessions:', chatSessions.length)
       console.log('📊 Analytics Debug - Total sessions count:', totalChatSessionsCount)
@@ -184,7 +184,7 @@ export default async function CreatorDashboard() {
       
       // Calculate engagement metrics from real data
       if (chatSessions.length > 0) {
-        const sessionsWithMessages = chatSessions.filter(s => s.messages && s.messages.length > 0)
+        const sessionsWithMessages = chatSessions.filter(s => (s as any).messages && (s as any).messages.length > 0)
         engagementData.rate = Math.round((sessionsWithMessages.length / chatSessions.length) * 100)
 
         // Calculate average session duration (simplified)
@@ -195,7 +195,7 @@ export default async function CreatorDashboard() {
 
       // Calculate sentiment analytics from all user messages
       const allUserMessages = allChatSessions.flatMap(session =>
-        session.messages?.filter(msg => msg.role === 'user' || msg.role === 'USER') || []
+        (session as any).messages?.filter((msg: any) => msg.role === 'user' || msg.role === 'USER') || []
       )
 
       // Count sentiment data
@@ -209,11 +209,11 @@ export default async function CreatorDashboard() {
       // Get top 3 most active users based on message count
       const userMessageCounts = new Map()
       allChatSessions.forEach(session => {
-        if (session.user) {
-          const userKey = session.user.email
-          const messageCount = session.messages?.filter(msg => msg.role === 'user' || msg.role === 'USER').length || 0
+        if ((session as any).user) {
+          const userKey = (session as any).user.email
+          const messageCount = (session as any).messages?.filter((msg: any) => msg.role === 'user' || msg.role === 'USER').length || 0
           userMessageCounts.set(userKey, {
-            user: session.user,
+            user: (session as any).user,
             count: (userMessageCounts.get(userKey)?.count || 0) + messageCount
           })
         }
@@ -258,15 +258,6 @@ export default async function CreatorDashboard() {
       where: {
         is_active: true,
         userId: { not: user?.id }
-      },
-      select: {
-        id: true,
-        username: true,
-        display_name: true,
-        bio: true,
-        profile_image: true,
-        youtube_channel_url: true,
-        created_at: true
       },
       orderBy: { created_at: 'desc' },
       take: 12
@@ -349,12 +340,12 @@ export default async function CreatorDashboard() {
             </div>
             
             <div className="flex items-center shrink-0">
-              <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 whitespace-nowrap" asChild>
-                <Link href={`/${effectiveCreator?.username}`} target="_blank" className="flex items-center">
+              <Link href={`/${effectiveCreator?.username}`} target="_blank">
+                <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 whitespace-nowrap flex items-center">
                   <ExternalLink className="w-4 h-4 mr-2" />
                   Check Your Page
-                </Link>
-              </Button>
+                </Button>
+              </Link>
             </div>
           </div>
         </>
@@ -376,12 +367,12 @@ export default async function CreatorDashboard() {
             </div>
             
             <div className="flex items-center space-x-3">
-              <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700" asChild>
-                <Link href="/creator/setup" className="flex items-center">
+              <Link href="/creator/setup">
+                <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 flex items-center">
                   <Plus className="w-4 h-4 mr-2" />
                   Become Creator
-                </Link>
-              </Button>
+                </Button>
+              </Link>
             </div>
           </div>
         </>
@@ -633,8 +624,8 @@ export default async function CreatorDashboard() {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-600 dark:text-neutral-300">Questions</span>
-                    <Badge variant={effectiveCreator?.creator_suggested_questions ? "default" : "secondary"} className={effectiveCreator?.creator_suggested_questions ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300" : "bg-gray-100 text-gray-600 dark:bg-neutral-700 dark:text-neutral-400"}>
-                      {effectiveCreator?.creator_suggested_questions ? 'Configured' : 'None'}
+                    <Badge variant={effectiveCreator?.suggested_questions ? "default" : "secondary"} className={effectiveCreator?.suggested_questions ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300" : "bg-gray-100 text-gray-600 dark:bg-neutral-700 dark:text-neutral-400"}>
+                      {effectiveCreator?.suggested_questions ? 'Configured' : 'None'}
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between">
@@ -648,18 +639,18 @@ export default async function CreatorDashboard() {
                 <Separator className="bg-gray-300 dark:bg-neutral-700" />
                 
                 <div className="space-y-2">
-                  <Button size="sm" className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700" asChild>
-                    <Link href="/creator/ai-config" className="flex items-center">
+                  <Link href="/creator/ai-config" className="flex items-center">
+                    <Button size="sm" className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 flex items-center">
                       <Bot className="w-4 h-4 mr-2" />
                       Configure AI
-                    </Link>
-                  </Button>
-                  <Button size="sm" variant="outline" className="w-full border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-neutral-300" asChild>
-                    <Link href="/creator/voice-settings" className="flex items-center">
+                    </Button>
+                  </Link>
+                  <Link href="/creator/voice-settings" className="flex items-center">
+                    <Button size="sm" variant="outline" className="w-full border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-neutral-300 flex items-center">
                       <Settings className="w-4 h-4 mr-2" />
                       Voice Setup
-                    </Link>
-                  </Button>
+                    </Button>
+                  </Link>
                 </div>
               </CardContent>
             </Card>
@@ -688,14 +679,14 @@ export default async function CreatorDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  {userSubscriptions.map((subscription) => (
+                  {userSubscriptions.map((subscription: any) => (
                     <Card key={subscription.id} className="bg-gray-50/50 dark:bg-neutral-800/50 border-gray-300 dark:border-neutral-600 hover:bg-gray-100/70 dark:hover:bg-neutral-800/70 transition-colors">
                       <CardHeader className="pb-3">
                         <div className="flex items-center space-x-3">
                           <Avatar className="h-10 w-10">
                             <AvatarImage src={subscription.creator?.profile_image || undefined} />
                             <AvatarFallback className="bg-gradient-to-br from-purple-600 to-blue-600 text-white">
-                              {subscription.creator.display_name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                              {subscription.creator.display_name.split(' ').map((n: string) => n[0]).join('').toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex-1 min-w-0">
@@ -706,18 +697,18 @@ export default async function CreatorDashboard() {
                       </CardHeader>
                       <CardContent className="pt-0">
                         <div className="flex gap-2">
-                          <Button size="sm" className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700" asChild>
-                            <Link href={`/${subscription.creator.username}`} className="flex items-center justify-center">
+                          <Link href={`/${subscription.creator.username}`} className="flex-1">
+                            <Button size="sm" className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 flex items-center justify-center">
                               <MessageCircle className="h-4 w-4 mr-1" />
                               Chat
-                            </Link>
-                          </Button>
-                          {subscription.creator.youtube_channel_url && (
-                            <Button size="sm" variant="outline" className="border-gray-400 dark:border-neutral-600 text-gray-700 dark:text-neutral-300" asChild>
-                              <a href={subscription.creator.youtube_channel_url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center">
-                                <Youtube className="h-4 w-4" />
-                              </a>
                             </Button>
+                          </Link>
+                          {subscription.creator.youtube_channel_url && (
+                            <a href={subscription.creator.youtube_channel_url} target="_blank" rel="noopener noreferrer">
+                              <Button size="sm" variant="outline" className="border-gray-400 dark:border-neutral-600 text-gray-700 dark:text-neutral-300 flex items-center justify-center">
+                                <Youtube className="h-4 w-4" />
+                              </Button>
+                            </a>
                           )}
                         </div>
                       </CardContent>
@@ -749,7 +740,7 @@ export default async function CreatorDashboard() {
                           <Avatar className="h-12 w-12">
                             <AvatarImage src={creator.profile_image || undefined} />
                             <AvatarFallback className="bg-gradient-to-br from-purple-600 to-blue-600 text-white">
-                              {creator.display_name?.split(' ').map(n => n[0]).join('').toUpperCase()}
+                              {creator.display_name?.split(' ').map((n: string) => n[0]).join('').toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex-1 min-w-0">
@@ -767,18 +758,18 @@ export default async function CreatorDashboard() {
                           <span>{creator._count?.subscriptions || 0} subscribers</span>
                         </div>
                         <div className="flex gap-2">
-                          <Button size="sm" className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700" asChild>
-                            <Link href={`/${creator.username}`} className="flex items-center justify-center">
+                          <Link href={`/${creator.username}`} className="flex-1">
+                            <Button size="sm" className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 flex items-center justify-center">
                               <MessageCircle className="h-4 w-4 mr-1" />
                               Chat
-                            </Link>
-                          </Button>
-                          {creator.youtube_channel_url && (
-                            <Button size="sm" variant="outline" className="border-gray-400 dark:border-neutral-600 text-gray-700 dark:text-neutral-300" asChild>
-                              <a href={creator.youtube_channel_url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center">
-                                <Youtube className="h-4 w-4" />
-                              </a>
                             </Button>
+                          </Link>
+                          {creator.youtube_channel_url && (
+                            <a href={creator.youtube_channel_url} target="_blank" rel="noopener noreferrer">
+                              <Button size="sm" variant="outline" className="border-gray-400 dark:border-neutral-600 text-gray-700 dark:text-neutral-300 flex items-center justify-center">
+                                <Youtube className="h-4 w-4" />
+                              </Button>
+                            </a>
                           )}
                         </div>
                       </CardContent>
@@ -818,12 +809,12 @@ export default async function CreatorDashboard() {
                     • Connect your YouTube channel • Build your AI personality • Start earning
                   </div>
                 </div>
-                <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 shrink-0" asChild>
-                  <Link href="/creator/setup" className="flex items-center">
+                <Link href="/creator/setup">
+                  <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 shrink-0 flex items-center">
                     <Plus className="h-4 w-4 mr-2" />
                     Become Creator
-                  </Link>
-                </Button>
+                  </Button>
+                </Link>
               </div>
             </CardContent>
           </Card>

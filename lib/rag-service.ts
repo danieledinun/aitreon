@@ -135,8 +135,8 @@ STRICT CONTENT RULES:
 5. Only say "I don't have that information" if there's truly no relevant content at all
 
 HANDLING OFF-TOPIC OR BROAD QUESTIONS:
-- If asked about a broad topic (like "tournaments") but your content covers a specific type (like "pickleball tournaments"), acknowledge this and offer your specific knowledge
-- Example: "I don't have information about tournaments in general, but I can tell you about pickleball tournaments specifically [1]. Would you like to know about that instead?"
+- If asked about a broad topic but your content covers a specific type, acknowledge this and offer your specific knowledge
+- Example: "I don't have information about [broad topic] in general, but I can tell you about [specific topic] specifically [1]. Would you like to know about that instead?"
 - Always try to bridge the gap between what they asked and what you actually know about
 6. Each citation [1], [2], etc. must correspond to actual content from that specific chunk
 
@@ -215,6 +215,7 @@ REMEMBER: Build your response ONLY from the content chunks above. Do not add ext
 
       // Convert back to RAG format
       const finalCitations = validatedCitations.map(validatedCitation => ({
+        videoId: validatedCitation.videoId,
         videoTitle: validatedCitation.videoTitle,
         videoUrl: validatedCitation.metadata?.timestampUrl?.split('&t=')[0] || '#',
         timestampUrl: validatedCitation.metadata?.timestampUrl || '#',
@@ -258,7 +259,7 @@ REMEMBER: Build your response ONLY from the content chunks above. Do not add ext
           // Check if this citation was kept in finalCitations
           const isKept = finalCitations.some(fc =>
             fc.content.trim() === originalCitation.content.trim() ||
-            (fc.videoTitle === originalCitation.videoTitle && Math.abs(fc.startTime - (originalCitation.startTime || 0)) < 5)
+            (fc.videoTitle === originalCitation.videoTitle && Math.abs((fc.startTime || 0) - (originalCitation.startTime || 0)) < 5)
           )
 
           if (isKept) {
@@ -346,16 +347,30 @@ REMEMBER: Build your response ONLY from the content chunks above. Do not add ext
       const keywords = [...baseKeywords]
 
       // Handle common compound words that might be written separately in content
-      const compoundWordMap = {
-        'pickleball': ['pickle', 'ball'],
-        'basketball': ['basket', 'ball'],
-        'football': ['foot', 'ball'],
-        'baseball': ['base', 'ball'],
-        'workout': ['work', 'out'],
-        'youtube': ['you', 'tube'],
-        'javascript': ['java', 'script'],
-        'typescript': ['type', 'script']
-      }
+      // Dynamic compound word detection based on common patterns
+      const compoundWordMap: { [key: string]: string[] } = {}
+
+      // Common compound word patterns that work across all domains
+      const universalCompounds = [
+        { compound: 'workout', parts: ['work', 'out'] },
+        { compound: 'youtube', parts: ['you', 'tube'] },
+        { compound: 'javascript', parts: ['java', 'script'] },
+        { compound: 'typescript', parts: ['type', 'script'] },
+        { compound: 'smartphone', parts: ['smart', 'phone'] },
+        { compound: 'software', parts: ['soft', 'ware'] },
+        { compound: 'hardware', parts: ['hard', 'ware'] },
+        { compound: 'database', parts: ['data', 'base'] },
+        { compound: 'website', parts: ['web', 'site'] },
+        { compound: 'online', parts: ['on', 'line'] },
+        { compound: 'offline', parts: ['off', 'line'] }
+      ]
+
+      // Only add universal compounds that appear in the query
+      universalCompounds.forEach(({ compound, parts }) => {
+        if (baseKeywords.some(keyword => keyword.includes(compound) || compound.includes(keyword))) {
+          compoundWordMap[compound] = parts
+        }
+      })
 
       baseKeywords.forEach(keyword => {
         if (compoundWordMap[keyword]) {
@@ -403,7 +418,7 @@ REMEMBER: Build your response ONLY from the content chunks above. Do not add ext
       }
 
       // Diversify results across videos to ensure variety
-      let chunks = []
+      let chunks: any[] = []
       if (allChunks && allChunks.length > 0) {
         const videoGroups = new Map()
 
@@ -500,7 +515,7 @@ REMEMBER: Build your response ONLY from the content chunks above. Do not add ext
           searchResults = await this.searchFallback(creatorId, userQuery, 8)
         }
       } catch (vectorError) {
-        console.log(`⚠️ Vector search failed, using fallback:`, vectorError.message)
+        console.log(`⚠️ Vector search failed, using fallback:`, vectorError instanceof Error ? vectorError.message : String(vectorError))
         searchResults = await this.searchFallback(creatorId, userQuery, 8)
       }
 
@@ -591,8 +606,8 @@ STRICT CONTENT RULES:
 5. Only say "I don't have that information" if there's truly no relevant content at all
 
 HANDLING OFF-TOPIC OR BROAD QUESTIONS:
-- If asked about a broad topic (like "tournaments") but your content covers a specific type (like "pickleball tournaments"), acknowledge this and offer your specific knowledge
-- Example: "I don't have information about tournaments in general, but I can tell you about pickleball tournaments specifically [1]. Would you like to know about that instead?"
+- If asked about a broad topic but your content covers a specific type, acknowledge this and offer your specific knowledge
+- Example: "I don't have information about [broad topic] in general, but I can tell you about [specific topic] specifically [1]. Would you like to know about that instead?"
 - Always try to bridge the gap between what they asked and what you actually know about
 6. Each citation [1], [2], etc. must correspond to actual content from that specific chunk
 
@@ -805,7 +820,7 @@ If no relevant content is provided above, respond that you don't have informatio
 
     } catch (error) {
       console.error('❌ Error generating system prompt for admin:', error)
-      return `Error generating system prompt: ${error.message}`
+      return `Error generating system prompt: ${error instanceof Error ? error.message : String(error)}`
     }
   }
 }

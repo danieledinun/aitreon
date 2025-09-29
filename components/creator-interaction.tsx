@@ -213,7 +213,7 @@ export default function CreatorInteraction({
   const startVoiceCall = async () => {
     console.log('🎤 Starting voice call directly...', { 
       creatorId: creator.id, 
-      creatorName: (creator.displayName || creator.display_name),
+      creatorName: creator.display_name,
       userId: session?.user?.id 
     })
     
@@ -757,13 +757,13 @@ export default function CreatorInteraction({
   const generateShareableConversation = () => {
     const conversationText = messages
       .map(message => {
-        const role = message.role === 'user' ? 'You' : (creator.displayName || creator.display_name)
+        const role = message.role === 'user' ? 'You' : creator.display_name
         const content = message.content.replace(/\[(\d+)\]/g, '') // Remove citation numbers
         return `${role}: ${content}`
       })
       .join('\n\n')
 
-    return `🤖 Chat with ${(creator.displayName || creator.display_name)} on AITreon\n\n${conversationText}\n\n---\nPowered by ⚡ AITreon\nContinue the conversation: ${window.location.href}`
+    return `🤖 Chat with ${creator.display_name} on AITreon\n\n${conversationText}\n\n---\nPowered by ⚡ AITreon\nContinue the conversation: ${window.location.href}`
   }
 
   // Handle share conversation
@@ -772,7 +772,7 @@ export default function CreatorInteraction({
     
     if (navigator.share) {
       navigator.share({
-        title: `Chat with ${(creator.displayName || creator.display_name)}`,
+        title: `Chat with ${creator.display_name}`,
         text: shareText,
         url: window.location.href
       }).catch(() => {
@@ -1147,10 +1147,10 @@ export default function CreatorInteraction({
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center max-w-md">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            Chat with {(creator.displayName || creator.display_name)}
+            Chat with {creator.display_name}
           </h2>
           <p className="text-gray-600 mb-6">
-            Sign in to start chatting with the AI version of {(creator.displayName || creator.display_name)}
+            Sign in to start chatting with the AI version of {creator.display_name}
           </p>
           <Link href="/auth/signin">
             <Button className="w-full">Sign In to Chat</Button>
@@ -1174,10 +1174,10 @@ export default function CreatorInteraction({
             {/* Center - Channel info and actions */}
             <div className="flex items-center space-x-3">
               <div className="relative">
-                {(creator.profileImage || creator.profile_image) ? (
+                {creator.profile_image ? (
                   <Image
-                    src={(creator.profileImage || creator.profile_image)}
-                    alt={(creator.displayName || creator.display_name)}
+                    src={creator.profile_image}
+                    alt={creator.display_name || 'Creator'}
                     width={32}
                     height={32}
                     className="rounded-full object-cover"
@@ -1185,13 +1185,13 @@ export default function CreatorInteraction({
                 ) : (
                   <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-orange-500 rounded-full flex items-center justify-center">
                     <span className="text-white text-xs font-bold">
-                      {(creator.displayName || creator.display_name || 'U').charAt(0)}
+                      {((creator.display_name || 'U')).charAt(0)}
                     </span>
                   </div>
                 )}
                 <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full border border-white"></div>
               </div>
-              <span className="font-semibold text-gray-900 text-lg">{(creator.displayName || creator.display_name)}</span>
+              <span className="font-semibold text-gray-900 text-lg">{creator.display_name}</span>
               <button 
                 onClick={() => setShowActionCenter(true)}
                 className="p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -1211,10 +1211,10 @@ export default function CreatorInteraction({
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center space-x-4">
               <div className="relative">
-                {(creator.profileImage || creator.profile_image) ? (
+                {creator.profile_image ? (
                   <Image
-                    src={(creator.profileImage || creator.profile_image)}
-                    alt={(creator.displayName || creator.display_name)}
+                    src={creator.profile_image}
+                    alt={creator.display_name || 'Creator'}
                     width={80}
                     height={80}
                     className="rounded-full object-cover"
@@ -1222,7 +1222,7 @@ export default function CreatorInteraction({
                 ) : (
                   <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-orange-500 rounded-full flex items-center justify-center">
                     <span className="text-white text-2xl font-bold">
-                      {(creator.displayName || creator.display_name || 'U').charAt(0)}
+                      {((creator.display_name || 'U')).charAt(0)}
                     </span>
                   </div>
                 )}
@@ -1230,7 +1230,7 @@ export default function CreatorInteraction({
               </div>
               <div>
                 <div className="flex items-center space-x-2">
-                  <h1 className="text-2xl font-bold text-gray-900">{(creator.displayName || creator.display_name)}</h1>
+                  <h1 className="text-2xl font-bold text-gray-900">{creator.display_name}</h1>
                   <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
                     <span className="text-white text-xs">✓</span>
                   </div>
@@ -1314,7 +1314,7 @@ export default function CreatorInteraction({
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), sendMessage())}
-                    placeholder={`Ask ${(creator.displayName || creator.display_name)} a question`}
+                    placeholder={`Ask ${creator.display_name} a question`}
                     className="w-full resize-none border border-gray-200 rounded-2xl px-4 py-3 pr-20 focus:outline-none focus:border-gray-300 text-gray-700"
                     rows={1}
                     disabled={loading}
@@ -1341,8 +1341,8 @@ export default function CreatorInteraction({
         {showVoiceCall && currentRoomName && (
           <VoiceCallInterface
             creatorId={creator.id}
-            creatorName={(creator.displayName || creator.display_name)}
-            creatorImage={(creator.profileImage || creator.profile_image)}
+            creatorName={creator.display_name || 'Creator'}
+            creatorImage={creator.profile_image}
             userId={session.user.id}
             roomName={currentRoomName}
             onClose={() => {
@@ -1377,10 +1377,10 @@ export default function CreatorInteraction({
           {/* Center - Channel info and actions */}
           <div className="flex items-center space-x-3">
             <div className="relative">
-              {(creator.profileImage || creator.profile_image) ? (
+              {creator.profile_image ? (
                 <Image
-                  src={(creator.profileImage || creator.profile_image)}
-                  alt={(creator.displayName || creator.display_name)}
+                  src={creator.profile_image}
+                  alt={creator.display_name || 'Creator'}
                   width={32}
                   height={32}
                   className="rounded-full object-cover"
@@ -1388,13 +1388,13 @@ export default function CreatorInteraction({
               ) : (
                 <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-orange-500 rounded-full flex items-center justify-center">
                   <span className="text-white text-xs font-bold">
-                    {(creator.displayName || creator.display_name || 'U').charAt(0)}
+                    {(creator.displayName || (creator.display_name || 'U')).charAt(0)}
                   </span>
                 </div>
               )}
               <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full border border-white"></div>
             </div>
-            <span className="font-semibold text-gray-900 text-sm">{(creator.displayName || creator.display_name)}</span>
+            <span className="font-semibold text-gray-900 text-sm">{creator.display_name}</span>
             <button 
               onClick={() => {
                 console.log('📞 Header phone button clicked in chat mode')
@@ -1430,10 +1430,10 @@ export default function CreatorInteraction({
               {message.role === 'assistant' && (
                 <div className="flex items-start space-x-3 mb-4 group">
                   <div className="relative flex-shrink-0">
-                    {(creator.profileImage || creator.profile_image) ? (
+                    {creator.profile_image ? (
                       <Image
-                        src={(creator.profileImage || creator.profile_image)}
-                        alt={(creator.displayName || creator.display_name)}
+                        src={creator.profile_image}
+                        alt={creator.display_name || 'Creator'}
                         width={32}
                         height={32}
                         className="rounded-full object-cover"
@@ -1441,7 +1441,7 @@ export default function CreatorInteraction({
                     ) : (
                       <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-orange-500 rounded-full flex items-center justify-center">
                         <span className="text-white text-xs font-bold">
-                          {(creator.displayName || creator.display_name || 'U').charAt(0)}
+                          {(creator.displayName || (creator.display_name || 'U')).charAt(0)}
                         </span>
                       </div>
                     )}
@@ -1766,8 +1766,8 @@ export default function CreatorInteraction({
       {showVoiceCall && currentRoomName && (
         <VoiceCallInterface
           creatorId={creator.id}
-          creatorName={(creator.displayName || creator.display_name)}
-          creatorImage={(creator.profileImage || creator.profile_image)}
+          creatorName={creator.display_name || 'Creator'}
+          creatorImage={creator.profile_image}
           userId={session.user.id}
           roomName={currentRoomName}
           onClose={() => {

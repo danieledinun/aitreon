@@ -91,7 +91,7 @@ export class KnowledgeBaseService {
       totalVideos: 0,
       processedVideos: 0,
       totalChunks: 0,
-      errors: [],
+      errors: [] as string[],
       quotaLimited: false
     }
 
@@ -242,11 +242,10 @@ export class KnowledgeBaseService {
   private static async processVideoForKnowledgeBase(creatorId: string, video: any, accessToken: string, userId?: string) {
     // Check if video is already processed (more aggressive caching)
     const existingVideo = await db.video.findUnique({
-      where: { youtubeId: video.id },
-      include: { chunks: true }
+      where: { youtubeId: video.id }
     })
 
-    if (existingVideo && existingVideo.isProcessed) {
+    if (existingVideo && existingVideo.is_processed) {
       console.log(`⏭️ Video already in knowledge base: ${video.title}`)
       return
     }
@@ -264,29 +263,35 @@ export class KnowledgeBaseService {
     const videoUrl = `https://www.youtube.com/watch?v=${video.id}`
 
     // Create or update video record
-    const videoRecord = await db.video.upsert({
-      where: { youtubeId: video.id },
-      update: {
-        title: video.title,
-        description: video.description,
-        thumbnail: video.thumbnail,
-        duration,
-        publishedAt: new Date(video.publishedAt),
-        transcript: JSON.stringify(transcript),
-        isProcessed: false, // Will be set to true after chunking
-      },
-      create: {
-        creatorId,
-        youtubeId: video.id,
-        title: video.title,
-        description: video.description,
-        thumbnail: video.thumbnail,
-        duration,
-        publishedAt: new Date(video.publishedAt),
-        transcript: JSON.stringify(transcript),
-        isProcessed: false,
-      }
-    })
+    let videoRecord
+    if (existingVideo) {
+      videoRecord = await db.video.update({
+        where: { id: existingVideo.id },
+        data: {
+          title: video.title,
+          description: video.description,
+          thumbnail: video.thumbnail,
+          duration,
+          published_at: new Date(video.publishedAt),
+          transcript: JSON.stringify(transcript),
+          is_processed: false, // Will be set to true after chunking
+        }
+      })
+    } else {
+      videoRecord = await db.video.create({
+        data: {
+          creator_id: creatorId,
+          youtube_id: video.id,
+          title: video.title,
+          description: video.description,
+          thumbnail: video.thumbnail,
+          duration,
+          published_at: new Date(video.publishedAt),
+          transcript: JSON.stringify(transcript),
+          is_processed: false,
+        }
+      })
+    }
 
     // Generate video-level summary and topic segmentation
     const videoSummary = await this.generateVideoSummary(video, transcript)
@@ -325,7 +330,7 @@ export class KnowledgeBaseService {
     // Mark video as processed
     await db.video.update({
       where: { id: videoRecord.id },
-      data: { isProcessed: true }
+      data: { is_processed: true }
     })
 
     console.log(`✅ Created ${chunksWithEmbeddings.length} hierarchical chunks for: ${video.title}`)
@@ -715,43 +720,42 @@ Format as JSON:
     averageConfidence: number
     languageDistribution: Record<string, number>
   }> {
-    const stats = await db.$transaction(async (tx) => {
-      const totalVideos = await tx.video.count({ where: { creatorId } })
-      const processedVideos = await tx.video.count({ where: { creatorId, isProcessed: true } })
-      const totalChunks = await tx.contentChunk.count({ where: { video: { creatorId } } })
-      
-      const chunks = await tx.contentChunk.findMany({
-        where: { video: { creatorId } },
-        select: { content: true, metadata: true }
-      })
-      
-      const totalWords = chunks.reduce((sum, chunk) => sum + chunk.content.split(/\s+/).length, 0)
-      
-      const chunksByLevel: Record<string, number> = {}
-      const languageDistribution: Record<string, number> = {}
-      let totalConfidence = 0
-      let confidenceCount = 0
-      
-      chunks.forEach(chunk => {
-        try {
-          const metadata = chunk.metadata ? JSON.parse(chunk.metadata) : {}
-          const level = metadata.level || 'unknown'
-          const language = metadata.language || 'unknown'
-          const confidence = metadata.confidence || 0
-          
-          chunksByLevel[level] = (chunksByLevel[level] || 0) + 1
-          languageDistribution[language] = (languageDistribution[language] || 0) + 1
-          
-          if (confidence > 0) {
-            totalConfidence += confidence
-            confidenceCount++
-          }
-        } catch (e) {
-          // Skip malformed metadata
+    // Get stats without transaction for Supabase compatibility
+    const totalVideos = await db.video.count({ where: { creator_id: creatorId } })
+    const processedVideos = await db.video.count({ where: { creator_id: creatorId, is_processed: true } })
+    const totalChunks = await db.contentChunk.count({ where: { video: { creator_id: creatorId } } })
+
+    const chunks = await db.contentChunk.findMany({
+      where: { video: { creator_id: creatorId } }
+    })
+
+    const totalWords = chunks.reduce((sum, chunk) => sum + chunk.content.split(/\s+/).length, 0)
+
+    const chunksByLevel: Record<string, number> = {}
+    const languageDistribution: Record<string, number> = {}
+    let totalConfidence = 0
+    let confidenceCount = 0
+
+    chunks.forEach(chunk => {
+      try {
+        const metadata = chunk.metadata ? JSON.parse(chunk.metadata) : {}
+        const level = metadata.level || 'unknown'
+        const language = metadata.language || 'unknown'
+        const confidence = metadata.confidence || 0
+
+        chunksByLevel[level] = (chunksByLevel[level] || 0) + 1
+        languageDistribution[language] = (languageDistribution[language] || 0) + 1
+
+        if (confidence > 0) {
+          totalConfidence += confidence
+          confidenceCount++
         }
-      })
-      
-      return {
+      } catch (e) {
+        // Skip malformed metadata
+      }
+    })
+
+    return {
         totalVideos,
         processedVideos,
         totalChunks,
@@ -760,9 +764,6 @@ Format as JSON:
         averageConfidence: confidenceCount > 0 ? totalConfidence / confidenceCount : 0,
         languageDistribution
       }
-    })
-    
-    return stats
   }
 
   // Smart video filtering to avoid wasting quota on videos without captions

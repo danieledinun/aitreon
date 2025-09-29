@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     
     // Store the video display request (simple in-memory for demo)
     // You could replace this with Redis, database, or WebSocket
-    global.pendingVideoDisplays = global.pendingVideoDisplays || new Map()
+    ;(global as any).pendingVideoDisplays = (global as any).pendingVideoDisplays || new Map()
     
     const displayRequest = {
       videoId,
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
       userId
     }
     
-    global.pendingVideoDisplays.set(userId, displayRequest)
+    ;(global as any).pendingVideoDisplays.set(userId, displayRequest)
     
     console.log('✅ Video display request stored for user:', userId)
     
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { 
         error: 'Failed to process video display request', 
-        details: error.message 
+        details: error instanceof Error ? error.message : String(error) 
       },
       { status: 500 }
     )
@@ -81,7 +81,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'userId required' }, { status: 400 })
     }
     
-    const pendingDisplays = global.pendingVideoDisplays || new Map()
+    const pendingDisplays = (global as any).pendingVideoDisplays || new Map()
     const pendingVideo = pendingDisplays.get(userId)
     
     if (pendingVideo) {
@@ -101,7 +101,7 @@ export async function GET(request: NextRequest) {
   } catch (error: any) {
     console.error('❌ Error checking pending video displays:', error)
     return NextResponse.json(
-      { error: 'Failed to check pending videos', details: error.message },
+      { error: 'Failed to check pending videos', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     )
   }

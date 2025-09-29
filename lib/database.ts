@@ -274,14 +274,14 @@ export class DatabaseService {
       if (error && error.code !== 'PGRST116') throw error
       
       // Handle _count if requested
-      if (data && options.include?._count) {
+      if (data && options.include?._count && typeof data === 'object' && 'id' in data) {
         const counts: any = {}
-        
+
         if (options.include._count.select?.subscriptions) {
           const { count } = await supabase
             .from('subscriptions')
             .select('*', { count: 'exact', head: true })
-            .eq('creator_id', data.id)
+            .eq('creator_id', (data as any).id)
             .eq('status', 'ACTIVE')
           counts.subscriptions = count || 0
         }
@@ -290,7 +290,7 @@ export class DatabaseService {
           const { count } = await supabase
             .from('videos')
             .select('*', { count: 'exact', head: true })
-            .eq('creator_id', data.id)
+            .eq('creator_id', (data as any).id)
             .eq('is_processed', true)
           counts.videos = count || 0
         }
@@ -299,11 +299,11 @@ export class DatabaseService {
           const { count } = await supabase
             .from('chat_sessions')
             .select('*', { count: 'exact', head: true })
-            .eq('creator_id', data.id)
+            .eq('creator_id', (data as any).id)
           counts.chat_sessions = count || 0
         }
-        
-        data._count = counts
+
+        (data as any)._count = counts
       }
       
       return data as Creator | null
@@ -533,7 +533,7 @@ export class DatabaseService {
       if (error) throw error
       
       // Supabase doesn't return count for delete operations, so we'll return a mock structure
-      return { count: data?.length || 0 }
+      return { count: (data as any)?.length || 0 }
     }
   }
 
@@ -625,7 +625,7 @@ export class DatabaseService {
       if (error) throw error
       
       // Transform the data to match expected structure
-      const transformedData = (data || []).map(session => ({
+      const transformedData = (data || []).map((session: any) => ({
         ...session,
         messages: session.messages || [],
         user: session.users || null
@@ -688,7 +688,7 @@ export class DatabaseService {
       if (existing) {
         return await this.voiceSettings.update({ where: options.where, data: options.update })
       } else {
-        return await this.voiceSettings.create({ data: { ...options.create, creatorId: options.where.creatorId } })
+        return await this.voiceSettings.create({ data: { ...options.create, creator_id: options.where.creatorId } })
       }
     },
 
@@ -747,7 +747,7 @@ export class DatabaseService {
       if (existing) {
         return await this.aiConfig.update({ where: options.where, data: options.update })
       } else {
-        return await this.aiConfig.create({ data: { ...options.create, creatorId: options.where.creatorId } })
+        return await this.aiConfig.create({ data: { ...options.create, creator_id: options.where.creatorId } })
       }
     }
   }

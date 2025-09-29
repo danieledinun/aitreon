@@ -92,7 +92,7 @@ function executePythonScript(command: string, args: string[]): Promise<{ stdout:
     })
     
     pythonProcess.on('error', (error) => {
-      reject(new Error(`Failed to start Python process: ${error.message}`))
+      reject(new Error(`Failed to start Python process: ${error instanceof Error ? error.message : String(error)}`))
     })
     
     // Set timeout for long-running requests (15 minutes for large batches)
@@ -145,13 +145,14 @@ export async function POST(request: NextRequest) {
         // Add processing date to each result
         const processingDate = new Date().toISOString()
         Object.keys(result).forEach(videoId => {
-          if (result[videoId].success) {
-            result[videoId].processing_date = processingDate
+          const batchResult = result as BatchTranscriptResult
+          if (batchResult[videoId].success) {
+            batchResult[videoId].processing_date = processingDate
           }
         })
 
         // Add successful transcripts to RAG memory
-        for (const [videoId, transcriptResult] of Object.entries(result)) {
+        for (const [videoId, transcriptResult] of Object.entries(result as BatchTranscriptResult)) {
           if (transcriptResult.success) {
             try {
               await addTranscriptToRAG(videoId, transcriptResult)
@@ -201,7 +202,7 @@ export async function POST(request: NextRequest) {
       success: false,
       error: 'internal_server_error',
       message: 'An unexpected error occurred',
-      details: error.message
+      details: error instanceof Error ? error.message : String(error)
     }, { status: 500 })
   }
 }
@@ -271,7 +272,7 @@ export async function GET(request: NextRequest) {
       success: false,
       error: 'internal_server_error',
       message: 'An unexpected error occurred',
-      details: error.message
+      details: error instanceof Error ? error.message : String(error)
     }, { status: 500 })
   }
 }

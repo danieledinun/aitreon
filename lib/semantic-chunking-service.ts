@@ -104,8 +104,8 @@ export class SemanticChunkingService {
         )
 
         // Find segments that fall within overlap window
-        const overlapSegments = currentChunk.segments.filter(
-          seg => seg.start >= overlapStart
+        const overlapSegments: any[] = currentChunk.segments.filter(
+          (seg: any) => seg.start >= overlapStart
         )
 
         currentChunk = {

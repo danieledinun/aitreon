@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
       const { data: newSession, error: sessionError } = await supabase
         .from('chat_sessions')
         .insert({
-          user_id: session.user.id,
+          userId: session.user.id,
           creator_id: creatorId
         })
         .select()
@@ -127,7 +127,7 @@ export async function POST(request: NextRequest) {
               })}\n\n`)
             )
           } catch (error) {
-            console.log('Stream complete error (controller closed):', error.message)
+            console.log('Stream complete error (controller closed):', error instanceof Error ? error.message : String(error))
           }
 
           // Save AI message to database
@@ -194,7 +194,7 @@ export async function POST(request: NextRequest) {
             const { error: insertError } = await supabase
               .from('daily_usage')
               .insert({
-                user_id: session.user.id,
+                userId: session.user.id,
                 creator_id: creatorId,
                 date: todayStr,
                 message_count: 1
@@ -215,7 +215,7 @@ export async function POST(request: NextRequest) {
               })}\n\n`)
             )
           } catch (error) {
-            console.log('Stream message_saved error (controller closed):', error.message)
+            console.log('Stream message_saved error (controller closed):', error instanceof Error ? error.message : String(error))
           }
 
         } catch (error) {

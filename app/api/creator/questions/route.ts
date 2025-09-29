@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { db } from '@/lib/database'
+import { createClient } from '@/lib/supabase'
 
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-    
+
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -24,18 +24,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'At least one question is required' }, { status: 400 })
     }
 
+    const supabase = createClient()
+
     // Get user and creator
-    const user = await db.user.findUnique({
-      where: { email: session.user.email }
-    })
+    const { data: user } = await supabase
+      .from('user')
+      .select('*')
+      .eq('email', session.user.email)
+      .single()
 
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    const creator = await db.creator.findFirst({
-      where: { user_id: user.id }
-    })
+    const { data: creator } = await supabase
+      .from('creator')
+      .select('*')
+      .eq('user_id', user.id)
+      .single()
 
     if (!creator) {
       return NextResponse.json({ error: 'Creator profile not found' }, { status: 404 })
@@ -44,33 +50,35 @@ export async function POST(request: NextRequest) {
     // Save questions - create or update creator_suggested_questions
     try {
       // Check if questions already exist
-      const existingQuestions = await db.creatorSuggestedQuestions.findUnique({
-        where: { creatorId: creator.id }
-      })
+      const { data: existingQuestions } = await supabase
+        .from('creator_suggested_questions')
+        .select('*')
+        .eq('creator_id', creator.id)
+        .single()
 
       const questionsData = {
-        creatorId: creator.id,
+        creator_id: creator.id,
         questions: validQuestions,
-        updatedAt: new Date()
+        updated_at: new Date().toISOString()
       }
 
       if (existingQuestions) {
         // Update existing
-        await db.creatorSuggestedQuestions.update({
-          where: { id: existingQuestions.id },
-          data: questionsData
-        })
+        await supabase
+          .from('creator_suggested_questions')
+          .update(questionsData)
+          .eq('id', existingQuestions.id)
       } else {
         // Create new
-        await db.creatorSuggestedQuestions.create({
-          data: {
+        await supabase
+          .from('creator_suggested_questions')
+          .insert({
             ...questionsData,
-            createdAt: new Date()
-          }
-        })
+            created_at: new Date().toISOString()
+          })
       }
 
-      return NextResponse.json({ 
+      return NextResponse.json({
         success: true,
         message: `Saved ${validQuestions.length} suggested questions`,
         questionCount: validQuestions.length
@@ -78,15 +86,15 @@ export async function POST(request: NextRequest) {
 
     } catch (dbError) {
       console.error('Database error saving questions:', dbError)
-      return NextResponse.json({ 
-        error: 'Failed to save questions to database' 
+      return NextResponse.json({
+        error: 'Failed to save questions to database'
       }, { status: 500 })
     }
 
   } catch (error) {
     console.error('Error saving questions:', error)
-    return NextResponse.json({ 
-      error: 'Failed to save questions. Please try again.' 
+    return NextResponse.json({
+      error: 'Failed to save questions. Please try again.'
     }, { status: 500 })
   }
 }

@@ -46,16 +46,16 @@ export async function POST(request: NextRequest) {
       }, { status: 403 })
     }
 
-    if (!voiceSettings?.isEnabled) {
+    if (!voiceSettings?.is_enabled) {
       return NextResponse.json({ 
         error: 'Voice features not enabled for this creator' 
       }, { status: 400 })
     }
 
-    const voiceId = voiceSettings?.elevenlabsVoiceId
+    const voiceId = voiceSettings?.elevenlabs_voice_id
     const audioBuffer = await VoiceService.generateSpeech(text, voiceId || undefined)
 
-    return new NextResponse(audioBuffer, {
+    return new NextResponse(new Uint8Array(audioBuffer), {
       headers: {
         'Content-Type': 'audio/mpeg',
         'Content-Length': audioBuffer.length.toString(),

@@ -63,8 +63,8 @@ export async function POST(request: NextRequest) {
     }) : null
 
     // Use custom voice if available and enabled, otherwise use default
-    const voiceId = (voiceSettings?.isEnabled && voiceSettings?.elevenlabsVoiceId) 
-      ? voiceSettings.elevenlabsVoiceId 
+    const voiceId = (voiceSettings?.is_enabled && voiceSettings?.elevenlabs_voice_id)
+      ? voiceSettings.elevenlabs_voice_id 
       : 'pNInz6obpgDQGcFmaJgB' // Adam voice as fallback
 
     console.log('🎵 Generating TTS for creator:', creatorId)

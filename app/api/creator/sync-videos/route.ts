@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
 
     // Get creator from session user ID
     const creator = await db.creator.findFirst({
-      where: { user_id: session.user.id }
+      where: { userId: session.user.id }
     })
 
     if (!creator) {

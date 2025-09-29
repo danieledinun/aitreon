@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
     const { data: creator, error: createError } = await supabase
       .from('creators')
       .insert({
-        user_id: session.user.id,
+        userId: session.user.id,
         username: validatedData.username,
         display_name: validatedData.displayName,
         bio: validatedData.bio || null,

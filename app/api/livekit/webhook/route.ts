@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { WebhookReceiver, AgentDispatchClient } from 'livekit-server-sdk'
+import { WebhookReceiver, AgentDispatchClient, TrackType } from 'livekit-server-sdk'
 
 const receiver = new WebhookReceiver(
   process.env.LIVEKIT_API_KEY!,
@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify webhook authenticity
-    const event = receiver.receive(body, authHeader)
+    const event = await receiver.receive(body, authHeader)
     console.log('🎤 LiveKit webhook event:', event.event, event.room?.name)
 
     switch (event.event) {
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
       case 'track_published':
         console.log('🎵 Track published:', event.track?.type, 'by', event.participant?.identity)
         // Audio/video track was published
-        if (event.track?.type === 'audio' && event.room?.name?.includes('voice_call')) {
+        if (event.track?.type === TrackType.AUDIO && event.room?.name?.includes('voice_call')) {
           // Dispatch AI agent when user publishes audio in voice call room
           console.log('🤖 Dispatching AI agent to room:', event.room.name)
           try {

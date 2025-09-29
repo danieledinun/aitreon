@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error('❌ Supabase error saving suggested questions:', error)
-      throw new Error(`Database error: ${error.message}`)
+      throw new Error(`Database error: ${error instanceof Error ? error.message : String(error)}`)
     }
 
     console.log(`✅ Updated custom suggested questions for creator ${creatorId}: ${validQuestions.length} questions`)

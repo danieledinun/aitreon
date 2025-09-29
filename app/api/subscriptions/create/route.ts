@@ -34,10 +34,10 @@ export async function POST(request: NextRequest) {
 
     // Get creator's user separately
     const creatorUser = await db.user.findUnique({
-      where: { id: creator.userId }
+      where: { id: creator.user_id }
     })
 
-    if (!creator.stripeAccountId) {
+    if (!creator.stripe_account_id) {
       return NextResponse.json({ 
         error: 'Creator has not set up payments yet' 
       }, { status: 400 })
@@ -73,8 +73,8 @@ export async function POST(request: NextRequest) {
     customerId = stripeCustomer.id
 
     const product = await StripeService.createProduct(
-      `${creator.displayName} Premium`,
-      `Unlimited access to chat with ${creator.displayName}`
+      `${creator.display_name} Premium`,
+      `Unlimited access to chat with ${creator.display_name}`
     )
 
     const price = await StripeService.createPrice(product.id, 500) // $5.00
@@ -84,8 +84,8 @@ export async function POST(request: NextRequest) {
       priceId: price.id,
       successUrl: `${process.env.NEXTAUTH_URL}/${creator.username}?subscribed=true`,
       cancelUrl: `${process.env.NEXTAUTH_URL}/subscribe/${creator.username}?canceled=true`,
-      connectedAccountId: creator.stripeAccountId,
-      applicationFeePercent: creator.commissionRate * 100,
+      connectedAccountId: creator.stripe_account_id,
+      applicationFeePercent: creator.commission_rate * 100,
     })
 
     return NextResponse.json({ 

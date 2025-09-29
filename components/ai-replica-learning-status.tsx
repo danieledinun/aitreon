@@ -74,7 +74,7 @@ const getLearningMessage = (
   processingCount: number, 
   completedCount: number,
   totalCount: number
-): { primary: string; secondary: string; icon: React.ComponentType } => {
+): { primary: string; secondary: string; icon: React.ComponentType<React.SVGProps<SVGSVGElement>> } => {
   if (processingCount > 0) {
     return {
       primary: `Your AI Replica is watching and memorizing ${processingCount} video${processingCount > 1 ? 's' : ''}...`,

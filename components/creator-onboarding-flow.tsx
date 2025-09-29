@@ -189,7 +189,7 @@ export default function CreatorOnboardingFlow({ userId }: OnboardingFlowProps) {
   // Step 3: AI Configuration (Quickstart style)
   const [aiConfig, setAiConfig] = useState({
     agentName: '',
-    audiences: [],
+    audiences: [] as string[],
     toneSliders: {
       directness: 3,
       playfulness: 3,
@@ -1119,8 +1119,8 @@ export default function CreatorOnboardingFlow({ userId }: OnboardingFlowProps) {
                       !basicInfo.username ||
                       !basicInfo.displayName ||
                       !basicInfo.youtubeChannelUrl ||
-                      validationErrors.username ||
-                      validationErrors.youtubeChannelUrl ||
+                      !!validationErrors.username ||
+                      !!validationErrors.youtubeChannelUrl ||
                       validationLoading.username ||
                       validationLoading.youtubeChannelUrl ||
                       (!validationSuccess.username && basicInfo.username.length >= 3) ||

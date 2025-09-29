@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { StripeService } from '@/lib/stripe'
+import { StripeService, stripe } from '@/lib/stripe'
 import { db } from '@/lib/database'
 import Stripe from 'stripe'
 
@@ -51,10 +51,10 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     const subscriptionId = session.subscription as string
     const customerId = session.customer as string
 
-    const stripeSubscription = await StripeService.stripe.subscriptions.retrieve(subscriptionId)
+    const stripeSubscription = await stripe.subscriptions.retrieve(subscriptionId)
     
     // Find the user by email from the customer
-    const customer = await StripeService.stripe.customers.retrieve(customerId)
+    const customer = await stripe.customers.retrieve(customerId)
     if (!customer || customer.deleted) {
       console.error('Customer not found or deleted')
       return
@@ -87,29 +87,29 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 
     // Find existing subscription first
     const existingSubs = await db.subscription.findMany({
-      where: { userId: user.id, creatorId: creator.id }
+      where: { user_id: user.id, creator_id: creator.id }
     })
     
     const subscriptionData = {
-      userId: user.id,
-      creatorId: creator.id,
-      stripeSubscriptionId: subscriptionId,
+      user_id: user.id,
+      creator_id: creator.id,
+      stripe_subscription_id: subscriptionId,
       status: 'ACTIVE' as const,
       tier: 'BASIC' as const,
-      currentPeriodStart: new Date(stripeSubscription.current_period_start * 1000),
-      currentPeriodEnd: new Date(stripeSubscription.current_period_end * 1000),
-      cancelAtPeriodEnd: false,
+      current_period_start: new Date(stripeSubscription.current_period_start * 1000),
+      current_period_end: new Date(stripeSubscription.current_period_end * 1000),
+      cancel_at_period_end: false,
     }
 
     if (existingSubs.length > 0) {
       await db.subscription.update({
         where: { id: existingSubs[0].id },
         data: {
-          stripeSubscriptionId: subscriptionId,
+          stripe_subscription_id: subscriptionId,
           status: 'ACTIVE' as const,
-          currentPeriodStart: new Date(stripeSubscription.current_period_start * 1000),
-          currentPeriodEnd: new Date(stripeSubscription.current_period_end * 1000),
-          cancelAtPeriodEnd: false,
+          current_period_start: new Date(stripeSubscription.current_period_start * 1000),
+          current_period_end: new Date(stripeSubscription.current_period_end * 1000),
+          cancel_at_period_end: false,
         }
       })
     } else {
@@ -127,7 +127,7 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
     const subscriptionId = invoice.subscription as string
     
     const subscription = await db.subscription.findFirst({
-      where: { stripeSubscriptionId: subscriptionId }
+      where: { stripe_subscription_id: subscriptionId }
     })
 
     if (subscription) {
@@ -135,8 +135,8 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
         where: { id: subscription.id },
         data: {
           status: 'ACTIVE' as const,
-          currentPeriodStart: new Date(invoice.period_start * 1000),
-          currentPeriodEnd: new Date(invoice.period_end * 1000),
+          current_period_start: new Date(invoice.period_start * 1000),
+          current_period_end: new Date(invoice.period_end * 1000),
         }
       })
     }
@@ -148,7 +148,7 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
 async function handleSubscriptionUpdated(stripeSubscription: Stripe.Subscription) {
   try {
     const subscription = await db.subscription.findFirst({
-      where: { stripeSubscriptionId: stripeSubscription.id }
+      where: { stripe_subscription_id: stripeSubscription.id }
     })
 
     if (subscription) {
@@ -175,9 +175,9 @@ async function handleSubscriptionUpdated(stripeSubscription: Stripe.Subscription
         where: { id: subscription.id },
         data: {
           status,
-          currentPeriodStart: new Date(stripeSubscription.current_period_start * 1000),
-          currentPeriodEnd: new Date(stripeSubscription.current_period_end * 1000),
-          cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end,
+          current_period_start: new Date(stripeSubscription.current_period_start * 1000),
+          current_period_end: new Date(stripeSubscription.current_period_end * 1000),
+          cancel_at_period_end: stripeSubscription.cancel_at_period_end,
         }
       })
     }
@@ -189,7 +189,7 @@ async function handleSubscriptionUpdated(stripeSubscription: Stripe.Subscription
 async function handleSubscriptionDeleted(stripeSubscription: Stripe.Subscription) {
   try {
     const subscription = await db.subscription.findFirst({
-      where: { stripeSubscriptionId: stripeSubscription.id }
+      where: { stripe_subscription_id: stripeSubscription.id }
     })
 
     if (subscription) {
@@ -197,7 +197,7 @@ async function handleSubscriptionDeleted(stripeSubscription: Stripe.Subscription
         where: { id: subscription.id },
         data: {
           status: 'CANCELED' as const,
-          cancelAtPeriodEnd: true,
+          cancel_at_period_end: true,
         }
       })
     }

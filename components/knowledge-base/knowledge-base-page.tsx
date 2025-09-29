@@ -381,9 +381,11 @@ export default function KnowledgeBasePage({ creator }: KnowledgeBasePageProps) {
                         Sync in Progress...
                       </Button>
                     ) : (
-                      <Button asChild className="bg-blue-600 hover:bg-blue-700">
-                        <Link href="/creator/sync">Sync YouTube Channel</Link>
-                      </Button>
+                      <Link href="/creator/sync">
+                        <Button className="bg-blue-600 hover:bg-blue-700">
+                          Sync YouTube Channel
+                        </Button>
+                      </Link>
                     )}
                   </>
                 )}
@@ -574,11 +576,10 @@ export default function KnowledgeBasePage({ creator }: KnowledgeBasePageProps) {
 
               <div className="space-y-4">
                 <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-neutral-400">
-                  <Badge className={selectedVideo.processed ? "bg-green-600 text-white" : "bg-orange-500 text-white"}>
-                    {selectedVideo.processed ? 'Processed' : 'Processing'}
+                  <Badge className={selectedVideo.is_processed ? "bg-green-600 text-white" : "bg-orange-500 text-white"}>
+                    {selectedVideo.is_processed ? 'Processed' : 'Processing'}
                   </Badge>
                   <span>{formatDuration(selectedVideo.duration)}</span>
-                  <span>{formatViewCount(selectedVideo.view_count)} views</span>
                   <span>{formatDate(selectedVideo.published_at)}</span>
                 </div>
 

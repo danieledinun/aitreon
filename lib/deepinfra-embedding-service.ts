@@ -149,12 +149,12 @@ export class DeepInfraEmbeddingService {
 
       // DeepInfra returns scores array directly, create results with indices
       const rerankedResults = response.scores
-        .map((score, index) => ({
+        .map((score: number, index: number) => ({
           index,
           score,
           candidate: candidates[index]
         }))
-        .sort((a, b) => b.score - a.score) // Sort by score descending
+        .sort((a: any, b: any) => b.score - a.score) // Sort by score descending
         .slice(0, topK) // Take only topK results
 
       console.log(`✅ Reranked to top ${rerankedResults.length} results with DeepInfra`)

@@ -27,7 +27,7 @@ export async function GET() {
       where: { userId: user.id }
     })
 
-    console.log('🔍 Videos API - Creator:', { id: creator?.id, username: creator?.username, user_id: creator?.user_id })
+    console.log('🔍 Videos API - Creator:', { id: creator?.id, username: creator?.username, userId: creator?.user_id })
 
     if (!creator) {
       return NextResponse.json({ error: 'Creator not found' }, { status: 404 })

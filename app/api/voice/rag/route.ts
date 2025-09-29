@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     // Generate AI response using Enhanced RAG (same as chat system)
     const { response, citations, confidence } = await EnhancedRAGService.generateResponse(
       creatorId,
-      creator.displayName,
+      creator.display_name,
       message,
       [] // No conversation history for voice RAG lookups
     )

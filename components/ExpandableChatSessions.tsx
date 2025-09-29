@@ -268,17 +268,16 @@ export default function ExpandableChatSessions({ sessions }: ExpandableChatSessi
                   
                   {session.messages && session.messages.length > 0 && (
                     <div className="mt-4 pt-3 border-t border-gray-200 dark:border-neutral-700 flex justify-center">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-neutral-300"
-                        asChild
-                      >
-                        <Link href="/creator/chat-sessions">
+                      <Link href="/creator/chat-sessions">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-neutral-300 flex items-center"
+                        >
                           <Eye className="w-4 h-4 mr-2" />
                           View Full Session
-                        </Link>
-                      </Button>
+                        </Button>
+                      </Link>
                     </div>
                   )}
                 </div>
@@ -289,11 +288,11 @@ export default function ExpandableChatSessions({ sessions }: ExpandableChatSessi
         
         {sessions.length > 5 && (
           <div className="mt-4 text-center">
-            <Button variant="outline" size="sm" className="border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-neutral-300" asChild>
-              <Link href="/creator/chat-sessions">
+            <Link href="/creator/chat-sessions">
+              <Button variant="outline" size="sm" className="border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-neutral-300">
                 View All Sessions ({sessions.length})
-              </Link>
-            </Button>
+              </Button>
+            </Link>
           </div>
         )}
       </CardContent>

@@ -35,17 +35,11 @@ export class SpeechPatternAnalyzer {
       // Get processed videos with transcripts
       const videos = await db.video.findMany({
         where: {
-          creatorId,
-          isProcessed: true,
+          creator_id: creatorId,
+          is_processed: true,
           transcript: { not: null }
         },
-        select: {
-          id: true,
-          title: true,
-          transcript: true,
-          publishedAt: true
-        },
-        orderBy: { publishedAt: 'desc' },
+        orderBy: { published_at: 'desc' },
         take: 10 // Analyze most recent 10 videos
       })
 
@@ -242,29 +236,33 @@ Return only the JSON object, no additional text.`
       console.log(`🔄 Updating AI config with extracted speech patterns...`)
 
       // Get existing AI config or create new one
-      const aiConfig = await db.aiConfig.upsert({
-        where: { creatorId },
-        update: {
-          catchphrases: JSON.stringify(patterns.catchphrases),
-          openPatterns: JSON.stringify(patterns.openingPatterns),
-          closePatterns: JSON.stringify(patterns.closingPatterns),
-          goToVerbs: JSON.stringify(patterns.goToVerbs),
-          avoidWords: JSON.stringify(patterns.avoidWords),
-          // Update sentence length based on speaking style
-          sentenceLength: patterns.speakingStyle.sentenceStructure.includes('short') ? 'SHORT' :
-                          patterns.speakingStyle.sentenceStructure.includes('long') ? 'LONG' : 'MEDIUM'
-        },
-        create: {
-          creatorId,
-          catchphrases: JSON.stringify(patterns.catchphrases),
-          openPatterns: JSON.stringify(patterns.openingPatterns),
-          closePatterns: JSON.stringify(patterns.closingPatterns),
-          goToVerbs: JSON.stringify(patterns.goToVerbs),
-          avoidWords: JSON.stringify(patterns.avoidWords),
-          sentenceLength: patterns.speakingStyle.sentenceStructure.includes('short') ? 'SHORT' :
-                          patterns.speakingStyle.sentenceStructure.includes('long') ? 'LONG' : 'MEDIUM'
-        }
-      })
+      const existingConfig = await db.aiConfig.findUnique({ where: { creatorId: creatorId } })
+
+      const configData = {
+        catchphrases: patterns.catchphrases,
+        open_patterns: patterns.openingPatterns,
+        close_patterns: patterns.closingPatterns,
+        go_to_verbs: patterns.goToVerbs,
+        avoid_words: patterns.avoidWords,
+        // Update sentence length based on speaking style
+        sentence_length: patterns.speakingStyle.sentenceStructure.includes('short') ? 'SHORT' :
+                        patterns.speakingStyle.sentenceStructure.includes('long') ? 'LONG' : 'MEDIUM'
+      }
+
+      let aiConfig
+      if (existingConfig) {
+        aiConfig = await db.aiConfig.update({
+          where: { creatorId: creatorId },
+          data: configData
+        })
+      } else {
+        aiConfig = await db.aiConfig.create({
+          data: {
+            creator_id: creatorId,
+            ...configData
+          }
+        })
+      }
 
       console.log(`✅ AI config updated with speech patterns`)
       return true
@@ -285,14 +283,14 @@ Return only the JSON object, no additional text.`
       if (!aiConfig) return null
 
       return {
-        catchphrases: aiConfig.catchphrases ? JSON.parse(aiConfig.catchphrases) : [],
-        openingPatterns: aiConfig.openPatterns ? JSON.parse(aiConfig.openPatterns) : [],
-        closingPatterns: aiConfig.closePatterns ? JSON.parse(aiConfig.closePatterns) : [],
-        goToVerbs: aiConfig.goToVerbs ? JSON.parse(aiConfig.goToVerbs) : [],
-        avoidWords: aiConfig.avoidWords ? JSON.parse(aiConfig.avoidWords) : [],
+        catchphrases: aiConfig.catchphrases || [],
+        openingPatterns: aiConfig.open_patterns || [],
+        closingPatterns: aiConfig.close_patterns || [],
+        goToVerbs: aiConfig.go_to_verbs || [],
+        avoidWords: aiConfig.avoid_words || [],
         speakingStyle: {
-          sentenceStructure: aiConfig.sentenceLength === 'SHORT' ? 'short and punchy' :
-                            aiConfig.sentenceLength === 'LONG' ? 'long and detailed' : 'mixed with emphasis',
+          sentenceStructure: aiConfig.sentence_length === 'SHORT' ? 'short and punchy' :
+                            aiConfig.sentence_length === 'LONG' ? 'long and detailed' : 'mixed with emphasis',
           energyLevel: 'moderate', // Could be enhanced later
           tonality: 'conversational', // Could be enhanced later  
           pacing: 'moderate' // Could be enhanced later

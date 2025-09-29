@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
         data: {
           email,
           name,
-          emailVerified: new Date(),
+          email_verified: new Date(),
         }
       })
     }
