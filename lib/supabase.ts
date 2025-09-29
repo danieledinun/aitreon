@@ -38,6 +38,7 @@ export interface User {
   id: string
   name?: string
   email: string
+  password?: string
   email_verified?: Date
   image?: string
   created_at: Date

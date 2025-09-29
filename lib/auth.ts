@@ -4,9 +4,16 @@ import GoogleProvider from 'next-auth/providers/google'
 import FacebookProvider from 'next-auth/providers/facebook'
 import AppleProvider from 'next-auth/providers/apple'
 import CredentialsProvider from 'next-auth/providers/credentials'
-import { db } from '@/lib/database'
+import { createClient } from '@supabase/supabase-js'
 import { YouTubeService } from '@/lib/youtube'
 import bcrypt from 'bcryptjs'
+
+function getSupabaseClient() {
+  return createClient(
+    process.env.SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+}
 
 async function refreshAccessToken(token: any) {
   try {
@@ -55,11 +62,14 @@ async function refreshAccessToken(token: any) {
 async function processYouTubeData(email: string, accessToken: string) {
   try {
     console.log('🎬 Processing YouTube data for:', email)
-    
+    const supabase = getSupabaseClient()
+
     // Find the user in the database first
-    const user = await db.user.findUnique({
-      where: { email }
-    })
+    const { data: user } = await supabase
+      .from('users')
+      .select('*')
+      .eq('email', email)
+      .single()
 
     if (!user) {
       console.log('❌ User not found in database:', email)
@@ -67,32 +77,34 @@ async function processYouTubeData(email: string, accessToken: string) {
     }
 
     // Check if user already has a creator profile
-    let creator = await db.creator.findUnique({
-      where: { userId: user.id }
-    })
+    const { data: creator } = await supabase
+      .from('creators')
+      .select('*')
+      .eq('user_id', user.id)
+      .single()
 
     // If user already has a creator profile with recent data, skip API calls
     if (creator && creator.youtube_channel_id) {
       const lastUpdate = new Date(creator.updated_at)
       const hoursSinceUpdate = (Date.now() - lastUpdate.getTime()) / (1000 * 60 * 60)
-      
+
       if (hoursSinceUpdate < 24) {
         console.log('✅ Using cached creator data (updated recently)')
         return
       }
     }
-    
+
     // Only make API call if we need fresh channel data
     const channelData = await YouTubeService.getUserChannel(accessToken)
-    
+
     if (!channelData) {
       console.log('❌ No YouTube channel found for:', email)
       return
     }
 
     console.log('✅ Found YouTube channel:', channelData.title)
-    
-    // Create or update creator profile  
+
+    // Create or update creator profile
     if (!creator) {
       // Generate username from channel title
       const username = channelData.title
@@ -100,8 +112,9 @@ async function processYouTubeData(email: string, accessToken: string) {
         .replace(/[^a-z0-9]/g, '')
         .substring(0, 20) + Math.random().toString(36).substring(2, 6)
 
-      creator = await db.creator.create({
-        data: {
+      const { data: newCreator } = await supabase
+        .from('creators')
+        .insert({
           user_id: user.id,
           username,
           display_name: channelData.title,
@@ -110,21 +123,26 @@ async function processYouTubeData(email: string, accessToken: string) {
           youtube_channel_id: channelData.id,
           youtube_channel_url: `https://www.youtube.com/channel/${channelData.id}`,
           is_active: true,
-        }
-      })
-      console.log('✅ Created creator profile:', creator.username)
+        })
+        .select()
+        .single()
+
+      console.log('✅ Created creator profile:', newCreator?.username)
     } else {
       // Update existing creator with latest channel data
-      creator = await db.creator.update({
-        where: { id: creator.id },
-        data: {
+      const { data: updatedCreator } = await supabase
+        .from('creators')
+        .update({
           youtube_channel_id: channelData.id,
           youtube_channel_url: `https://www.youtube.com/channel/${channelData.id}`,
           profile_image: channelData.thumbnail,
           bio: channelData.description.substring(0, 500) || creator.bio,
-        }
-      })
-      console.log('✅ Updated creator profile:', creator.username)
+        })
+        .eq('id', creator.id)
+        .select()
+        .single()
+
+      console.log('✅ Updated creator profile:', updatedCreator?.username)
     }
 
     // Skip background processing during sign-in to reduce quota usage
@@ -193,6 +211,8 @@ export const authOptions: NextAuthOptions = {
         }
 
         try {
+          const supabase = getSupabaseClient()
+
           // Check if this is a sign-up or sign-in
           const isSignUp = credentials.action === 'signup'
 
@@ -204,9 +224,11 @@ export const authOptions: NextAuthOptions = {
             }
 
             // Check if user already exists
-            const existingUser = await db.user.findUnique({
-              where: { email: credentials.email }
-            })
+            const { data: existingUser } = await supabase
+              .from('users')
+              .select('*')
+              .eq('email', credentials.email)
+              .single()
 
             if (existingUser) {
               throw new Error('User already exists with this email')
@@ -216,17 +238,23 @@ export const authOptions: NextAuthOptions = {
             const hashedPassword = await bcrypt.hash(credentials.password, 12)
 
             // Create new user directly in database
-            const newUser = await db.user.create({
-              data: {
+            const { data: newUser, error } = await supabase
+              .from('users')
+              .insert({
                 email: credentials.email,
                 name: credentials.name,
-                // password: hashedPassword, // Password handling in Supabase Auth
-                email_verified: new Date(), // Auto-verify for now
-              }
-            })
+                password: hashedPassword,
+                email_verified: new Date().toISOString(), // Auto-verify for now
+              })
+              .select()
+              .single()
+
+            if (error) {
+              throw new Error('Failed to create user: ' + error.message)
+            }
 
             console.log('✅ Credentials: New user created successfully:', { id: newUser.id, email: newUser.email })
-            
+
             // Return user object - NextAuth will handle session creation via adapter
             return {
               id: newUser.id,
@@ -237,23 +265,32 @@ export const authOptions: NextAuthOptions = {
           } else {
             // Sign In Logic
             console.log('🔐 Credentials: Starting sign-in process for:', credentials.email)
-            const user = await db.user.findUnique({
-              where: { email: credentials.email }
-            })
+            const { data: user } = await supabase
+              .from('users')
+              .select('*')
+              .eq('email', credentials.email)
+              .single()
 
             if (!user) {
               throw new Error('Invalid email or password')
             }
 
-            // Verify password - handled by Supabase Auth
-            const isValidPassword = true // await bcrypt.compare(credentials.password, user.password)
+            // Verify password
+            let isValidPassword = false
+            if (user.password) {
+              // User has a stored password, verify it
+              isValidPassword = await bcrypt.compare(credentials.password, user.password)
+            } else {
+              // User doesn't have a password (OAuth-only user), deny access
+              throw new Error('This account uses social login. Please sign in with Google, Facebook, or Apple.')
+            }
 
             if (!isValidPassword) {
               throw new Error('Invalid email or password')
             }
 
             console.log('✅ Credentials: User authenticated successfully:', { id: user.id, email: user.email })
-            
+
             // Return user object - NextAuth will handle session creation via adapter
             return {
               id: user.id,
@@ -375,27 +412,39 @@ export const authOptions: NextAuthOptions = {
         
         // Get or set user type from metadata
         try {
+          const supabase = getSupabaseClient()
+
           // Check if user already has a creator profile
           const userIdString = typeof userId === 'string' ? userId : ''
           console.log('🔍 Session Debug - User Info:', { userId: userIdString, userEmail: session.user.email })
-          let creator = await db.creator.findUnique({
-            where: { userId: userIdString }
-          })
+
+          const { data: creator } = await supabase
+            .from('creators')
+            .select('*')
+            .eq('user_id', userIdString)
+            .single()
+
           console.log('🔍 Session Debug - Creator Query Result:', creator ? { creatorId: creator.id, creatorUserId: creator.user_id, creatorUsername: creator.username } : null)
 
           // SAFETY CHECK: If we got a creator, verify it actually exists in database
+          let validCreator = creator
           if (creator) {
             try {
-              const verifyCreator = await db.creator.findUnique({ where: { id: creator.id } })
+              const { data: verifyCreator } = await supabase
+                .from('creators')
+                .select('*')
+                .eq('id', creator.id)
+                .single()
+
               if (!verifyCreator) {
                 console.log('❌ Session Debug - Creator verification failed! Creator does not exist:', creator.id)
-                creator = null
+                validCreator = null
               } else {
                 console.log('✅ Session Debug - Creator verified:', verifyCreator.id)
               }
             } catch (error) {
               console.log('❌ Session Debug - Creator verification error:', error)
-              creator = null
+              validCreator = null
             }
           }
           
