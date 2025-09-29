@@ -247,8 +247,7 @@ npx prisma migrate deploy
 - ✅ AI replica engine with content grounding
 - ✅ Creator landing pages with chat interface
 - ✅ Fan interaction limits (5 messages/day)
-- ✅ Subscription system with Stripe
-- ✅ Payment processing with 10% commission
+- ✅ AI-powered chat interactions
 - ✅ Admin dashboard for platform metrics
 - ✅ Basic voice features with ElevenLabs/Twilio
 
