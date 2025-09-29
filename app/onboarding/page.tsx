@@ -8,7 +8,7 @@ import CreatorOnboardingFlow from '@/components/creator-onboarding-flow'
 export default async function OnboardingPage({
   searchParams
 }: {
-  searchParams: { userType?: string }
+  searchParams: { userType?: string; from?: string }
 }) {
   const session = await getServerSession(authOptions)
 
@@ -39,14 +39,13 @@ export default async function OnboardingPage({
     console.log('🔄 Onboarding page: Complete creator profile exists')
     console.log('🔄 Creator details:', { id: creator.id, username: creator.username, display_name: creator.display_name })
 
-    // Add referer check to prevent infinite redirect loops
-    // If we're being redirected from the creator dashboard, don't redirect back
-    const referer = headers().get('referer')
-    if (referer && referer.includes('/creator')) {
-      console.log('⚠️ Preventing redirect loop - staying on onboarding page')
-      // Don't redirect - let the user complete onboarding manually to fix any issues
+    // Check if we came from dashboard to prevent infinite redirect loops
+    const fromDashboard = searchParams.from === 'dashboard'
+    if (fromDashboard) {
+      console.log('⚠️ Preventing redirect loop - came from dashboard, staying on onboarding page')
+      // Don't redirect back to dashboard - let the user complete onboarding manually to fix any data issues
     } else {
-      console.log('🔄 Redirecting to dashboard')
+      console.log('🔄 Redirecting complete creator to dashboard')
       redirect('/creator')
     }
   }

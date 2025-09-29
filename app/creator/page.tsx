@@ -300,7 +300,9 @@ export default async function CreatorDashboard() {
       username: effectiveCreator.username,
       display_name: effectiveCreator.display_name
     })
-    redirect('/onboarding?userType=creator')
+
+    // Add redirect loop prevention
+    redirect('/onboarding?userType=creator&from=dashboard')
   }
 
   // Add debug logging to understand the decision flow
