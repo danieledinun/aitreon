@@ -180,45 +180,46 @@ export default async function CreatorDashboard() {
       console.log('🔍 Analytics Debug - Source:', creator ? 'database' : 'session')
       
       // Get recent chat sessions with full message data for transcript display
-      const chatSessions = await db.chatSession.findMany({
-        where: { creatorId: analyticsCreatorId },
-        include: {
-          messages: {
-            select: {
-              id: true,
-              role: true,
-              content: true,
-              created_at: true,
-              sentiment: true,
-              sentiment_confidence: true
-            },
-            orderBy: { created_at: 'asc' }
-          },
-          user: {
-            select: { name: true, email: true, image: true }
-          }
-        },
-        orderBy: { created_at: 'desc' },
-        take: 10
-      })
+      const { data: chatSessions } = await supabase
+        .from('chat_sessions')
+        .select(`
+          *,
+          messages:messages(
+            id,
+            role,
+            content,
+            created_at,
+            sentiment,
+            sentiment_confidence
+          ),
+          user:users(
+            name,
+            email,
+            image
+          )
+        `)
+        .eq('creator_id', analyticsCreatorId)
+        .order('created_at', { ascending: false })
+        .limit(10)
       
       // Get total count of all chat sessions for analytics
-      const allChatSessions = await db.chatSession.findMany({
-        where: { creatorId: analyticsCreatorId },
-        include: {
-          messages: {
-            select: {
-              id: true,
-              role: true,
-              sentiment: true,
-              sentiment_confidence: true
-            }
-          },
-          user: {
-            select: { name: true, email: true, image: true }
-          }
-        }
-      })
+      const { data: allChatSessions } = await supabase
+        .from('chat_sessions')
+        .select(`
+          *,
+          messages:messages(
+            id,
+            role,
+            sentiment,
+            sentiment_confidence
+          ),
+          user:users(
+            name,
+            email,
+            image
+          )
+        `)
+        .eq('creator_id', analyticsCreatorId)
       
       console.log('📊 Analytics Debug - Found chat sessions:', chatSessions.length)
       console.log('📊 Analytics Debug - Chat sessions data:', chatSessions)
@@ -303,33 +304,30 @@ export default async function CreatorDashboard() {
   // If user doesn't have a creator profile (checking DB, fallback, and session), get available creators for discovery
   let availableCreators: any[] = []
   if (!creator && !hasCreatorIntent) {
-    const creators = await db.creator.findMany({
-      where: {
-        is_active: true,
-        userId: { not: user?.id }
-      },
-      orderBy: { created_at: 'desc' },
-      take: 12
-    })
+    const { data: creators } = await supabase
+      .from('creators')
+      .select('*')
+      .eq('is_active', true)
+      .neq('user_id', user?.id || '')
+      .order('created_at', { ascending: false })
+      .limit(12)
     
     // Get counts for each available creator manually
     const creatorsWithCounts = await Promise.all(
       (creators || []).map(async (creatorItem) => {
         // Get video count
-        const videos = await db.video.findMany({
-          where: { 
-            creatorId: creatorItem.id,
-            isProcessed: true 
-          }
-        })
-        
+        const { data: videos } = await supabase
+          .from('videos')
+          .select('*')
+          .eq('creator_id', creatorItem.id)
+          .eq('is_processed', true)
+
         // Get subscription count
-        const subscriptions = await db.subscription.findMany({
-          where: { 
-            creatorId: creatorItem.id,
-            status: 'ACTIVE' 
-          }
-        })
+        const { data: subscriptions } = await supabase
+          .from('subscriptions')
+          .select('*')
+          .eq('creator_id', creatorItem.id)
+          .eq('status', 'ACTIVE')
         
         return {
           ...creatorItem,
