@@ -15,7 +15,7 @@ export default function AuthErrorPage() {
         return {
           title: 'Account Linking Issue',
           description: 'There was a problem linking your Google account. This usually happens when there are multiple accounts or a temporary issue.',
-          suggestion: 'Try signing in again or use the demo login for testing.'
+          suggestion: 'Try signing in again or contact support if the issue persists.'
         }
       case 'OAuthCallback':
         return {
@@ -59,13 +59,7 @@ export default function AuthErrorPage() {
               Try Again
             </Button>
           </Link>
-          
-          <Link href="/test-auth">
-            <Button variant="secondary" className="w-full">
-              Use Demo Login
-            </Button>
-          </Link>
-          
+
           <Link href="/">
             <Button variant="outline" className="w-full">
               Back to Home

@@ -4,6 +4,8 @@ import { authOptions } from '@/lib/auth'
 import { supabase } from '@/lib/supabase'
 import jwt from 'jsonwebtoken'
 
+export const dynamic = 'force-dynamic'
+
 // Admin emails for access control
 const ADMIN_EMAILS = [
   'admin@aitrion.com',
