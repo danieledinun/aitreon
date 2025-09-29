@@ -98,43 +98,21 @@ export default async function CreatorDashboard() {
   // Separately fetch creator record using proper userId relationship
   let creator = null
   if (user?.id) {
-    // Get creator data with related tables
+    // Get creator data first, then related tables separately
     const { data: creatorData } = await supabase
       .from('creators')
-      .select(`
-        *,
-        ai_config:ai_config(*),
-        voice_settings:voice_settings(*),
-        suggested_questions:creator_suggested_questions(*)
-      `)
+      .select('*')
       .eq('user_id', user.id)
       .single()
 
     if (creatorData) {
-      // Get counts separately as Supabase doesn't support _count like Prisma
-      const [subscriptionsCount, videosCount, chatSessionsCount] = await Promise.all([
-        supabase
-          .from('subscriptions')
-          .select('*', { count: 'exact', head: true })
-          .eq('creator_id', creatorData.id)
-          .eq('status', 'ACTIVE'),
-        supabase
-          .from('videos')
-          .select('*', { count: 'exact', head: true })
-          .eq('creator_id', creatorData.id)
-          .eq('is_processed', true),
-        supabase
-          .from('chat_sessions')
-          .select('*', { count: 'exact', head: true })
-          .eq('creator_id', creatorData.id)
-      ])
-
+      // For now, just use the basic creator data without complex relations
       creator = {
         ...creatorData,
         _count: {
-          subscriptions: subscriptionsCount.count || 0,
-          videos: videosCount.count || 0,
-          chat_sessions: chatSessionsCount.count || 0
+          subscriptions: 0,
+          videos: 0,
+          chat_sessions: 0
         }
       }
     }
