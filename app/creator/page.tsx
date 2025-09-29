@@ -156,7 +156,7 @@ export default async function CreatorDashboard() {
   let sentimentData = { positive: 0, negative: 0, neutral: 0, total: 0 }
   let topActiveUsers: any[] = []
 
-  const userSubscriptions = (user as any)?.subscriptions || []
+  // userSubscriptions is already defined from the Supabase query above
 
   // Check session data as fallback
   console.log('🔍 Session Debug - Full session:', JSON.stringify(session, null, 2))
