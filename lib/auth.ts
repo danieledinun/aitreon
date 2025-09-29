@@ -323,10 +323,17 @@ export const authOptions: NextAuthOptions = {
         const urlObj = new URL(fullUrl)
         const userType = urlObj.searchParams.get('userType')
 
-        // Simple redirect logic - avoid infinite loops
+        // Handle creator flow - let dashboard handle onboarding logic
         if (userType === 'creator') {
-          // For creators, always go to creator dashboard after successful login
-          console.log('🔄 Creator login, redirecting to creator dashboard')
+          // Check if we're already on onboarding - avoid loops
+          if (fullUrl.includes('/onboarding')) {
+            console.log('🔄 Already going to onboarding, allowing redirect')
+            return fullUrl
+          }
+
+          // For creators, always go to dashboard first
+          // The dashboard will check creator status and redirect to onboarding if needed
+          console.log('🔄 Creator login, redirecting to dashboard (will handle onboarding check)')
           return `${baseUrl}/creator`
         } else if (userType === 'fan') {
           // For fans, go to creator listing page
