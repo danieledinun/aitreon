@@ -68,27 +68,24 @@ export default async function CreatorDashboard() {
     .single()
 
   // Get user's active subscriptions with creator data
-  let userSubscriptions = []
-  if (user?.id) {
-    const { data: subscriptions } = await supabase
-      .from('subscriptions')
-      .select(`
-        *,
-        creator:creators(
-          id,
-          username,
-          display_name,
-          bio,
-          profile_image,
-          youtube_channel_url,
-          is_active
-        )
-      `)
-      .eq('user_id', user.id)
-      .eq('status', 'ACTIVE')
-
-    userSubscriptions = subscriptions || []
-  }
+  const { data: userSubscriptions = [] } = user?.id
+    ? await supabase
+        .from('subscriptions')
+        .select(`
+          *,
+          creator:creators(
+            id,
+            username,
+            display_name,
+            bio,
+            profile_image,
+            youtube_channel_url,
+            is_active
+          )
+        `)
+        .eq('user_id', user.id)
+        .eq('status', 'ACTIVE')
+    : { data: [] }
 
   // Add subscriptions to user object for compatibility
   const userWithSubscriptions = {
