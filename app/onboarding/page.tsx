@@ -33,21 +33,16 @@ export default async function OnboardingPage({
     .eq('user_id', user.id)
     .single()
 
-  // If creator already exists and is complete, redirect to dashboard
-  // Check if creator has essential fields like username and display_name
-  if (creator && creator.username && creator.display_name) {
-    console.log('🔄 Onboarding page: Complete creator profile exists')
-    console.log('🔄 Creator details:', { id: creator.id, username: creator.username, display_name: creator.display_name })
+  // Simple logic: if user has completed onboarding, redirect to dashboard
+  const { data: userData } = await supabase
+    .from('users')
+    .select('onboarding_completed')
+    .eq('email', session.user.email!)
+    .single()
 
-    // Check if we came from dashboard to prevent infinite redirect loops
-    const fromDashboard = searchParams.from === 'dashboard'
-    if (fromDashboard) {
-      console.log('⚠️ Preventing redirect loop - came from dashboard, staying on onboarding page')
-      // Don't redirect back to dashboard - let the user complete onboarding manually to fix any data issues
-    } else {
-      console.log('🔄 Redirecting complete creator to dashboard')
-      redirect('/creator')
-    }
+  if (userData?.onboarding_completed) {
+    console.log('🔄 User has completed onboarding, redirecting to dashboard')
+    redirect('/creator')
   }
 
   return <CreatorOnboardingFlow userId={session.user.id} />

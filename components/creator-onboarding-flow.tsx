@@ -482,6 +482,23 @@ export default function CreatorOnboardingFlow({ userId }: OnboardingFlowProps) {
         }
       }
 
+      // Mark onboarding as completed
+      console.log('🎉 Marking onboarding as completed...')
+      try {
+        const onboardingResponse = await fetch('/api/user/complete-onboarding', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        })
+
+        if (onboardingResponse.ok) {
+          console.log('✅ Onboarding marked as completed')
+        } else {
+          console.error('❌ Failed to mark onboarding as completed')
+        }
+      } catch (error) {
+        console.error('⚠️ Error marking onboarding as completed:', error)
+      }
+
       // Force session refresh and redirect
       console.log('🔄 Refreshing session and redirecting...')
 

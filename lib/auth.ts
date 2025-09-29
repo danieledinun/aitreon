@@ -311,7 +311,7 @@ export const authOptions: NextAuthOptions = {
       console.log('🔄 Redirect callback:', { url, baseUrl })
 
       try {
-        // For sign-in flows, always redirect to a safe page and let that page handle routing
+        // For sign-in flows, check onboarding status
         if (url.includes('/auth/signin') || url === '/auth/signin') {
           console.log('🔄 Sign-in flow detected, redirecting to creator dashboard')
           return `${baseUrl}/creator`

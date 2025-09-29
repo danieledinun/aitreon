@@ -60,12 +60,14 @@ export default async function CreatorDashboard() {
 
   const supabase = getSupabaseClient()
 
-  // Get user data
+  // Get user data including onboarding status
   const { data: user } = await supabase
     .from('users')
     .select('*')
     .eq('email', session.user.email)
     .single()
+
+  console.log('🔍 User onboarding status:', user?.onboarding_completed)
 
   // Get user's active subscriptions with creator data
   const { data: userSubscriptions = [] } = user?.id
@@ -165,17 +167,20 @@ export default async function CreatorDashboard() {
   console.log('🔍 Session Debug - session.user.creatorId:', session?.user?.creatorId)
   console.log('🔍 Session Debug - session.user.userType:', session?.user?.userType)
 
-  // Check if user intends to be a creator (either has session creator data or session indicates creator intent)
-  const hasCreatorIntent = session?.user?.isCreator || session?.user?.creatorId
+  // Simple onboarding check using the flag
+  if (!user?.onboarding_completed) {
+    console.log('🔄 User has not completed onboarding, redirecting...')
+    redirect('/onboarding?userType=creator')
+  }
 
   // Get real analytics data if user is a creator
   const analyticsCreatorId = creator?.id || session?.user?.creatorId
-  
+
   if (analyticsCreatorId) {
     try {
       console.log('🔍 Analytics Debug - Creator ID:', analyticsCreatorId)
       console.log('🔍 Analytics Debug - Source:', creator ? 'database' : 'session')
-      
+
       // Get recent chat sessions with full message data for transcript display
       const { data: chatSessions } = await supabase
         .from('chat_sessions')
@@ -198,7 +203,7 @@ export default async function CreatorDashboard() {
         .eq('creator_id', analyticsCreatorId)
         .order('created_at', { ascending: false })
         .limit(10)
-      
+
       // Get total count of all chat sessions for analytics
       const { data: allChatSessions } = await supabase
         .from('chat_sessions')
@@ -217,7 +222,7 @@ export default async function CreatorDashboard() {
           )
         `)
         .eq('creator_id', analyticsCreatorId)
-      
+
       console.log('📊 Analytics Debug - Found chat sessions:', chatSessions?.length || 0)
       console.log('📊 Analytics Debug - Chat sessions data:', chatSessions)
 
@@ -269,7 +274,7 @@ export default async function CreatorDashboard() {
       topActiveUsers = Array.from(userMessageCounts.values())
         .sort((a, b) => b.count - a.count)
         .slice(0, 3)
-      
+
     } catch (error) {
       console.error('Error fetching analytics data:', error)
     }
@@ -277,38 +282,6 @@ export default async function CreatorDashboard() {
 
   // Use the creator record we fetched
   const effectiveCreator = creator
-
-  // Check if user has creator intent but no actual creator record
-  if (!effectiveCreator && hasCreatorIntent) {
-    // User wants to be a creator but doesn't have a creator record yet
-    // Redirect them to onboarding to complete setup
-    redirect('/onboarding?userType=creator')
-  }
-
-  // Check if user has incomplete creator record (missing required fields for onboarding completion)
-  // Only username and display_name are required for basic onboarding completion
-  // youtube_channel_id and other fields are optional and can be added later
-  if (effectiveCreator && (!effectiveCreator.username || !effectiveCreator.display_name)) {
-    // Creator record exists but is incomplete - redirect to onboarding to complete setup
-    console.log('🔄 Creator record incomplete, redirecting to onboarding for completion')
-    console.log('🔄 Missing required fields:', {
-      username: !effectiveCreator.username,
-      display_name: !effectiveCreator.display_name
-    })
-    console.log('🔄 Creator data:', {
-      id: effectiveCreator.id,
-      username: effectiveCreator.username,
-      display_name: effectiveCreator.display_name
-    })
-
-    // Safety check: only redirect if we haven't already tried
-    try {
-      redirect('/onboarding?userType=creator&from=dashboard')
-    } catch (error) {
-      console.error('❌ Redirect failed, showing dashboard instead:', error)
-      // If redirect fails, just show the dashboard to prevent infinite loops
-    }
-  }
 
   // Add debug logging to understand the decision flow
   console.log('🔍 Dashboard Debug - Final decision points:')

@@ -41,6 +41,7 @@ export interface User {
   password?: string
   email_verified?: Date
   image?: string
+  onboarding_completed?: boolean
   created_at: Date
   updated_at: Date
 }
