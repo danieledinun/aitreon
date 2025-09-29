@@ -1,27 +1,44 @@
 import Link from 'next/link'
-import { db } from '@/lib/database'
+import { createClient } from '@supabase/supabase-js'
 import { Button } from '@/components/ui/button'
 import { Users, MessageCircle } from 'lucide-react'
 
+function getSupabaseClient() {
+  return createClient(
+    process.env.SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+}
+
 export default async function ExplorePage() {
-  const creators = await db.creator.findMany({
-    where: { isActive: true },
-    orderBy: { createdAt: 'desc' }
-  })
+  const supabase = getSupabaseClient()
+
+  const { data: creators } = await supabase
+    .from('creators')
+    .select('*')
+    .eq('is_active', true)
+    .order('created_at', { ascending: false })
 
   // Get users and subscription counts separately
   const creatorsWithData = await Promise.all(
-    creators.map(async (creator) => {
-      const user = await db.user.findUnique({ where: { id: creator.user_id } })
-      const subscriptions = await db.subscription.findMany({
-        where: { creator_id: creator.id, status: 'ACTIVE' }
-      })
-      
+    (creators || []).map(async (creator) => {
+      const { data: user } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', creator.user_id)
+        .single()
+
+      const { data: subscriptions } = await supabase
+        .from('subscriptions')
+        .select('*')
+        .eq('creator_id', creator.id)
+        .eq('status', 'ACTIVE')
+
       return {
         ...creator,
         user,
         _count: {
-          subscriptions: subscriptions.length
+          subscriptions: subscriptions?.length || 0
         }
       }
     })
