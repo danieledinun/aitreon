@@ -485,7 +485,7 @@ export default async function CreatorDashboard() {
               <Users className="h-4 w-4 text-green-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-gray-900 dark:text-white">{userSubscriptions.length}</div>
+              <div className="text-2xl font-bold text-gray-900 dark:text-white">{userSubscriptions?.length || 0}</div>
               <p className="text-xs text-gray-500 dark:text-neutral-400">
                 Active creator subscriptions
               </p>
