@@ -7,10 +7,12 @@ import { promisify } from 'util'
 
 const execAsync = promisify(exec)
 
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+function getSupabaseClient() {
+  return createClient(
+    process.env.SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,6 +22,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get creator profile using Supabase
+    const supabase = getSupabaseClient()
     const { data: creators, error } = await supabase
       .from('creators')
       .select('id, display_name, username')
@@ -145,6 +148,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get creator profile using Supabase
+    const supabase = getSupabaseClient()
     const { data: creators, error } = await supabase
       .from('creators')
       .select('id, display_name, username')

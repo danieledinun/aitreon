@@ -4,17 +4,18 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
 import SuggestedQuestionsPage from '@/components/suggested-questions/suggested-questions-page'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
-
 export default async function CreatorSuggestedQuestionsPage() {
   const session = await getServerSession(authOptions)
 
   if (!session?.user?.email) {
     redirect('/auth/signin')
   }
+
+  // Initialize Supabase client inside the function to ensure environment variables are available
+  const supabase = createClient(
+    process.env.SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
 
   // Get user info using Supabase
   const { data: user } = await supabase
