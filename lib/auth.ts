@@ -323,43 +323,30 @@ export const authOptions: NextAuthOptions = {
         const urlObj = new URL(fullUrl)
         const userType = urlObj.searchParams.get('userType')
 
-        // Store userType for session callback if present
-        if (userType && (userType === 'creator' || userType === 'fan')) {
-          console.log('✅ UserType parameter found in URL:', userType)
-
-          if (typeof globalThis !== 'undefined') {
-            if (!(globalThis as any).pendingUserTypes) {
-              (globalThis as any).pendingUserTypes = new Map()
-            }
-            (globalThis as any).pendingUserTypes.set(fullUrl, userType)
-          }
-
-          // For creators, redirect to onboarding unless we're already there or going to dashboard
-          if (userType === 'creator') {
-            if (fullUrl.includes('/onboarding')) {
-              console.log('🔄 Already going to onboarding, allowing redirect')
-            } else if (fullUrl.includes('/creator') && !fullUrl.includes('/auth/')) {
-              console.log('🔄 Going to creator dashboard, allowing redirect (existing creator)')
-            } else {
-              console.log('🔄 New creator sign-in, redirecting to onboarding')
-              return `${baseUrl}/onboarding?userType=creator`
-            }
-          }
+        // Simple redirect logic - avoid infinite loops
+        if (userType === 'creator') {
+          // For creators, always go to creator dashboard after successful login
+          console.log('🔄 Creator login, redirecting to creator dashboard')
+          return `${baseUrl}/creator`
+        } else if (userType === 'fan') {
+          // For fans, go to creator listing page
+          console.log('🔄 Fan login, redirecting to creator listing')
+          return `${baseUrl}/`
         }
 
-        // Always allow the redirect to proceed to the intended URL
+        // If no userType specified, check if URL is internal and allow it
         if (fullUrl.startsWith(baseUrl)) {
           console.log('🔄 Allowing redirect to:', fullUrl)
           return fullUrl
         }
 
-        // Default fallback for external URLs
-        console.log('🔄 External URL detected, redirecting to dashboard')
-        return `${baseUrl}/creator`
+        // Default fallback - go to home page
+        console.log('🔄 Default fallback, redirecting to home')
+        return baseUrl
 
       } catch (error) {
         console.error('❌ Redirect callback error:', error)
-        return `${baseUrl}/creator`
+        return baseUrl
       }
     },
     async signIn({ user, account, profile, email, credentials }) {
@@ -387,105 +374,15 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       console.log('📋 Session callback:', { hasToken: !!token, tokenUserId: token?.userId, tokenSub: token?.sub })
-      
+
       if (session.user) {
         // For JWT sessions, get user ID from token
         const userId = token?.userId || token?.sub
         session.user.id = (typeof userId === 'string' ? userId : '') || ''
-        
-        // Get or set user type from metadata
+
+        // Get user type from database - simplified logic
         try {
           const supabase = getSupabaseClient()
-
-          // Check if user already has a creator profile
-          const userIdString = typeof userId === 'string' ? userId : ''
-          console.log('🔍 Session Debug - User Info:', { userId: userIdString, userEmail: session.user.email })
-
-          const { data: creator } = await supabase
-            .from('creators')
-            .select('*')
-            .eq('user_id', userIdString)
-            .single()
-
-          console.log('🔍 Session Debug - Creator Query Result:', creator ? { creatorId: creator.id, creatorUserId: creator.user_id, creatorUsername: creator.username } : null)
-
-          // SAFETY CHECK: If we got a creator, verify it actually exists in database
-          let validCreator = creator
-          if (creator) {
-            try {
-              const { data: verifyCreator } = await supabase
-                .from('creators')
-                .select('*')
-                .eq('id', creator.id)
-                .single()
-
-              if (!verifyCreator) {
-                console.log('❌ Session Debug - Creator verification failed! Creator does not exist:', creator.id)
-                validCreator = null
-              } else {
-                console.log('✅ Session Debug - Creator verified:', verifyCreator.id)
-              }
-            } catch (error) {
-              console.log('❌ Session Debug - Creator verification error:', error)
-              validCreator = null
-            }
-          }
-          
-          let userType: 'creator' | 'fan' = creator ? 'creator' : 'fan'
-          console.log('📋 Current user state:', { userId: userId, hasCreator: !!creator, currentType: userType })
-          
-          // Check for pending user type from redirect (user-specific)
-          let pendingUserType = null
-          if (typeof globalThis !== 'undefined' && (globalThis as any).pendingUserTypes) {
-            const pendingUserTypes = (globalThis as any).pendingUserTypes as Map<string, string>
-            // Look for any pending user type for creator onboarding URLs
-            for (const [url, type] of pendingUserTypes.entries()) {
-              if (url.includes('/onboarding?userType=creator') && type === 'creator') {
-                pendingUserType = type
-                // Clean up this entry
-                pendingUserTypes.delete(url)
-                break
-              }
-            }
-          }
-          console.log('📋 Pending user type from redirect:', pendingUserType)
-          
-          if (pendingUserType && (pendingUserType === 'creator' || pendingUserType === 'fan')) {
-            console.log('🏷️ Processing pending user type:', pendingUserType)
-
-            // Check if user is already a complete creator
-            const isCompleteCreator = creator && creator.username && creator.display_name
-
-            if (pendingUserType === 'creator') {
-              if (isCompleteCreator) {
-                console.log('✅ User is already a complete creator - respecting existing status')
-                userType = 'creator' // Keep creator status but don't force onboarding
-              } else {
-                console.log('🏷️ User intends to be creator - will complete onboarding')
-                userType = 'creator' // Set for onboarding (new or incomplete creator)
-              }
-            }
-
-            // Note: Pending user type already cleaned up during lookup above
-          }
-          
-          // Set session properties
-          session.user.userType = userType
-          session.user.isCreator = userType === 'creator'
-          session.user.creatorId = creator?.id
-          session.user.username = creator?.username
-          
-          console.log('📋 Final session state:', { 
-            userType: session.user.userType, 
-            isCreator: session.user.isCreator,
-            creatorId: session.user.creatorId,
-            username: session.user.username
-          })
-        } catch (error) {
-          console.error('❌ Error handling user type in session:', error)
-          // Fallback to existing logic
-          const supabase = getSupabaseClient()
-          const userId = token?.userId || token?.sub
           const userIdString = typeof userId === 'string' ? userId : ''
 
           const { data: creator } = await supabase
@@ -494,10 +391,26 @@ export const authOptions: NextAuthOptions = {
             .eq('user_id', userIdString)
             .single()
 
+          console.log('📋 Session - Creator found:', !!creator)
+
+          // Set session properties based on database state
           session.user.userType = creator ? 'creator' : 'fan'
           session.user.isCreator = !!creator
           session.user.creatorId = creator?.id
           session.user.username = creator?.username
+
+          console.log('📋 Session state:', {
+            userType: session.user.userType,
+            isCreator: session.user.isCreator,
+            creatorId: session.user.creatorId
+          })
+        } catch (error) {
+          console.error('❌ Error in session callback:', error)
+          // Safe fallback
+          session.user.userType = 'fan'
+          session.user.isCreator = false
+          session.user.creatorId = undefined
+          session.user.username = undefined
         }
       }
       return session
