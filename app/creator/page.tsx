@@ -370,7 +370,7 @@ export default async function CreatorDashboard() {
               <Avatar className="h-12 w-12 border-2 border-gray-300 dark:border-neutral-700 shrink-0">
                 <AvatarImage src={effectiveCreator?.profile_image || undefined} />
                 <AvatarFallback className="bg-gradient-to-br from-purple-600 to-blue-600 text-white font-bold">
-                  {effectiveCreator?.display_name?.split(' ').map(n => n[0]).join('').toUpperCase()}
+                  {effectiveCreator?.display_name?.split(' ').map((n: string) => n[0]).join('').toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <div className="min-w-0 flex-1">
@@ -401,7 +401,7 @@ export default async function CreatorDashboard() {
               <Avatar className="h-12 w-12 border-2 border-gray-300 dark:border-neutral-700">
                 <AvatarImage src={session.user.image || undefined} />
                 <AvatarFallback className="bg-gradient-to-br from-blue-600 to-purple-600 text-white font-bold">
-                  {(session.user.name || 'U').split(' ').map(n => n[0]).join('').toUpperCase()}
+                  {(session.user.name || 'U').split(' ').map((n: string) => n[0]).join('').toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <div>
