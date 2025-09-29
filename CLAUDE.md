@@ -118,7 +118,6 @@ This is **Aitrion** - a Patreon-style platform where creators host AI replicas o
 **YouTube Service** (`lib/youtube.ts`): Channel data, video metadata, transcript extraction  
 **Auth Service** (`lib/auth.ts`): NextAuth configuration, token refresh, creator profile creation
 **Voice Services** (`lib/voice.ts`): ElevenLabs TTS, Twilio calling integration
-**Payment Service** (`lib/stripe.ts`): Stripe Connect, subscription management
 
 ### Database Schema
 
@@ -156,7 +155,6 @@ scripts/              # Utility scripts and database operations
 - **YouTube Data API v3**: Channel and video metadata
 - **OpenAI API**: GPT-4 chat, text-embedding-ada-002
 - **ElevenLabs API**: Text-to-speech for voice features
-- **Stripe Connect**: Payment processing with 10% platform commission
 - **Twilio**: SMS and voice calling features
 - **Neo4j**: Graph database for advanced content relationships
 
@@ -167,7 +165,6 @@ Essential environment variables (see `.env.example`):
 - NextAuth: `NEXTAUTH_URL`, `NEXTAUTH_SECRET`
 - Google/YouTube: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `YOUTUBE_API_KEY`
 - OpenAI: `OPENAI_API_KEY`
-- Stripe: `STRIPE_PUBLISHABLE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`
 - Voice: `ELEVENLABS_API_KEY`, `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`
 
 ### Development Notes

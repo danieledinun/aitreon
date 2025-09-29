@@ -55,7 +55,6 @@ export interface Creator {
   youtube_channel_url?: string
   is_active: boolean
   commission_rate: number
-  stripe_account_id?: string
   created_at: Date
   updated_at: Date
   // Relations
@@ -111,7 +110,6 @@ export interface Subscription {
   id: string
   user_id: string
   creator_id: string
-  stripe_subscription_id?: string
   status: string
   tier: string
   current_period_start: Date
@@ -254,7 +252,6 @@ export async function setupDatabaseSchema() {
           youtube_channel_url TEXT,
           is_active BOOLEAN DEFAULT true,
           commission_rate DECIMAL DEFAULT 0.10,
-          stripe_account_id TEXT,
           created_at TIMESTAMPTZ DEFAULT NOW(),
           updated_at TIMESTAMPTZ DEFAULT NOW()
       );

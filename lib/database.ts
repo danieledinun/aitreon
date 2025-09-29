@@ -943,9 +943,6 @@ export class DatabaseService {
       if (options.where?.creatorId) {
         query = query.eq('creator_id', options.where.creatorId)
       }
-      if (options.where?.stripeSubscriptionId) {
-        query = query.eq('stripe_subscription_id', options.where.stripeSubscriptionId)
-      }
       
       const { data, error } = await query
       if (error) throw error
