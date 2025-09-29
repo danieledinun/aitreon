@@ -501,12 +501,16 @@ export const authOptions: NextAuthOptions = {
         } catch (error) {
           console.error('❌ Error handling user type in session:', error)
           // Fallback to existing logic
+          const supabase = getSupabaseClient()
           const userId = token?.userId || token?.sub
           const userIdString = typeof userId === 'string' ? userId : ''
-          const creator = await db.creator.findUnique({
-            where: { userId: userIdString }
-          })
-          
+
+          const { data: creator } = await supabase
+            .from('creators')
+            .select('*')
+            .eq('user_id', userIdString)
+            .single()
+
           session.user.userType = creator ? 'creator' : 'fan'
           session.user.isCreator = !!creator
           session.user.creatorId = creator?.id
