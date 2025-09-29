@@ -61,11 +61,15 @@ export default async function CreatorDashboard() {
   const supabase = getSupabaseClient()
 
   // Get user data including onboarding status
-  const { data: user } = await supabase
+  const { data: user, error: userError } = await supabase
     .from('users')
     .select('*')
     .eq('email', session.user.email)
     .single()
+
+  console.log('🔍 Session email:', session.user.email)
+  console.log('🔍 User lookup result:', user)
+  console.log('🔍 User lookup error:', userError)
 
   console.log('🔍 User onboarding status:', user?.onboarding_completed)
 
@@ -99,11 +103,15 @@ export default async function CreatorDashboard() {
   let creator = null
   if (user?.id) {
     // Get creator data first, then related tables separately
-    const { data: creatorData } = await supabase
+    const { data: creatorData, error: creatorError } = await supabase
       .from('creators')
       .select('*')
       .eq('user_id', user.id)
       .single()
+
+    console.log('🔍 Creator lookup for user ID:', user.id)
+    console.log('🔍 Creator lookup result:', creatorData)
+    console.log('🔍 Creator lookup error:', creatorError)
 
     if (creatorData) {
       // For now, just use the basic creator data without complex relations
@@ -115,6 +123,9 @@ export default async function CreatorDashboard() {
           chat_sessions: 0
         }
       }
+      console.log('🔍 Creator object created:', creator)
+    } else {
+      console.log('❌ No creator data found - this is why fan dashboard shows!')
     }
   }
   
