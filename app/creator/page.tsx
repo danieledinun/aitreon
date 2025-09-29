@@ -295,8 +295,20 @@ export default async function CreatorDashboard() {
       username: !effectiveCreator.username,
       display_name: !effectiveCreator.display_name
     })
+    console.log('🔄 Creator data:', {
+      id: effectiveCreator.id,
+      username: effectiveCreator.username,
+      display_name: effectiveCreator.display_name
+    })
     redirect('/onboarding?userType=creator')
   }
+
+  // Add debug logging to understand the decision flow
+  console.log('🔍 Dashboard Debug - Final decision points:')
+  console.log('🔍 - effectiveCreator:', !!effectiveCreator)
+  console.log('🔍 - effectiveCreator.username:', effectiveCreator?.username)
+  console.log('🔍 - effectiveCreator.display_name:', effectiveCreator?.display_name)
+  console.log('🔍 - Will show creator dashboard:', !!effectiveCreator)
   
   // If user doesn't have a creator profile (checking DB, fallback, and session), get available creators for discovery
   let availableCreators: any[] = []

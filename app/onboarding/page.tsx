@@ -1,6 +1,7 @@
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { redirect } from 'next/navigation'
+import { headers } from 'next/headers'
 import { supabase } from '@/lib/supabase'
 import CreatorOnboardingFlow from '@/components/creator-onboarding-flow'
 
@@ -35,8 +36,19 @@ export default async function OnboardingPage({
   // If creator already exists and is complete, redirect to dashboard
   // Check if creator has essential fields like username and display_name
   if (creator && creator.username && creator.display_name) {
-    console.log('🔄 Onboarding page: Complete creator profile exists, redirecting to dashboard')
-    redirect('/creator')
+    console.log('🔄 Onboarding page: Complete creator profile exists')
+    console.log('🔄 Creator details:', { id: creator.id, username: creator.username, display_name: creator.display_name })
+
+    // Add referer check to prevent infinite redirect loops
+    // If we're being redirected from the creator dashboard, don't redirect back
+    const referer = headers().get('referer')
+    if (referer && referer.includes('/creator')) {
+      console.log('⚠️ Preventing redirect loop - staying on onboarding page')
+      // Don't redirect - let the user complete onboarding manually to fix any issues
+    } else {
+      console.log('🔄 Redirecting to dashboard')
+      redirect('/creator')
+    }
   }
 
   return <CreatorOnboardingFlow userId={session.user.id} />
