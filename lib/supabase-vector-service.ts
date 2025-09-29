@@ -4,7 +4,8 @@
  * Designed to work with any creator and eventually replace SQLite
  */
 
-import { createClient, SupabaseClient } from '@supabase/supabase-js'
+import { supabase as supabaseInstance } from './supabase'
+import { SupabaseClient } from '@supabase/supabase-js'
 import OpenAI from 'openai'
 import { DeepInfraEmbeddingService } from './deepinfra-embedding-service'
 
@@ -17,17 +18,9 @@ const openai = new OpenAI({
 type EmbeddingProvider = 'openai' | 'deepinfra'
 const EMBEDDING_PROVIDER: EmbeddingProvider = (process.env.EMBEDDING_PROVIDER as EmbeddingProvider) || 'deepinfra' // Default to DeepInfra for cost efficiency
 
-// Supabase client
-let supabaseClient: SupabaseClient | null = null
-
+// Supabase client - use centralized instance
 function getSupabaseClient(): SupabaseClient {
-  if (!supabaseClient) {
-    supabaseClient = createClient(
-      process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    )
-  }
-  return supabaseClient
+  return supabaseInstance
 }
 
 // Types for the vector database schema

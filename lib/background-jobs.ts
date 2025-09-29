@@ -1,10 +1,5 @@
-import { createClient } from '@supabase/supabase-js'
+import { supabase } from './supabase'
 import { sentimentAnalyzer } from './sentiment'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
 
 interface BackgroundJob {
   id: string
