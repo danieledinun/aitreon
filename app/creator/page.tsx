@@ -290,9 +290,9 @@ export default async function CreatorDashboard() {
   console.log('🔍 - effectiveCreator.display_name:', effectiveCreator?.display_name)
   console.log('🔍 - Will show creator dashboard:', !!effectiveCreator)
   
-  // If user doesn't have a creator profile (checking DB, fallback, and session), get available creators for discovery
+  // If user doesn't have a creator profile, get available creators for discovery
   let availableCreators: any[] = []
-  if (!creator && !hasCreatorIntent) {
+  if (!creator) {
     const { data: creators } = await supabase
       .from('creators')
       .select('*')
