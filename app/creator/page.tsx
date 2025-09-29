@@ -102,16 +102,17 @@ export default async function CreatorDashboard() {
   // Separately fetch creator record using proper userId relationship
   let creator = null
   if (user?.id) {
-    // Get creator data first, then related tables separately
-    const { data: creatorData, error: creatorError } = await supabase
+    // Get creator data - using array method to avoid .single() errors
+    const { data: creatorArray, error: creatorError } = await supabase
       .from('creators')
       .select('*')
       .eq('user_id', user.id)
-      .single()
 
     console.log('🔍 Creator lookup for user ID:', user.id)
-    console.log('🔍 Creator lookup result:', creatorData)
+    console.log('🔍 Creator lookup result:', creatorArray)
     console.log('🔍 Creator lookup error:', creatorError)
+
+    const creatorData = creatorArray && creatorArray.length > 0 ? creatorArray[0] : null
 
     if (creatorData) {
       // For now, just use the basic creator data without complex relations
@@ -126,6 +127,7 @@ export default async function CreatorDashboard() {
       console.log('🔍 Creator object created:', creator)
     } else {
       console.log('❌ No creator data found - this is why fan dashboard shows!')
+      console.log('🔍 Creator array was:', creatorArray)
     }
   }
   
@@ -272,25 +274,11 @@ export default async function CreatorDashboard() {
   // Use the creator record we fetched
   const effectiveCreator = creator
 
-  // TEMPORARY: Force creator dashboard for Tanner to test UI logic
-  const isTannerEmail = session.user.email === 'tanner@tanner.com'
-  const forcedCreatorForTanner = isTannerEmail ? {
-    id: '5864ded5-edfa-4e63-b131-582fe844fa43',
-    username: 'tanner',
-    display_name: 'tanner',
-    _count: { subscriptions: 0, videos: 0, chat_sessions: 0 },
-    ai_config: null,
-    voice_settings: null,
-    suggested_questions: null
-  } : null
-
-  const finalEffectiveCreator = effectiveCreator || forcedCreatorForTanner
-
   // Add debug logging to understand the decision flow
   console.log('🔍 Dashboard Debug - Final decision points:')
   console.log('🔍 - effectiveCreator:', !!effectiveCreator)
-  console.log('🔍 - effectiveCreator.username:', finalEffectiveCreator?.username)
-  console.log('🔍 - effectiveCreator.display_name:', finalEffectiveCreator?.display_name)
+  console.log('🔍 - effectiveCreator.username:', effectiveCreator?.username)
+  console.log('🔍 - effectiveCreator.display_name:', effectiveCreator?.display_name)
   console.log('🔍 - Will show creator dashboard:', !!effectiveCreator)
   
   // If user doesn't have a creator profile, get available creators for discovery
@@ -335,7 +323,7 @@ export default async function CreatorDashboard() {
   }
 
   // Calculate growth metrics
-  const monthlyGrowth = finalEffectiveCreator?._count?.subscriptions || 0 > 0 ?
+  const monthlyGrowth = effectiveCreator?._count?.subscriptions || 0 > 0 ?
     Math.round(Math.random() * 20 + 5) : 0 // Simplified growth calculation
 
   // Debug the final values
@@ -346,13 +334,13 @@ export default async function CreatorDashboard() {
   console.log('🔍 Final Debug - session.user.isCreator:', session?.user?.isCreator)
   console.log('🔍 Final Debug - effectiveCreator:', !!effectiveCreator)
   console.log('🔍 Final Debug - effectiveCreator.id:', effectiveCreator?.id)
-  console.log('🔍 Final Debug - effectiveCreator.username:', finalEffectiveCreator?.username)
-  console.log('🔍 Final Debug - will show creator view:', !!finalEffectiveCreator)
-  console.log('🔍 Final Debug - View decision: ', !!finalEffectiveCreator ? 'CREATOR VIEW' : 'FAN VIEW')
+  console.log('🔍 Final Debug - effectiveCreator.username:', effectiveCreator?.username)
+  console.log('🔍 Final Debug - will show creator view:', !!effectiveCreator)
+  console.log('🔍 Final Debug - View decision: ', !!effectiveCreator ? 'CREATOR VIEW' : 'FAN VIEW')
 
   return (
     <div className="space-y-8">
-      {finalEffectiveCreator ? (
+      {effectiveCreator ? (
         <>
           {/* Video Processing Banner */}
           <VideoProcessingBanner
@@ -363,14 +351,14 @@ export default async function CreatorDashboard() {
           <div className="flex items-start justify-between gap-6">
             <div className="flex items-center space-x-4 flex-1 min-w-0">
               <Avatar className="h-12 w-12 border-2 border-gray-300 dark:border-neutral-700 shrink-0">
-                <AvatarImage src={finalEffectiveCreator?.profile_image || undefined} />
+                <AvatarImage src={effectiveCreator?.profile_image || undefined} />
                 <AvatarFallback className="bg-gradient-to-br from-purple-600 to-blue-600 text-white font-bold">
-                  {finalEffectiveCreator?.display_name?.split(' ').map((n: string) => n[0]).join('').toUpperCase()}
+                  {effectiveCreator?.display_name?.split(' ').map((n: string) => n[0]).join('').toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <div className="min-w-0 flex-1">
                 <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white truncate">
-                  Welcome back, {finalEffectiveCreator?.display_name}
+                  Welcome back, {effectiveCreator?.display_name}
                 </h1>
                 <p className="text-gray-600 dark:text-neutral-400 text-base lg:text-lg">
                   Here's what's happening with your AI replica
@@ -379,7 +367,7 @@ export default async function CreatorDashboard() {
             </div>
             
             <div className="flex items-center shrink-0">
-              <Link href={`/${finalEffectiveCreator?.username}`} target="_blank">
+              <Link href={`/${effectiveCreator?.username}`} target="_blank">
                 <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 whitespace-nowrap flex items-center">
                   <ExternalLink className="w-4 h-4 mr-2" />
                   Check Your Page
@@ -418,7 +406,7 @@ export default async function CreatorDashboard() {
       )}
 
       {/* Metrics Cards */}
-      {finalEffectiveCreator ? (
+      {effectiveCreator ? (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <Card className="bg-white/50 dark:bg-neutral-900/50 border-gray-300 dark:border-neutral-700 hover:bg-gray-50/70 dark:hover:bg-neutral-900/70 transition-colors">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -426,7 +414,7 @@ export default async function CreatorDashboard() {
               <Users className="h-4 w-4 text-blue-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-gray-900 dark:text-white">{finalEffectiveCreator?._count?.subscriptions || 0}</div>
+              <div className="text-2xl font-bold text-gray-900 dark:text-white">{effectiveCreator?._count?.subscriptions || 0}</div>
               <p className="text-xs text-gray-500 dark:text-neutral-400">
                 <span className="text-green-400">+{monthlyGrowth}%</span> from last month
               </p>
@@ -439,7 +427,7 @@ export default async function CreatorDashboard() {
               <Play className="h-4 w-4 text-green-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-gray-900 dark:text-white">{finalEffectiveCreator?._count?.videos || 0}</div>
+              <div className="text-2xl font-bold text-gray-900 dark:text-white">{effectiveCreator?._count?.videos || 0}</div>
               <p className="text-xs text-gray-500 dark:text-neutral-400">
                 Training your AI personality
               </p>
@@ -452,7 +440,7 @@ export default async function CreatorDashboard() {
               <MessageCircle className="h-4 w-4 text-purple-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-gray-900 dark:text-white">{finalEffectiveCreator?._count?.chat_sessions || 0}</div>
+              <div className="text-2xl font-bold text-gray-900 dark:text-white">{effectiveCreator?._count?.chat_sessions || 0}</div>
               <p className="text-xs text-gray-500 dark:text-neutral-400">
                 {totalMessages} total messages exchanged
               </p>
@@ -516,7 +504,7 @@ export default async function CreatorDashboard() {
       )}
 
       {/* Analytics Dashboard */}
-      {finalEffectiveCreator ? (
+      {effectiveCreator ? (
         <div className="space-y-6">
           {/* Real-time Analytics Section */}
           <div className="grid gap-6 lg:grid-cols-3">
