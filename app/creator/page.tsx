@@ -710,7 +710,7 @@ export default async function CreatorDashboard() {
           {/* Fan Discovery Content */}
           
           {/* Your Subscriptions */}
-          {userSubscriptions.length > 0 && (
+          {userSubscriptions && userSubscriptions.length > 0 && (
             <Card className="bg-white/50 dark:bg-neutral-900/50 border-gray-300 dark:border-neutral-700">
               <CardHeader>
                 <CardTitle className="text-gray-900 dark:text-white flex items-center gap-2">
