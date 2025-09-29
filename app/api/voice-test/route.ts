@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { createClient } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase'
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,7 +18,6 @@ export async function POST(request: NextRequest) {
 
     console.log('🧪 Voice Test API:', { query, creatorId })
 
-    const supabase = createClient()
 
     // Get creator info for voice settings
     const { data: creator } = await supabase

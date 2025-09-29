@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { createClient } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase'
 
 export async function DELETE(request: NextRequest) {
   try {
@@ -12,7 +12,6 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Get creator using Supabase
-    const supabase = createClient()
 
     const { data: user } = await supabase
       .from('users')

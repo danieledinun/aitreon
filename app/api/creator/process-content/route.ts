@@ -38,7 +38,7 @@ async function processCreatorVideosWithSemanticChunking(creatorId: string) {
 
       const env = {
         ...process.env,
-        NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+        SUPABASE_URL: process.env.SUPABASE_URL,
         SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
         EMBEDDING_PROVIDER: process.env.EMBEDDING_PROVIDER || 'deepinfra',
         OPENAI_API_KEY: process.env.OPENAI_API_KEY,
@@ -57,10 +57,12 @@ async function processCreatorVideosWithSemanticChunking(creatorId: string) {
       if (stderr) console.error(stderr)
 
       // Check if chunks were created successfully
-      const { data: chunks } = await require('@supabase/supabase-js').createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      const { createClient } = require('@supabase/supabase-js')
+      const supabaseChecker = createClient(
+        process.env.SUPABASE_URL!,
         process.env.SUPABASE_SERVICE_ROLE_KEY!
-      ).from('content_chunks').select('*').eq('video_id', video.id)
+      )
+      const { data: chunks } = await supabaseChecker.from('content_chunks').select('*').eq('video_id', video.id)
 
       if (chunks && chunks.length > 0) {
         processedVideos++

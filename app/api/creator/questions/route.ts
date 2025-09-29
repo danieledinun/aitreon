@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { createClient } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase'
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,7 +24,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'At least one question is required' }, { status: 400 })
     }
 
-    const supabase = createClient()
 
     // Get user and creator
     const { data: user } = await supabase

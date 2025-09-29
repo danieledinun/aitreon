@@ -580,7 +580,7 @@ ${segmentsText}`
 
         const env = {
           ...process.env,
-          NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+          SUPABASE_URL: process.env.SUPABASE_URL,
           SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
           EMBEDDING_PROVIDER: process.env.EMBEDDING_PROVIDER || 'openai',
           OPENAI_API_KEY: process.env.OPENAI_API_KEY,
@@ -619,7 +619,7 @@ ${segmentsText}`
 
             const env = {
               ...process.env,
-              NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+              SUPABASE_URL: process.env.SUPABASE_URL,
               SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
               EMBEDDING_PROVIDER: process.env.EMBEDDING_PROVIDER || 'deepinfra',
               OPENAI_API_KEY: process.env.OPENAI_API_KEY,
@@ -666,7 +666,7 @@ ${segmentsText}`
 
           const env = {
             ...process.env,
-            NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+            SUPABASE_URL: process.env.SUPABASE_URL,
             SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
             EMBEDDING_PROVIDER: process.env.EMBEDDING_PROVIDER || 'deepinfra',
             OPENAI_API_KEY: process.env.OPENAI_API_KEY,
