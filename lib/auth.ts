@@ -333,10 +333,21 @@ export const authOptions: NextAuthOptions = {
             }
             (globalThis as any).pendingUserTypes.set(fullUrl, userType)
           }
+
+          // For creators, redirect to onboarding unless we're already there or going to dashboard
+          if (userType === 'creator') {
+            if (fullUrl.includes('/onboarding')) {
+              console.log('🔄 Already going to onboarding, allowing redirect')
+            } else if (fullUrl.includes('/creator') && !fullUrl.includes('/auth/')) {
+              console.log('🔄 Going to creator dashboard, allowing redirect (existing creator)')
+            } else {
+              console.log('🔄 New creator sign-in, redirecting to onboarding')
+              return `${baseUrl}/onboarding?userType=creator`
+            }
+          }
         }
 
         // Always allow the redirect to proceed to the intended URL
-        // Let the session callback and page-level logic handle routing decisions
         if (fullUrl.startsWith(baseUrl)) {
           console.log('🔄 Allowing redirect to:', fullUrl)
           return fullUrl

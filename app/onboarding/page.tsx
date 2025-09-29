@@ -1,7 +1,7 @@
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { redirect } from 'next/navigation'
-import { db } from '@/lib/database'
+import { supabase } from '@/lib/supabase'
 import CreatorOnboardingFlow from '@/components/creator-onboarding-flow'
 
 export default async function OnboardingPage({
@@ -10,28 +10,32 @@ export default async function OnboardingPage({
   searchParams: { userType?: string }
 }) {
   const session = await getServerSession(authOptions)
-  
+
   if (!session?.user?.id) {
     redirect('/auth/signin')
   }
 
-  // Check if creator already exists
-  const user = await db.user.findUnique({
-    where: { email: session.user.email! }
-  })
+  // Check if creator already exists using Supabase
+  const { data: user } = await supabase
+    .from('users')
+    .select('id')
+    .eq('email', session.user.email!)
+    .single()
 
   if (!user) {
     redirect('/auth/signin')
   }
 
-  const creator = await db.creator.findUnique({
-    where: { userId: user.id }
-  })
+  const { data: creator } = await supabase
+    .from('creators')
+    .select('*')
+    .eq('user_id', user.id)
+    .single()
 
-  // If creator already exists, redirect to dashboard regardless of userType parameter
-  // The creator profile is complete, no need for onboarding
-  if (creator) {
-    console.log('🔄 Onboarding page: Creator already exists, redirecting to dashboard')
+  // If creator already exists and is complete, redirect to dashboard
+  // Check if creator has essential fields like username and display_name
+  if (creator && creator.username && creator.display_name) {
+    console.log('🔄 Onboarding page: Complete creator profile exists, redirecting to dashboard')
     redirect('/creator')
   }
 
