@@ -311,49 +311,26 @@ export const authOptions: NextAuthOptions = {
       console.log('🔄 Redirect callback:', { url, baseUrl })
 
       try {
-        // Ensure we have a valid URL
-        let fullUrl = url
-        if (!url.startsWith('http')) {
-          fullUrl = new URL(url, baseUrl).toString()
-        }
-
-        console.log('🔄 Full URL:', fullUrl)
-
-        // Parse URL to extract userType
-        const urlObj = new URL(fullUrl)
-        const userType = urlObj.searchParams.get('userType')
-
-        // Handle creator flow - let dashboard handle onboarding logic
-        if (userType === 'creator') {
-          // Check if we're already on onboarding - avoid loops
-          if (fullUrl.includes('/onboarding')) {
-            console.log('🔄 Already going to onboarding, allowing redirect')
-            return fullUrl
-          }
-
-          // For creators, always go to dashboard first
-          // The dashboard will check creator status and redirect to onboarding if needed
-          console.log('🔄 Creator login, redirecting to dashboard (will handle onboarding check)')
+        // For sign-in flows, always redirect to a safe page and let that page handle routing
+        if (url.includes('/auth/signin') || url === '/auth/signin') {
+          console.log('🔄 Sign-in flow detected, redirecting to creator dashboard')
           return `${baseUrl}/creator`
-        } else if (userType === 'fan') {
-          // For fans, go to creator listing page
-          console.log('🔄 Fan login, redirecting to creator listing')
-          return `${baseUrl}/`
         }
 
-        // If no userType specified, check if URL is internal and allow it
-        if (fullUrl.startsWith(baseUrl)) {
-          console.log('🔄 Allowing redirect to:', fullUrl)
+        // If URL starts with base URL, allow it (internal navigation)
+        if (url.startsWith(baseUrl) || url.startsWith('/')) {
+          const fullUrl = url.startsWith('/') ? `${baseUrl}${url}` : url
+          console.log('🔄 Internal redirect allowed:', fullUrl)
           return fullUrl
         }
 
-        // Default fallback - go to home page
-        console.log('🔄 Default fallback, redirecting to home')
-        return baseUrl
+        // Default fallback
+        console.log('🔄 Default fallback to dashboard')
+        return `${baseUrl}/creator`
 
       } catch (error) {
         console.error('❌ Redirect callback error:', error)
-        return baseUrl
+        return `${baseUrl}/creator`
       }
     },
     async signIn({ user, account, profile, email, credentials }) {

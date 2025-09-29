@@ -301,8 +301,13 @@ export default async function CreatorDashboard() {
       display_name: effectiveCreator.display_name
     })
 
-    // Add redirect loop prevention
-    redirect('/onboarding?userType=creator&from=dashboard')
+    // Safety check: only redirect if we haven't already tried
+    try {
+      redirect('/onboarding?userType=creator&from=dashboard')
+    } catch (error) {
+      console.error('❌ Redirect failed, showing dashboard instead:', error)
+      // If redirect fails, just show the dashboard to prevent infinite loops
+    }
   }
 
   // Add debug logging to understand the decision flow
