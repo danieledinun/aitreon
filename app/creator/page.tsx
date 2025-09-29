@@ -218,30 +218,30 @@ export default async function CreatorDashboard() {
         `)
         .eq('creator_id', analyticsCreatorId)
       
-      console.log('📊 Analytics Debug - Found chat sessions:', chatSessions.length)
+      console.log('📊 Analytics Debug - Found chat sessions:', chatSessions?.length || 0)
       console.log('📊 Analytics Debug - Chat sessions data:', chatSessions)
-      
-      recentChatSessions = chatSessions
-      totalChatSessionsCount = allChatSessions.length
-      totalMessages = allChatSessions.reduce((sum, session) => sum + ((session as any).messages?.length || 0), 0)
-      
-      console.log('📊 Analytics Debug - Recent sessions:', chatSessions.length)
+
+      recentChatSessions = chatSessions || []
+      totalChatSessionsCount = allChatSessions?.length || 0
+      totalMessages = (allChatSessions || []).reduce((sum, session) => sum + ((session as any).messages?.length || 0), 0)
+
+      console.log('📊 Analytics Debug - Recent sessions:', chatSessions?.length || 0)
       console.log('📊 Analytics Debug - Total sessions count:', totalChatSessionsCount)
       console.log('📊 Analytics Debug - Total messages calculated:', totalMessages)
-      
+
       // Calculate engagement metrics from real data
-      if (chatSessions.length > 0) {
-        const sessionsWithMessages = chatSessions.filter(s => (s as any).messages && (s as any).messages.length > 0)
-        engagementData.rate = Math.round((sessionsWithMessages.length / chatSessions.length) * 100)
+      if ((chatSessions?.length || 0) > 0) {
+        const sessionsWithMessages = (chatSessions || []).filter(s => (s as any).messages && (s as any).messages.length > 0)
+        engagementData.rate = Math.round((sessionsWithMessages.length / (chatSessions?.length || 1)) * 100)
 
         // Calculate average session duration (simplified)
-        const avgMessagesPerSession = totalMessages / chatSessions.length
+        const avgMessagesPerSession = totalMessages / (chatSessions?.length || 1)
         engagementData.responseTime = Math.round(avgMessagesPerSession * 1.2) // Simplified metric
         engagementData.userSatisfaction = Math.min(95, Math.round(engagementData.rate * 1.1)) // Derived metric
       }
 
       // Calculate sentiment analytics from all user messages
-      const allUserMessages = allChatSessions.flatMap(session =>
+      const allUserMessages = (allChatSessions || []).flatMap(session =>
         (session as any).messages?.filter((msg: any) => msg.role === 'user' || msg.role === 'USER') || []
       )
 
@@ -255,7 +255,7 @@ export default async function CreatorDashboard() {
 
       // Get top 3 most active users based on message count
       const userMessageCounts = new Map()
-      allChatSessions.forEach(session => {
+      ;(allChatSessions || []).forEach(session => {
         if ((session as any).user) {
           const userKey = (session as any).user.email
           const messageCount = (session as any).messages?.filter((msg: any) => msg.role === 'user' || msg.role === 'USER').length || 0
