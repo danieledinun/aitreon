@@ -309,71 +309,43 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async redirect({ url, baseUrl }) {
       console.log('🔄 Redirect callback:', { url, baseUrl })
-      
-      // Extract userType from URL and store it for later use
+
       try {
+        // Ensure we have a valid URL
         let fullUrl = url
         if (!url.startsWith('http')) {
           fullUrl = new URL(url, baseUrl).toString()
         }
-        
+
         console.log('🔄 Full URL:', fullUrl)
-        
-        // Extract userType from URL parameters
+
+        // Parse URL to extract userType
         const urlObj = new URL(fullUrl)
         const userType = urlObj.searchParams.get('userType')
-        
+
+        // Store userType for session callback if present
         if (userType && (userType === 'creator' || userType === 'fan')) {
           console.log('✅ UserType parameter found in URL:', userType)
-          
-          // Store user type for use in session callback (user-specific)
+
           if (typeof globalThis !== 'undefined') {
             if (!(globalThis as any).pendingUserTypes) {
               (globalThis as any).pendingUserTypes = new Map()
             }
-            // Use URL as key to make it user-session specific
             (globalThis as any).pendingUserTypes.set(fullUrl, userType)
           }
-          
-          // For creators, check if they already exist before redirecting to onboarding
-          if (userType === 'creator') {
-            // Check if user already has a creator profile
-            try {
-              // Token not available in redirect callback
-              let userId = null // token?.sub || token?.userId
-              console.log('🔍 Redirect: Token not available in redirect callback')
-
-              // Since token/userId not available in redirect callback, let session callback handle routing
-              console.log('🔄 No userId available in redirect, allowing auth flow to complete naturally')
-              return fullUrl
-            } catch (error) {
-              console.error('❌ Error checking existing creator in redirect:', error)
-            }
-
-            // Fallback: redirect to onboarding
-            console.log('🔄 Fallback: redirecting creator from auth flow to onboarding')
-            return `${baseUrl}/onboarding?userType=creator`
-          }
-          
-          return fullUrl
         }
-        
-        // For Google OAuth sign-ins without userType parameter, check if user has creator profile
-        if (url.includes('/api/auth/callback/google')) {
-          try {
-            // Token not available in redirect callback, skip this check
-            console.log('🔄 Google OAuth callback, token not available for user lookup')
-          } catch (error) {
-            console.error('❌ Error checking Google OAuth creator:', error)
-          }
-        }
-        
-        // Check if URL is within our domain
+
+        // Always allow the redirect to proceed to the intended URL
+        // Let the session callback and page-level logic handle routing decisions
         if (fullUrl.startsWith(baseUrl)) {
+          console.log('🔄 Allowing redirect to:', fullUrl)
           return fullUrl
         }
-        
+
+        // Default fallback for external URLs
+        console.log('🔄 External URL detected, redirecting to dashboard')
         return `${baseUrl}/creator`
+
       } catch (error) {
         console.error('❌ Redirect callback error:', error)
         return `${baseUrl}/creator`
