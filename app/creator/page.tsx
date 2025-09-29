@@ -103,7 +103,7 @@ export default async function CreatorDashboard() {
       .from('creators')
       .select(`
         *,
-        ai_config:ai_configs(*),
+        ai_config:ai_config(*),
         voice_settings:voice_settings(*),
         suggested_questions:creator_suggested_questions(*)
       `)
