@@ -338,7 +338,7 @@ export default async function CreatorDashboard() {
   // Debug the final values
   console.log('🔍 Final Debug - creator:', !!creator)
   console.log('🔍 Final Debug - creator found:', !!creator)
-  console.log('🔍 Final Debug - hasCreatorIntent:', hasCreatorIntent)
+  console.log('🔍 Final Debug - onboarding_completed:', user?.onboarding_completed)
   console.log('🔍 Final Debug - session.user.creatorId:', session?.user?.creatorId)
   console.log('🔍 Final Debug - session.user.isCreator:', session?.user?.isCreator)
   console.log('🔍 Final Debug - effectiveCreator:', !!effectiveCreator)
