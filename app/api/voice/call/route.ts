@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { db } from '@/lib/database'
+import { createClient } from '@supabase/supabase-js'
 import { VoiceService } from '@/lib/voice'
 import { z } from 'zod'
+
+const supabase = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
 
 const callSchema = z.object({
   phoneNumber: z.string().regex(/^\+[1-9]\d{1,14}$/),
@@ -21,25 +26,29 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { phoneNumber, message, creatorId } = callSchema.parse(body)
 
-    const creator = await db.creator.findUnique({
-      where: { id: creatorId }
-    })
+    const { data: creator } = await supabase
+      .from('creators')
+      .select('*')
+      .eq('id', creatorId)
+      .single()
 
     if (!creator) {
       return NextResponse.json({ error: 'Creator not found' }, { status: 404 })
     }
 
-    const voiceSettings = await db.voiceSettings.findUnique({
-      where: { creatorId: creator.id }
-    })
+    const { data: voiceSettings } = await supabase
+      .from('voice_settings')
+      .select('*')
+      .eq('creator_id', creator.id)
+      .single()
 
     // Check if user has subscription for voice features
-    const subscription = await db.subscription.findFirst({
-      where: {
-        userId: session.user.id,
-        creatorId
-      }
-    })
+    const { data: subscription } = await supabase
+      .from('subscriptions')
+      .select('*')
+      .eq('user_id', session.user.id)
+      .eq('creator_id', creatorId)
+      .single()
 
     if (!subscription || subscription.status !== 'ACTIVE') {
       return NextResponse.json({ 
@@ -55,7 +64,7 @@ export async function POST(request: NextRequest) {
 
     // Generate speech
     const voiceId = voiceSettings?.elevenlabs_voice_id
-    const audioBuffer = await VoiceService.generateSpeech(message, voiceId || undefined)
+    const audioBuffer = await VoiceService.generateSpeech(message, creatorId, voiceId || undefined)
 
     // Voice calling feature not implemented - return the audio buffer for download
     return new NextResponse(new Uint8Array(audioBuffer), {

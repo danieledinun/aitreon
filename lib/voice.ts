@@ -1,13 +1,74 @@
-// @ts-ignore
-const ElevenLabs = require('elevenlabs-node')
-import { db } from './database'
+import { createClient } from '@supabase/supabase-js'
 import { StyleAdapterService } from './style-adapter'
 
-let elevenlabs: any
+const supabase = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
+
+// ElevenLabs service using fetch API for better compatibility
+class ElevenLabsClient {
+  private apiKey: string
+
+  constructor(apiKey: string) {
+    this.apiKey = apiKey
+  }
+
+  async textToSpeech(params: {
+    text: string
+    voice: string
+    model_id: string
+    voice_settings: any
+  }): Promise<ArrayBuffer> {
+    if (!this.apiKey) {
+      throw new Error('ElevenLabs API key not configured')
+    }
+
+    const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${params.voice}`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'audio/mpeg',
+        'Content-Type': 'application/json',
+        'xi-api-key': this.apiKey
+      },
+      body: JSON.stringify({
+        text: params.text,
+        model_id: params.model_id,
+        voice_settings: params.voice_settings
+      })
+    })
+
+    if (!response.ok) {
+      throw new Error(`ElevenLabs API error: ${response.status} ${response.statusText}`)
+    }
+
+    return response.arrayBuffer()
+  }
+
+  async getVoices(): Promise<{ voices: any[] }> {
+    if (!this.apiKey) {
+      throw new Error('ElevenLabs API key not configured')
+    }
+
+    const response = await fetch('https://api.elevenlabs.io/v1/voices', {
+      headers: {
+        'xi-api-key': this.apiKey
+      }
+    })
+
+    if (!response.ok) {
+      throw new Error(`ElevenLabs API error: ${response.status} ${response.statusText}`)
+    }
+
+    return response.json()
+  }
+}
+
+let elevenlabs: ElevenLabsClient | null = null
 try {
-  elevenlabs = new ElevenLabs({
-    apiKey: process.env.ELEVENLABS_API_KEY!,
-  })
+  if (process.env.ELEVENLABS_API_KEY) {
+    elevenlabs = new ElevenLabsClient(process.env.ELEVENLABS_API_KEY)
+  }
 } catch (error) {
   console.warn('ElevenLabs initialization failed:', error)
   elevenlabs = null
@@ -23,9 +84,11 @@ export class VoiceService {
 
       // If no voice ID provided, try to load from creator's voice settings
       if (!voice && creatorId) {
-        const voiceSettings = await db.voiceSettings.findUnique({
-          where: { creatorId }
-        })
+        const { data: voiceSettings } = await supabase
+          .from('voice_settings')
+          .select('elevenlabs_voice_id')
+          .eq('creator_id', creatorId)
+          .single()
         voice = voiceSettings?.elevenlabs_voice_id
       }
 
