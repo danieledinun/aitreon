@@ -11,8 +11,8 @@ interface ConversationActivity {
 export class ConversationTracker {
   private static instance: ConversationTracker
   private activeConversations = new Map<string, ConversationActivity>()
-  private inactivityThreshold = 5 * 60 * 1000 // 5 minutes of inactivity
-  private checkInterval = 60 * 1000 // Check every minute
+  private inactivityThreshold = 30 * 60 * 1000 // 30 minutes of inactivity
+  private checkInterval = 5 * 60 * 1000 // Check every 5 minutes
   private intervalId: NodeJS.Timeout | null = null
 
   static getInstance(): ConversationTracker {

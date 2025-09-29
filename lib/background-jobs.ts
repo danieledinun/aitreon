@@ -28,9 +28,12 @@ export class BackgroundJobService {
     return BackgroundJobService.instance
   }
 
-  // Schedule sentiment analysis for a session 30 minutes after it ends
+  // Schedule sentiment analysis for next daily cron run
   async scheduleSentimentAnalysis(sessionId: string, creatorId: string, conversationEndTime: Date) {
-    const scheduledFor = new Date(conversationEndTime.getTime() + 30 * 60 * 1000) // 30 minutes later
+    // Schedule for next day at noon (when daily cron runs)
+    const scheduledFor = new Date()
+    scheduledFor.setDate(scheduledFor.getDate() + 1)
+    scheduledFor.setHours(12, 0, 0, 0) // Next day at 12:00 PM
 
     try {
       // First, ensure the background_jobs table exists

@@ -65,8 +65,10 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // Schedule sentiment analysis for 30 minutes from now
-    const scheduledFor = new Date(Date.now() + 30 * 60 * 1000)
+    // Schedule sentiment analysis for next day at noon (when cron runs)
+    const scheduledFor = new Date()
+    scheduledFor.setDate(scheduledFor.getDate() + 1)
+    scheduledFor.setHours(12, 0, 0, 0) // Next day at 12:00 PM
 
     const { data: job, error: jobError } = await supabase
       .from('background_jobs')
