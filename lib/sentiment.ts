@@ -46,9 +46,15 @@ export class SentimentAnalyzer {
         throw new Error(`HuggingFace API error: ${response.status}`)
       }
 
-      const result = await response.json() as SentimentResult[]
+      const result = await response.json()
 
-      if (!Array.isArray(result) || result.length === 0) {
+      // Handle nested array structure from HuggingFace API
+      let sentimentResults: SentimentResult[]
+      if (Array.isArray(result) && result.length > 0 && Array.isArray(result[0])) {
+        sentimentResults = result[0] as SentimentResult[]
+      } else if (Array.isArray(result)) {
+        sentimentResults = result as SentimentResult[]
+      } else {
         console.warn('Invalid sentiment analysis result:', result)
         return {
           sentiment: 'NEUTRAL',
@@ -57,38 +63,40 @@ export class SentimentAnalyzer {
         }
       }
 
+      if (sentimentResults.length === 0) {
+        console.warn('Empty sentiment analysis result:', result)
+        return {
+          sentiment: 'NEUTRAL',
+          confidence: 0,
+          rawResult: sentimentResults
+        }
+      }
+
       // Find the highest confidence result
-      const topResult = result.reduce((prev, current) =>
+      const topResult = sentimentResults.reduce((prev, current) =>
         current.score > prev.score ? current : prev
       )
 
       // Map HuggingFace labels to our standardized format
       let sentiment: 'POSITIVE' | 'NEGATIVE' | 'NEUTRAL'
-      switch (topResult.label.toUpperCase()) {
-        case 'POSITIVE':
-          sentiment = 'POSITIVE'
-          break
-        case 'NEGATIVE':
-          sentiment = 'NEGATIVE'
-          break
-        case 'NEUTRAL':
-          sentiment = 'NEUTRAL'
-          break
-        default:
-          // Handle potential variations in label naming
-          if (topResult.label.toLowerCase().includes('pos')) {
-            sentiment = 'POSITIVE'
-          } else if (topResult.label.toLowerCase().includes('neg')) {
-            sentiment = 'NEGATIVE'
-          } else {
-            sentiment = 'NEUTRAL'
-          }
+      const label = topResult.label.toUpperCase()
+
+      if (label.includes('POSITIVE')) {
+        sentiment = 'POSITIVE'
+      } else if (label.includes('NEGATIVE')) {
+        sentiment = 'NEGATIVE'
+      } else if (label.includes('NEUTRAL')) {
+        sentiment = 'NEUTRAL'
+      } else {
+        // Fallback for any unexpected labels
+        console.warn('Unexpected sentiment label:', topResult.label)
+        sentiment = 'NEUTRAL'
       }
 
       return {
         sentiment,
         confidence: Math.round(topResult.score * 100) / 100, // Round to 2 decimal places
-        rawResult: result
+        rawResult: sentimentResults
       }
 
     } catch (error) {
