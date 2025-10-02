@@ -609,10 +609,12 @@ export default function CreatorInteraction({
 
     if (!input.trim() || loading) return
 
-    // For anonymous users, check message limit (2 messages = 1 inbound + 1 outbound)
+    // For anonymous users, check message limit
+    // Count: user message (1) + AI response (1) = 2 total exchanges
+    // After 1 complete exchange (count = 2), block the next user message
     if (!session?.user?.id) {
       if (anonymousMessageCount >= 2) {
-        console.log('📱 Anonymous user reached message limit')
+        console.log('📱 Anonymous user reached message limit, current count:', anonymousMessageCount)
         setShowRegistrationModal(true)
         return
       }
@@ -716,6 +718,12 @@ export default function CreatorInteraction({
                     console.log('🔤 Full response received:', accumulatedContent)
                     console.log('🔤 Citations received:', finalCitations?.length || 0)
 
+                    // For anonymous users, check if this will be the limit-reaching response
+                    const isAnonymousLimitReached = !session?.user?.id && (anonymousMessageCount + 1) === 2
+                    if (isAnonymousLimitReached) {
+                      console.log('📱 This will be the limit-reaching response, preparing blur')
+                    }
+
                     // Start the robust typing animation using ref-based state management
                     startTypingAnimation(accumulatedContent, finalCitations, streamingMessageId, () => {
                       // Apply pending message update after typing animation completes
@@ -741,11 +749,12 @@ export default function CreatorInteraction({
                         console.log('📱 Anonymous response completed, count now:', newCount)
 
                         // If this is the 2nd message (limit reached), blur the response and show modal
-                        if (newCount >= 2) {
+                        if (newCount === 2) {
+                          console.log('📱 Setting blur and showing modal for limit reached')
                           setLastResponseBlurred(true)
                           setTimeout(() => {
                             setShowRegistrationModal(true)
-                          }, 1000) // Show modal after a short delay
+                          }, 1500) // Show modal after typing animation completes
                         }
                       }
                     })
