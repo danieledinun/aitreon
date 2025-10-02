@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
       async start(controller) {
         try {
           // Save user message first (only for authenticated users)
-          let userMessage = null
+          let userMessage: any = null
           if (isAuthenticated) {
             const { data: savedUserMessage, error: userMessageError } = await supabase
               .from('messages')
@@ -155,7 +155,7 @@ export async function POST(request: NextRequest) {
           }
 
           // Save AI message to database (only for authenticated users)
-          let aiMessage = null
+          let aiMessage: any = null
           if (isAuthenticated) {
             const { data: savedAiMessage, error: aiMessageError } = await supabase
               .from('messages')
