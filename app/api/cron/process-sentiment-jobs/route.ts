@@ -195,15 +195,30 @@ async function detectAndScheduleInactiveConversations(now: Date): Promise<void> 
     const thirtyMinutesAgo = new Date(now.getTime() - 30 * 60 * 1000).toISOString()
 
     // Get all chat sessions that have user messages
+    // First get session IDs that have user messages
+    const { data: sessionIds, error: sessionIdsError } = await supabase
+      .from('messages')
+      .select('session_id')
+      .in('role', ['user', 'USER'])
+
+    if (sessionIdsError) {
+      console.error('❌ Error fetching session IDs:', sessionIdsError)
+      return
+    }
+
+    if (!sessionIds || sessionIds.length === 0) {
+      console.log('📋 No sessions with user messages found')
+      return
+    }
+
+    // Extract unique session IDs
+    const uniqueSessionIds = [...new Set(sessionIds.map(s => s.session_id))]
+
+    // Get chat session details for these IDs
     const { data: sessionsWithUserMessages, error: fetchError } = await supabase
       .from('chat_sessions')
       .select('id, creator_id')
-      .in('id',
-        supabase
-          .from('messages')
-          .select('session_id')
-          .in('role', ['user', 'USER'])
-      )
+      .in('id', uniqueSessionIds)
 
     if (fetchError) {
       console.error('❌ Error fetching inactive sessions:', fetchError)
