@@ -133,6 +133,15 @@ export default function CreatorInteraction({
           setAnonymousSessionId(sessionData.sessionId)
           setAnonymousMessageCount(sessionData.messageCount || 0)
           console.log('📱 Retrieved anonymous session:', sessionData)
+
+          // If user already reached limit, show modal and blur immediately
+          if (sessionData.messageCount >= 2) {
+            console.log('📱 User already reached limit on page load, showing modal')
+            setLastResponseBlurred(true)
+            setTimeout(() => {
+              setShowRegistrationModal(true)
+            }, 1000) // Small delay to let page load
+          }
         } catch (error) {
           console.error('Error parsing stored session:', error)
           // Create new session if parsing fails
@@ -1456,10 +1465,10 @@ export default function CreatorInteraction({
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), sendMessage())}
-                    placeholder={`Ask ${creator.display_name} a question`}
-                    className="w-full resize-none border border-gray-200 rounded-2xl px-4 py-3 pr-20 focus:outline-none focus:border-gray-300 text-gray-700"
+                    placeholder={(!session?.user?.id && anonymousMessageCount >= 2) ? "Sign in to continue chatting" : `Ask ${creator.display_name} a question`}
+                    className={`w-full resize-none border border-gray-200 rounded-2xl px-4 py-3 pr-20 focus:outline-none focus:border-gray-300 text-gray-700 ${(!session?.user?.id && anonymousMessageCount >= 2) ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                     rows={1}
-                    disabled={loading}
+                    disabled={loading || (!session?.user?.id && anonymousMessageCount >= 2)}
                   />
                   <div className="absolute right-3 bottom-3 flex items-center space-x-2">
                     <button className="text-gray-400 hover:text-gray-600">
@@ -1467,8 +1476,8 @@ export default function CreatorInteraction({
                     </button>
                     <Button
                       onClick={sendMessage}
-                      disabled={!input.trim() || loading}
-                      className="w-8 h-8 p-0 bg-orange-500 hover:bg-orange-600 rounded-full"
+                      disabled={!input.trim() || loading || (!session?.user?.id && anonymousMessageCount >= 2)}
+                      className="w-8 h-8 p-0 bg-orange-500 hover:bg-orange-600 rounded-full disabled:bg-gray-300 disabled:cursor-not-allowed"
                     >
                       <Send className="w-4 h-4" />
                     </Button>
@@ -1767,10 +1776,10 @@ export default function CreatorInteraction({
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), sendMessage())}
-                  placeholder="Type..."
-                  className="w-full resize-none border border-gray-200 rounded-2xl px-4 py-3 pr-20 focus:outline-none focus:border-gray-300 text-gray-700"
+                  placeholder={(!session?.user?.id && anonymousMessageCount >= 2) ? "Sign in to continue chatting" : "Type..."}
+                  className={`w-full resize-none border border-gray-200 rounded-2xl px-4 py-3 pr-20 focus:outline-none focus:border-gray-300 text-gray-700 ${(!session?.user?.id && anonymousMessageCount >= 2) ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                   rows={1}
-                  disabled={loading}
+                  disabled={loading || (!session?.user?.id && anonymousMessageCount >= 2)}
                 />
                 <div className="absolute right-3 bottom-3 flex items-center space-x-2 z-[60]">
                   <Button
@@ -1778,8 +1787,8 @@ export default function CreatorInteraction({
                       console.log('📤 Send button clicked in CHAT MODE')
                       sendMessage()
                     }}
-                    disabled={!input.trim() || loading}
-                    className="w-8 h-8 p-0 bg-orange-500 hover:bg-orange-600 rounded-full"
+                    disabled={!input.trim() || loading || (!session?.user?.id && anonymousMessageCount >= 2)}
+                    className="w-8 h-8 p-0 bg-orange-500 hover:bg-orange-600 rounded-full disabled:bg-gray-300 disabled:cursor-not-allowed"
                   >
                     <Send className="w-4 h-4" />
                   </Button>
