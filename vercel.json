@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/cron/process-sentiment-jobs",
-      "schedule": "0 12 * * *"
+      "schedule": "*/5 * * * *"
     }
   ]
 }

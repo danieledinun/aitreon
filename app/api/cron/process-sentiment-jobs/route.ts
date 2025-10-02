@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 import { sentimentAnalyzer } from '@/lib/sentiment'
+import { SentimentScheduler } from '@/lib/sentiment-scheduler'
 
 export async function GET(request: NextRequest) {
   // Verify this is a legitimate cron request
@@ -278,26 +279,15 @@ async function detectAndScheduleInactiveConversations(now: Date): Promise<void> 
           continue
         }
 
-        // Create background job for sentiment analysis
-        const { error: insertError } = await supabase
-          .from('background_jobs')
-          .insert({
-            type: 'sentiment_analysis',
-            payload: {
-              sessionId: session.id,
-              creatorId: session.creator_id
-            },
-            scheduled_for: now.toISOString(), // Process immediately
-            status: 'pending',
-            attempts: 0,
-            max_attempts: 3
-          })
-
-        if (insertError) {
-          console.error(`❌ Error creating job for session ${session.id}:`, insertError)
-        } else {
-          scheduledCount++
-          console.log(`✅ Scheduled sentiment analysis for session ${session.id}`)
+        // Schedule sentiment analysis for inactive conversation
+        try {
+          const jobId = await SentimentScheduler.scheduleInactive(session.id, session.creator_id)
+          if (jobId) {
+            scheduledCount++
+            console.log(`✅ Scheduled sentiment analysis for inactive session ${session.id}`)
+          }
+        } catch (error) {
+          console.error(`❌ Error scheduling sentiment analysis for session ${session.id}:`, error)
         }
 
       } catch (error) {

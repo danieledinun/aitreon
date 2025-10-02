@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { supabase } from '@/lib/supabase'
+import { SentimentScheduler } from '@/lib/sentiment-scheduler'
 
 // Explicit endpoint to mark a chat session as ended
 export async function POST(request: NextRequest) {
@@ -47,60 +48,34 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // Check if sentiment analysis job already exists
-    const { data: existingJob } = await supabase
-      .from('background_jobs')
-      .select('id, status')
-      .eq('type', 'sentiment_analysis')
-      .eq('payload->sessionId', sessionId)
-      .in('status', ['pending', 'processing'])
-      .single()
+    // Schedule immediate sentiment analysis using the shared scheduler
+    try {
+      const jobId = await SentimentScheduler.scheduleImmediate(
+        sessionId,
+        chatSession.creator_id,
+        `session_ended_${reason}`
+      )
 
-    if (existingJob) {
+      if (!jobId) {
+        return NextResponse.json({
+          success: true,
+          message: 'No user messages to analyze',
+          sessionId
+        })
+      }
+
       return NextResponse.json({
         success: true,
-        message: 'Sentiment analysis already scheduled',
+        message: 'Session ended and sentiment analysis scheduled for immediate processing',
         sessionId,
-        jobId: existingJob.id
+        jobId,
+        scheduledFor: new Date().toISOString()
       })
-    }
 
-    // Schedule sentiment analysis for next day at noon (when cron runs)
-    const scheduledFor = new Date()
-    scheduledFor.setDate(scheduledFor.getDate() + 1)
-    scheduledFor.setHours(12, 0, 0, 0) // Next day at 12:00 PM
-
-    const { data: job, error: jobError } = await supabase
-      .from('background_jobs')
-      .insert({
-        type: 'sentiment_analysis',
-        payload: {
-          sessionId,
-          creatorId: chatSession.creator_id,
-          endReason: reason
-        },
-        scheduled_for: scheduledFor.toISOString(),
-        status: 'pending',
-        attempts: 0,
-        max_attempts: 3
-      })
-      .select()
-      .single()
-
-    if (jobError) {
-      console.error('❌ Error scheduling sentiment analysis:', jobError)
+    } catch (error) {
+      console.error('❌ Error scheduling sentiment analysis:', error)
       return NextResponse.json({ error: 'Failed to schedule sentiment analysis' }, { status: 500 })
     }
-
-    console.log(`✅ Scheduled sentiment analysis for session ${sessionId} at ${scheduledFor.toISOString()}`)
-
-    return NextResponse.json({
-      success: true,
-      message: 'Session ended and sentiment analysis scheduled',
-      sessionId,
-      jobId: job.id,
-      scheduledFor: scheduledFor.toISOString()
-    })
 
   } catch (error) {
     console.error('❌ Error ending chat session:', error)
