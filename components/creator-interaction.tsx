@@ -40,7 +40,7 @@ interface CreatorInteractionProps {
   }
   isSubscribed: boolean
   messagesUsed: number
-  session: any
+  session: any | null
 }
 
 interface SuggestedQuestion {
@@ -78,6 +78,12 @@ export default function CreatorInteraction({
   const [messageCount, setMessageCount] = useState(49)
   const [suggestedQuestions, setSuggestedQuestions] = useState<SuggestedQuestion[]>([])
   const [questionsLoading, setQuestionsLoading] = useState(true)
+
+  // Anonymous user session tracking
+  const [anonymousSessionId, setAnonymousSessionId] = useState<string>()
+  const [anonymousMessageCount, setAnonymousMessageCount] = useState(0)
+  const [showRegistrationModal, setShowRegistrationModal] = useState(false)
+  const [lastResponseBlurred, setLastResponseBlurred] = useState(false)
   const [showAllCitations, setShowAllCitations] = useState<string | null>(null)
   const [showActionCenter, setShowActionCenter] = useState(false)
   const [likedMessages, setLikedMessages] = useState<Set<string>>(new Set())
@@ -113,6 +119,48 @@ export default function CreatorInteraction({
   useEffect(() => {
     console.log('🎤 showVoiceCall state changed to:', showVoiceCall)
   }, [showVoiceCall])
+
+  // Initialize anonymous session tracking for non-authenticated users
+  useEffect(() => {
+    if (!session?.user?.id) {
+      // Generate or retrieve anonymous session ID
+      const storageKey = `anonymous_session_${creator.id}`
+      const storedSession = localStorage.getItem(storageKey)
+
+      if (storedSession) {
+        try {
+          const sessionData = JSON.parse(storedSession)
+          setAnonymousSessionId(sessionData.sessionId)
+          setAnonymousMessageCount(sessionData.messageCount || 0)
+          console.log('📱 Retrieved anonymous session:', sessionData)
+        } catch (error) {
+          console.error('Error parsing stored session:', error)
+          // Create new session if parsing fails
+          const newSessionId = `anon_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+          setAnonymousSessionId(newSessionId)
+          localStorage.setItem(storageKey, JSON.stringify({ sessionId: newSessionId, messageCount: 0 }))
+          console.log('📱 Created new anonymous session after error:', newSessionId)
+        }
+      } else {
+        // Create new anonymous session
+        const newSessionId = `anon_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+        setAnonymousSessionId(newSessionId)
+        localStorage.setItem(storageKey, JSON.stringify({ sessionId: newSessionId, messageCount: 0 }))
+        console.log('📱 Created new anonymous session:', newSessionId)
+      }
+    }
+  }, [session?.user?.id, creator.id])
+
+  // Function to update anonymous session data
+  const updateAnonymousSession = (messageCount: number) => {
+    if (!session?.user?.id && anonymousSessionId) {
+      const storageKey = `anonymous_session_${creator.id}`
+      const sessionData = { sessionId: anonymousSessionId, messageCount }
+      localStorage.setItem(storageKey, JSON.stringify(sessionData))
+      setAnonymousMessageCount(messageCount)
+      console.log('📱 Updated anonymous session:', sessionData)
+    }
+  }
 
   // Typing animation function using ref to persist state across re-renders
   const startTypingAnimation = (content: string, citations: Citation[], messageId: string, onComplete?: () => void) => {
@@ -549,14 +597,26 @@ export default function CreatorInteraction({
   }, [input])
 
   const sendMessage = async () => {
-    console.log('🚀 sendMessage called!', { 
-      input: input, 
-      inputLength: input.trim().length, 
-      loading, 
+    console.log('🚀 sendMessage called!', {
+      input: input,
+      inputLength: input.trim().length,
+      loading,
       hasSession: !!session?.user,
-      showVoiceCall 
+      showVoiceCall,
+      anonymousMessageCount,
+      isAnonymous: !session?.user?.id
     })
-    if (!input.trim() || loading || !session?.user) return
+
+    if (!input.trim() || loading) return
+
+    // For anonymous users, check message limit (2 messages = 1 inbound + 1 outbound)
+    if (!session?.user?.id) {
+      if (anonymousMessageCount >= 2) {
+        console.log('📱 Anonymous user reached message limit')
+        setShowRegistrationModal(true)
+        return
+      }
+    }
 
     const currentInput = input
     const userMessage: ChatMessage = {
@@ -580,8 +640,17 @@ export default function CreatorInteraction({
     setMessages(prev => [...prev, userMessage, streamingMessage])
     setInput('')
     setLoading(true)
-    setMessageCount(prev => prev - 1)
-    
+
+    // Update message counting based on user type
+    if (session?.user?.id) {
+      // Authenticated user - use existing logic
+      setMessageCount(prev => prev - 1)
+    } else {
+      // Anonymous user - increment anonymous message count (user message = +1)
+      const newCount = anonymousMessageCount + 1
+      updateAnonymousSession(newCount)
+    }
+
     // Close voice call modal when user chooses to send a message instead
     if (showVoiceCall) {
       console.log('🔄 Closing voice call modal - user chose to send message instead')
@@ -600,7 +669,8 @@ export default function CreatorInteraction({
         body: JSON.stringify({
           message: currentInput,
           creatorId: creator.id,
-          sessionId
+          sessionId: session?.user?.id ? sessionId : undefined,
+          anonymousSessionId: !session?.user?.id ? anonymousSessionId : undefined
         }),
       })
 
@@ -662,6 +732,21 @@ export default function CreatorInteraction({
                             : msg
                         ))
                         pendingMessageUpdateRef.current = null
+                      }
+
+                      // Handle anonymous user response completion
+                      if (!session?.user?.id) {
+                        const newCount = anonymousMessageCount + 1
+                        updateAnonymousSession(newCount)
+                        console.log('📱 Anonymous response completed, count now:', newCount)
+
+                        // If this is the 2nd message (limit reached), blur the response and show modal
+                        if (newCount >= 2) {
+                          setLastResponseBlurred(true)
+                          setTimeout(() => {
+                            setShowRegistrationModal(true)
+                          }, 1000) // Show modal after a short delay
+                        }
                       }
                     })
                   } else if (data.type === 'message_saved') {
@@ -910,6 +995,61 @@ export default function CreatorInteraction({
     </div>
   )
 
+  // Registration Modal component
+  const RegistrationModal = ({ onClose }: { onClose: () => void }) => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl max-w-md w-full p-6 relative">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xl font-bold text-gray-900">Continue Chatting</h2>
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700 p-1"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="mb-6">
+          <p className="text-gray-600 mb-4">
+            You've reached the 2-message limit for anonymous users. Sign in to continue your conversation with {creator.display_name}!
+          </p>
+          <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-4">
+            <h3 className="font-medium text-orange-800 mb-2">Free Account Benefits:</h3>
+            <ul className="text-sm text-orange-700 space-y-1">
+              <li>• 5 messages per day per creator</li>
+              <li>• Access to all creator conversations</li>
+              <li>• Save your chat history</li>
+              <li>• Personalized experience</li>
+            </ul>
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="space-y-3">
+          <Link href="/auth/signin" className="w-full">
+            <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white">
+              Sign In to Continue
+            </Button>
+          </Link>
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={onClose}
+          >
+            Maybe Later
+          </Button>
+        </div>
+
+        {/* Footer */}
+        <div className="text-center text-sm text-gray-400 mt-4">
+          No account? Signing in will create one automatically
+        </div>
+      </div>
+    </div>
+  )
+
   // Action Center component
   const ActionCenter = ({ onClose }: { onClose: () => void }) => (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -1142,22 +1282,13 @@ export default function CreatorInteraction({
     }
   }, [messages])
 
-  if (!session?.user) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center max-w-md">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            Chat with {creator.display_name}
-          </h2>
-          <p className="text-gray-600 mb-6">
-            Sign in to start chatting with the AI version of {creator.display_name}
-          </p>
-          <Link href="/auth/signin">
-            <Button className="w-full">Sign In to Chat</Button>
-          </Link>
-        </div>
-      </div>
-    )
+  // Show message count for anonymous users
+  const getDisplayMessageCount = () => {
+    if (session?.user?.id) {
+      return messageCount // Authenticated user existing logic
+    } else {
+      return Math.max(0, 2 - anonymousMessageCount) // Anonymous user: show remaining from 2
+    }
   }
 
   // Initial state - no messages yet
@@ -1201,7 +1332,15 @@ export default function CreatorInteraction({
             </div>
             
             <div className="flex-1 flex justify-end">
-              <UserProfileDropdown />
+              {session?.user?.id ? (
+                <UserProfileDropdown />
+              ) : (
+                <Link href="/auth/signin">
+                  <Button variant="outline" size="sm">
+                    Sign In
+                  </Button>
+                </Link>
+              )}
             </div>
           </div>
         </div>
@@ -1414,7 +1553,15 @@ export default function CreatorInteraction({
           </div>
           
           <div className="flex-1 flex justify-end">
-            <UserProfileDropdown />
+            {session?.user?.id ? (
+              <UserProfileDropdown />
+            ) : (
+              <Link href="/auth/signin">
+                <Button variant="outline" size="sm">
+                  Sign In
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
       </div>
@@ -1447,7 +1594,9 @@ export default function CreatorInteraction({
                     )}
                   </div>
                   <div className="flex-1">
-                    <div className={`${message.messageType === 'voice_transcript' ? 'bg-blue-50 border border-blue-100' : 'bg-gray-100'} rounded-2xl rounded-tl-md px-4 py-3 w-full relative break-words`}>
+                    <div className={`${message.messageType === 'voice_transcript' ? 'bg-blue-50 border border-blue-100' : 'bg-gray-100'} rounded-2xl rounded-tl-md px-4 py-3 w-full relative break-words ${
+                      !session?.user?.id && lastResponseBlurred && index === messages.length - 1 && message.role === 'assistant' ? 'blur-sm' : ''
+                    }`}>
                       {message.isStreaming && !message.content ? (
                         <div className="flex space-x-1">
                           <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
@@ -1635,7 +1784,7 @@ export default function CreatorInteraction({
               </div>
             </div>
             <div className="text-center text-sm text-gray-500 mt-2">
-              {messageCount} Messages Remaining
+              {session?.user?.id ? `${messageCount} Messages Remaining` : `${getDisplayMessageCount()} Messages Remaining (Anonymous)`}
             </div>
           </div>
         </div>
@@ -1782,6 +1931,13 @@ export default function CreatorInteraction({
         <PipVideoPlayer
           video={pipVideo}
           onClose={() => setPipVideo(null)}
+        />
+      )}
+
+      {/* Registration Modal for Anonymous Users */}
+      {showRegistrationModal && (
+        <RegistrationModal
+          onClose={() => setShowRegistrationModal(false)}
         />
       )}
 

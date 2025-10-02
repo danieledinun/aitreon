@@ -37,34 +37,40 @@ export default async function CreatorPage({ params }: CreatorPageProps) {
   creator._count = { subscriptions: subscriptionCount || 0 }
 
   const session = await getServerSession(authOptions)
-  
-  // Require authentication to access creator pages
-  if (!session?.user?.id) {
-    redirect(`/auth/signin?callbackUrl=${encodeURIComponent(`/${params.username}`)}`)
+
+  // Allow anonymous users to access creator pages
+  // Only fetch user-specific data if authenticated
+  let subscription = null
+  let dailyUsage = null
+  let isSubscribed = false
+  let messagesUsed = 0
+
+  if (session?.user?.id) {
+    // Fetch user-specific data for authenticated users
+    const { data: userSubscription } = await supabase
+      .from('subscriptions')
+      .select('*')
+      .eq('user_id', session.user.id)
+      .eq('creator_id', creator.id)
+      .single()
+
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const dateStr = today.toISOString().split('T')[0]
+
+    const { data: userDailyUsage } = await supabase
+      .from('daily_usage')
+      .select('*')
+      .eq('user_id', session.user.id)
+      .eq('creator_id', creator.id)
+      .eq('date', dateStr)
+      .single()
+
+    subscription = userSubscription
+    dailyUsage = userDailyUsage
+    isSubscribed = subscription?.status === 'ACTIVE'
+    messagesUsed = dailyUsage?.message_count || 0
   }
-  
-  // Now we can safely fetch user-specific data since authentication is verified
-  const { data: subscription } = await supabase
-    .from('subscriptions')
-    .select('*')
-    .eq('user_id', session.user.id)
-    .eq('creator_id', creator.id)
-    .single()
-
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  const dateStr = today.toISOString().split('T')[0]
-
-  const { data: dailyUsage } = await supabase
-    .from('daily_usage')
-    .select('*')
-    .eq('user_id', session.user.id)
-    .eq('creator_id', creator.id)
-    .eq('date', dateStr)
-    .single()
-
-  const isSubscribed = subscription?.status === 'ACTIVE'
-  const messagesUsed = dailyUsage?.message_count || 0
 
   return (
     <CreatorInteraction
