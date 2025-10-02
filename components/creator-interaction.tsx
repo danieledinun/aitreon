@@ -718,10 +718,20 @@ export default function CreatorInteraction({
                     console.log('🔤 Full response received:', accumulatedContent)
                     console.log('🔤 Citations received:', finalCitations?.length || 0)
 
-                    // For anonymous users, check if this will be the limit-reaching response
-                    const isAnonymousLimitReached = !session?.user?.id && (anonymousMessageCount + 1) === 2
-                    if (isAnonymousLimitReached) {
-                      console.log('📱 This will be the limit-reaching response, preparing blur')
+                    // For anonymous users, handle limit immediately when response is complete
+                    if (!session?.user?.id) {
+                      const newCount = anonymousMessageCount + 1
+                      updateAnonymousSession(newCount)
+                      console.log('📱 Anonymous response completed, count now:', newCount)
+
+                      if (newCount === 2) {
+                        console.log('📱 LIMIT REACHED! Setting blur and showing modal immediately')
+                        setLastResponseBlurred(true)
+                        // Show modal immediately, don't wait for animation
+                        setTimeout(() => {
+                          setShowRegistrationModal(true)
+                        }, 500) // Short delay just to let the message appear
+                      }
                     }
 
                     // Start the robust typing animation using ref-based state management
@@ -740,22 +750,6 @@ export default function CreatorInteraction({
                             : msg
                         ))
                         pendingMessageUpdateRef.current = null
-                      }
-
-                      // Handle anonymous user response completion
-                      if (!session?.user?.id) {
-                        const newCount = anonymousMessageCount + 1
-                        updateAnonymousSession(newCount)
-                        console.log('📱 Anonymous response completed, count now:', newCount)
-
-                        // If this is the 2nd message (limit reached), blur the response and show modal
-                        if (newCount === 2) {
-                          console.log('📱 Setting blur and showing modal for limit reached')
-                          setLastResponseBlurred(true)
-                          setTimeout(() => {
-                            setShowRegistrationModal(true)
-                          }, 1500) // Show modal after typing animation completes
-                        }
                       }
                     })
                   } else if (data.type === 'message_saved') {
