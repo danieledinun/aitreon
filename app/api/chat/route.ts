@@ -4,7 +4,6 @@ import { authOptions } from '@/lib/auth'
 import { supabase } from '@/lib/supabase'
 import { RAGService } from '@/lib/rag-service'
 import { EnhancedRAGService } from '@/lib/enhanced-rag-service'
-import { conversationTracker } from '@/lib/conversation-tracker'
 import { z } from 'zod'
 
 const chatSchema = z.object({
@@ -113,8 +112,6 @@ export async function POST(request: NextRequest) {
       console.error('❌ Failed to save user message:', userMessageError)
     } else {
       console.log('✅ User message saved successfully')
-      // Track user message for conversation end detection
-      await conversationTracker.trackMessage(chatSession.id, creatorId, 'USER')
     }
 
     // Save AI response
@@ -134,8 +131,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to save response' }, { status: 500 })
     } else {
       console.log('✅ AI message saved successfully')
-      // Track AI message for conversation activity
-      await conversationTracker.trackMessage(chatSession.id, creatorId, 'ASSISTANT')
     }
 
     // Save citations separately

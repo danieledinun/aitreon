@@ -13,15 +13,19 @@ export async function GET(request: NextRequest) {
   console.log('⏰ Processing sentiment analysis cron job...')
 
   try {
-    const now = new Date().toISOString()
+    const now = new Date()
+    const nowIso = now.toISOString()
 
-    // Get pending sentiment analysis jobs that are due for processing
+    // Step 1: Detect inactive conversations and create background jobs for them
+    await detectAndScheduleInactiveConversations(now)
+
+    // Step 2: Get pending sentiment analysis jobs that are due for processing
     const { data: jobs, error: fetchError } = await supabase
       .from('background_jobs')
       .select('*')
       .eq('type', 'sentiment_analysis')
       .eq('status', 'pending')
-      .lte('scheduled_for', now)
+      .lte('scheduled_for', nowIso)
       .lt('attempts', 3) // max attempts
       .order('scheduled_for', { ascending: true })
       .limit(50) // Process up to 50 jobs per cron run
@@ -176,5 +180,119 @@ async function processSentimentAnalysisJob(payload: { sessionId: string, creator
   } catch (error) {
     console.error('❌ Error in sentiment analysis job:', error)
     return false
+  }
+}
+
+// Detect inactive conversations and schedule sentiment analysis for them
+async function detectAndScheduleInactiveConversations(now: Date): Promise<void> {
+  try {
+    console.log('🔍 Detecting inactive conversations...')
+
+    // Find chat sessions that:
+    // 1. Have at least one user message
+    // 2. Last message was more than 30 minutes ago
+    // 3. Don't already have a pending/completed sentiment analysis job
+    const thirtyMinutesAgo = new Date(now.getTime() - 30 * 60 * 1000).toISOString()
+
+    // Get all chat sessions that have user messages
+    const { data: sessionsWithUserMessages, error: fetchError } = await supabase
+      .from('chat_sessions')
+      .select('id, creator_id')
+      .in('id',
+        supabase
+          .from('messages')
+          .select('session_id')
+          .in('role', ['user', 'USER'])
+      )
+
+    if (fetchError) {
+      console.error('❌ Error fetching inactive sessions:', fetchError)
+      return
+    }
+
+    if (!sessionsWithUserMessages || sessionsWithUserMessages.length === 0) {
+      console.log('📋 No sessions with user messages found')
+      return
+    }
+
+    console.log(`📋 Found ${sessionsWithUserMessages.length} sessions with user messages`)
+
+    // For each session, check if it's inactive and needs sentiment analysis
+    let scheduledCount = 0
+    for (const session of sessionsWithUserMessages) {
+      try {
+        // Check if session is actually inactive (last message > 30 min ago)
+        const { data: lastMessage } = await supabase
+          .from('messages')
+          .select('created_at')
+          .eq('session_id', session.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single()
+
+        if (!lastMessage || lastMessage.created_at > thirtyMinutesAgo) {
+          // Session is still active or no messages found
+          continue
+        }
+
+        // Check if job already exists
+        const { data: existingJob } = await supabase
+          .from('background_jobs')
+          .select('id')
+          .eq('type', 'sentiment_analysis')
+          .eq('payload->sessionId', session.id)
+          .in('status', ['pending', 'processing', 'completed'])
+          .single()
+
+        if (existingJob) {
+          console.log(`📋 Job already exists for session ${session.id}`)
+          continue
+        }
+
+        // Check if there are any unanalyzed user messages
+        const { data: unanalyzedMessages } = await supabase
+          .from('messages')
+          .select('id')
+          .eq('session_id', session.id)
+          .in('role', ['user', 'USER'])
+          .is('sentiment', null)
+          .limit(1)
+
+        if (!unanalyzedMessages || unanalyzedMessages.length === 0) {
+          console.log(`📋 No unanalyzed messages for session ${session.id}`)
+          continue
+        }
+
+        // Create background job for sentiment analysis
+        const { error: insertError } = await supabase
+          .from('background_jobs')
+          .insert({
+            type: 'sentiment_analysis',
+            payload: {
+              sessionId: session.id,
+              creatorId: session.creator_id
+            },
+            scheduled_for: now.toISOString(), // Process immediately
+            status: 'pending',
+            attempts: 0,
+            max_attempts: 3
+          })
+
+        if (insertError) {
+          console.error(`❌ Error creating job for session ${session.id}:`, insertError)
+        } else {
+          scheduledCount++
+          console.log(`✅ Scheduled sentiment analysis for session ${session.id}`)
+        }
+
+      } catch (error) {
+        console.error(`❌ Error processing session ${session.id}:`, error)
+      }
+    }
+
+    console.log(`✅ Scheduled ${scheduledCount} new sentiment analysis jobs`)
+
+  } catch (error) {
+    console.error('❌ Error detecting inactive conversations:', error)
   }
 }
