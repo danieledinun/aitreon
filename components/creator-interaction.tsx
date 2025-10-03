@@ -1012,20 +1012,14 @@ export default function CreatorInteraction({
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl max-w-md w-full p-6 relative">
         {/* Header */}
-        <div className="flex justify-between items-center mb-6">
+        <div className="text-center mb-6">
           <h2 className="text-xl font-bold text-gray-900">Continue Chatting</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 p-1"
-          >
-            <X className="w-5 h-5" />
-          </button>
         </div>
 
         {/* Content */}
         <div className="mb-6">
-          <p className="text-gray-600 mb-4">
-            You've reached the 2-message limit for anonymous users. Sign in to continue your conversation with {creator.display_name}!
+          <p className="text-gray-600 mb-4 text-center">
+            You've reached the 2-message limit for anonymous users. Create an account to continue your conversation with {creator.display_name}!
           </p>
           <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-4">
             <h3 className="font-medium text-orange-800 mb-2">Free Account Benefits:</h3>
@@ -1042,21 +1036,19 @@ export default function CreatorInteraction({
         <div className="space-y-3">
           <Link href="/auth/signin" className="w-full">
             <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white">
-              Sign In to Continue
+              Sign In
             </Button>
           </Link>
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={onClose}
-          >
-            Maybe Later
-          </Button>
+          <Link href="/auth/signin" className="w-full">
+            <Button variant="outline" className="w-full border-orange-500 text-orange-500 hover:bg-orange-50">
+              Create Account
+            </Button>
+          </Link>
         </div>
 
         {/* Footer */}
         <div className="text-center text-sm text-gray-400 mt-4">
-          No account? Signing in will create one automatically
+          Both options will redirect to the same authentication page
         </div>
       </div>
     </div>
