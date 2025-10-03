@@ -619,8 +619,7 @@ export default function CreatorInteraction({
     if (!input.trim() || loading) return
 
     // For anonymous users, check message limit
-    // Count: user message (1) + AI response (1) = 2 total exchanges
-    // After 1 complete exchange (count = 2), block the next user message
+    // Allow 2 total messages (1 user + 1 AI response), then show modal
     if (!session?.user?.id) {
       if (anonymousMessageCount >= 2) {
         console.log('📱 Anonymous user reached message limit, current count:', anonymousMessageCount)
@@ -657,9 +656,10 @@ export default function CreatorInteraction({
       // Authenticated user - use existing logic
       setMessageCount(prev => prev - 1)
     } else {
-      // Anonymous user - increment anonymous message count (user message = +1)
+      // Anonymous user - increment by 1 for user message
       const newCount = anonymousMessageCount + 1
       updateAnonymousSession(newCount)
+      console.log('📱 Anonymous user sent message, count now:', newCount)
     }
 
     // Close voice call modal when user chooses to send a message instead
@@ -727,13 +727,13 @@ export default function CreatorInteraction({
                     console.log('🔤 Full response received:', accumulatedContent)
                     console.log('🔤 Citations received:', finalCitations?.length || 0)
 
-                    // For anonymous users, handle limit immediately when response is complete
+                    // For anonymous users, increment count for AI response and check limit
                     if (!session?.user?.id) {
                       const newCount = anonymousMessageCount + 1
                       updateAnonymousSession(newCount)
                       console.log('📱 Anonymous response completed, count now:', newCount)
 
-                      if (newCount === 2) {
+                      if (newCount >= 2) {
                         console.log('📱 LIMIT REACHED! Setting blur and showing modal immediately')
                         setLastResponseBlurred(true)
                         // Show modal immediately, don't wait for animation
