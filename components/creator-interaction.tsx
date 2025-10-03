@@ -188,11 +188,14 @@ export default function CreatorInteraction({
       originalMessageId: messageId // Store the original ID
     }
 
-    const typingSpeed = 15 // milliseconds per character
+    console.log('🔤 Starting typing animation for message:', messageId, 'Content length:', content.length)
+
+    const typingSpeed = 7 // milliseconds per character (2x faster)
 
     const typeText = () => {
       const state = typingStateRef.current
       if (!state || !state.isActive) {
+        console.log('🔤 Typing animation stopped - state inactive')
         return
       }
 
@@ -766,17 +769,29 @@ export default function CreatorInteraction({
                           setShowRegistrationModal(true)
                         }, 500) // Short delay to ensure blur is applied
                       }
+
+                      // IMPORTANT: Only set loading to false after animation completes
+                      setLoading(false)
                     })
 
-                    // Failsafe: If animation doesn't complete, still show modal after 5 seconds
+                    // Failsafe: If animation doesn't complete, still show modal and unlock after 5 seconds
                     if (shouldBlurAndShowModal) {
                       setTimeout(() => {
-                        console.log('📱 Failsafe - ensuring modal shows even if animation stuck')
+                        console.log('📱 Failsafe - ensuring modal shows and unlocking input even if animation stuck')
                         setLastResponseBlurred(true)
+                        setLoading(false) // Unlock input as failsafe
                         if (!showRegistrationModal) {
                           setShowRegistrationModal(true)
                         }
                       }, 5000)
+                    } else {
+                      // For normal responses, add failsafe to unlock input after 3 seconds
+                      setTimeout(() => {
+                        if (loading) {
+                          console.log('📱 Failsafe - unlocking input after 3 seconds')
+                          setLoading(false)
+                        }
+                      }, 3000)
                     }
                   } else if (data.type === 'message_saved') {
                     // Store the final message ID and timestamp for later application
@@ -818,7 +833,8 @@ export default function CreatorInteraction({
         return [...filtered, errorMessage]
       })
     } finally {
-      setLoading(false)
+      // Note: setLoading(false) is now handled in animation completion callback
+      // This prevents users from sending messages while typing animation is playing
     }
   }
 
