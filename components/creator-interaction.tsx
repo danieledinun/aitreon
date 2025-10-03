@@ -208,6 +208,8 @@ export default function CreatorInteraction({
         setMessages(prev => {
           console.log('🔍 Animation searching for message. Current messages:', prev.map(m => ({ id: m.id, role: m.role, isStreaming: m.isStreaming, contentLength: m.content.length })))
           console.log('🔍 Looking for message ID:', state.messageId, 'or original:', state.originalMessageId)
+          console.log('🔍 Actual message IDs in array:', prev.map(m => m.id))
+          console.log('🔍 Assistant messages:', prev.filter(m => m.role === 'assistant').map(m => ({ id: m.id, isStreaming: m.isStreaming })))
           // First try to find by ID
           let updated = prev.map(msg => {
             if (msg.id === state.messageId || msg.id === state.originalMessageId) {
