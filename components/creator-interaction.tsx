@@ -204,8 +204,8 @@ export default function CreatorInteraction({
 
       // Find the message by original ID or current ID
       const findAndUpdateMessage = (updateFn: (msg: ChatMessage) => ChatMessage) => {
+        let messageFound = false
         setMessages(prev => {
-          let messageFound = false
           const updated = prev.map(msg => {
             if (msg.id === state.messageId || msg.id === state.originalMessageId) {
               messageFound = true
@@ -219,12 +219,21 @@ export default function CreatorInteraction({
             return msg
           })
 
-          if (!messageFound) {
-            console.warn(`⚠️ Message not found with ID ${state.messageId} or ${state.originalMessageId}`)
-          }
-
           return updated
         })
+
+        // CRITICAL: Stop animation if message not found to prevent infinite loop
+        if (!messageFound) {
+          console.error(`❌ STOPPING ANIMATION - Message not found with ID ${state.messageId} or ${state.originalMessageId}`)
+          state.isActive = false
+          // Call onComplete to unlock the UI
+          if (onComplete) {
+            console.log('🔄 Calling onComplete due to message not found')
+            onComplete()
+          }
+          return false // Indicate failure
+        }
+        return true // Indicate success
       }
 
       if (isComplete) {
@@ -232,31 +241,38 @@ export default function CreatorInteraction({
         console.log('🔤 Typing animation completed!')
         state.isActive = false
 
-        findAndUpdateMessage(msg => ({
+        const success = findAndUpdateMessage(msg => ({
           ...msg,
           content: state.content, // Use full content, not currentText
           citations: state.citations,
           isStreaming: false
         }))
 
-        console.log(`🔤 Final update - isStreaming set to FALSE for message ${state.messageId}`)
+        if (success) {
+          console.log(`🔤 Final update - isStreaming set to FALSE for message ${state.messageId}`)
 
-        // Call onComplete callback if provided
-        if (onComplete) {
-          console.log('🔄 Calling onComplete callback after typing animation')
-          onComplete()
+          // Call onComplete callback if provided
+          if (onComplete) {
+            console.log('🔄 Calling onComplete callback after typing animation')
+            onComplete()
+          }
         }
 
         return // Exit early to prevent further processing
       }
 
       // Animation still in progress - render partial content
-      findAndUpdateMessage(msg => ({
+      const success = findAndUpdateMessage(msg => ({
         ...msg,
         content: currentText,
         citations: [],
         isStreaming: true
       }))
+
+      if (!success) {
+        // Animation failed - stop here
+        return
+      }
 
       state.currentIndex++
 
