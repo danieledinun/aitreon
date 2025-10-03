@@ -728,18 +728,15 @@ export default function CreatorInteraction({
                     console.log('🔤 Citations received:', finalCitations?.length || 0)
 
                     // For anonymous users, increment count for AI response and check limit
+                    let shouldBlurAndShowModal = false
                     if (!session?.user?.id) {
                       const newCount = anonymousMessageCount + 1
                       updateAnonymousSession(newCount)
                       console.log('📱 Anonymous response completed, count now:', newCount)
 
                       if (newCount === 4) {
-                        console.log('📱 LIMIT REACHED! Setting blur and showing modal after 2nd AI response')
-                        setLastResponseBlurred(true)
-                        // Show modal after response is displayed
-                        setTimeout(() => {
-                          setShowRegistrationModal(true)
-                        }, 1000) // Wait for typing animation to show response
+                        console.log('📱 LIMIT REACHED! Will blur and show modal after animation')
+                        shouldBlurAndShowModal = true
                       }
                     }
 
@@ -760,7 +757,27 @@ export default function CreatorInteraction({
                         ))
                         pendingMessageUpdateRef.current = null
                       }
+
+                      // Handle blur and modal after animation completes
+                      if (shouldBlurAndShowModal) {
+                        console.log('📱 Animation completed - applying blur and showing modal')
+                        setLastResponseBlurred(true)
+                        setTimeout(() => {
+                          setShowRegistrationModal(true)
+                        }, 500) // Short delay to ensure blur is applied
+                      }
                     })
+
+                    // Failsafe: If animation doesn't complete, still show modal after 5 seconds
+                    if (shouldBlurAndShowModal) {
+                      setTimeout(() => {
+                        console.log('📱 Failsafe - ensuring modal shows even if animation stuck')
+                        setLastResponseBlurred(true)
+                        if (!showRegistrationModal) {
+                          setShowRegistrationModal(true)
+                        }
+                      }, 5000)
+                    }
                   } else if (data.type === 'message_saved') {
                     // Store the final message ID and timestamp for later application
                     finalMessageId = data.messageId
