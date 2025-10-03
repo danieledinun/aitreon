@@ -206,6 +206,8 @@ export default function CreatorInteraction({
       const findAndUpdateMessage = (updateFn: (msg: ChatMessage) => ChatMessage) => {
         let messageFound = false
         setMessages(prev => {
+          console.log('🔍 Animation searching for message. Current messages:', prev.map(m => ({ id: m.id, role: m.role, isStreaming: m.isStreaming, contentLength: m.content.length })))
+          console.log('🔍 Looking for message ID:', state.messageId, 'or original:', state.originalMessageId)
           // First try to find by ID
           let updated = prev.map(msg => {
             if (msg.id === state.messageId || msg.id === state.originalMessageId) {
@@ -799,7 +801,13 @@ export default function CreatorInteraction({
                       // Get the current count from localStorage to ensure we have the latest value
                       const currentStoredCount = parseInt(localStorage.getItem(`anonymous_message_count_${creator.id}`) || '0')
                       console.log('🚨 DEBUG: Current stored count from localStorage:', currentStoredCount)
-                      const newCount = currentStoredCount + 1
+                      console.log('🚨 DEBUG: Current React state anonymousMessageCount:', anonymousMessageCount)
+
+                      // Use the max of localStorage and React state to handle timing issues
+                      const actualCurrentCount = Math.max(currentStoredCount, anonymousMessageCount)
+                      console.log('🚨 DEBUG: Using actual current count:', actualCurrentCount)
+
+                      const newCount = actualCurrentCount + 1
                       updateAnonymousSession(newCount)
                       console.log('🚨 DEBUG: Updated count to:', newCount, 'shouldBlur?', newCount === 4)
 
