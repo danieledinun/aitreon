@@ -619,9 +619,9 @@ export default function CreatorInteraction({
     if (!input.trim() || loading) return
 
     // For anonymous users, check message limit
-    // Allow 2 total messages (1 user + 1 AI response), then show modal
+    // Allow 2 complete exchanges (4 total messages), block 3rd user message
     if (!session?.user?.id) {
-      if (anonymousMessageCount >= 2) {
+      if (anonymousMessageCount >= 4) {
         console.log('📱 Anonymous user reached message limit, current count:', anonymousMessageCount)
         setShowRegistrationModal(true)
         return
@@ -733,13 +733,13 @@ export default function CreatorInteraction({
                       updateAnonymousSession(newCount)
                       console.log('📱 Anonymous response completed, count now:', newCount)
 
-                      if (newCount >= 2) {
-                        console.log('📱 LIMIT REACHED! Setting blur and showing modal immediately')
+                      if (newCount === 4) {
+                        console.log('📱 LIMIT REACHED! Setting blur and showing modal after 2nd AI response')
                         setLastResponseBlurred(true)
-                        // Show modal immediately, don't wait for animation
+                        // Show modal after response is displayed
                         setTimeout(() => {
                           setShowRegistrationModal(true)
-                        }, 500) // Short delay just to let the message appear
+                        }, 1000) // Wait for typing animation to show response
                       }
                     }
 
