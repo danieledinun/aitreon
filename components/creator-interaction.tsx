@@ -236,6 +236,21 @@ export default function CreatorInteraction({
             }
           }
 
+          // Final fallback: find ANY assistant message and force update it
+          if (!messageFound) {
+            console.warn(`⚠️ Still no streaming message found, trying ANY assistant message`)
+            for (let i = updated.length - 1; i >= 0; i--) {
+              const msg = updated[i]
+              if (msg.role === 'assistant') {
+                console.log(`🔄 Found ANY assistant message at index ${i}, forcing update`)
+                updated[i] = updateFn(msg)
+                state.messageId = msg.id
+                messageFound = true
+                break
+              }
+            }
+          }
+
           // Last resort: if still not found, force create the message
           if (!messageFound) {
             console.warn(`⚠️ No streaming message found, force updating last assistant message`)
@@ -775,13 +790,18 @@ export default function CreatorInteraction({
                     console.log('🔤 Citations received:', finalCitations?.length || 0)
 
                     // For anonymous users, increment count for AI response and check limit
+                    console.log('🚨 DEBUG: Entered data.type === complete block')
                     console.log('🚨 DEBUG: Checking if user is anonymous. session?.user?.id:', session?.user?.id)
+                    console.log('🚨 DEBUG: Current anonymousMessageCount before increment:', anonymousMessageCount)
                     let shouldBlurAndShowModal = false
                     if (!session?.user?.id) {
                       console.log('🚨 DEBUG: User is anonymous, processing count increment')
-                      const newCount = anonymousMessageCount + 1
+                      // Get the current count from localStorage to ensure we have the latest value
+                      const currentStoredCount = parseInt(localStorage.getItem(`anonymous_message_count_${creator.id}`) || '0')
+                      console.log('🚨 DEBUG: Current stored count from localStorage:', currentStoredCount)
+                      const newCount = currentStoredCount + 1
                       updateAnonymousSession(newCount)
-                      console.log('📱 Anonymous response completed, count now:', newCount, 'shouldBlur?', newCount === 4)
+                      console.log('🚨 DEBUG: Updated count to:', newCount, 'shouldBlur?', newCount === 4)
 
                       if (newCount === 4) {
                         console.log('🚨 LIMIT REACHED! Will blur and show modal after animation')
