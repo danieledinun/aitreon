@@ -814,7 +814,12 @@ export default function CreatorInteraction({
                       const actualCurrentCount = Math.max(currentStoredCount, anonymousMessageCount)
                       console.log('🚨 DEBUG: Using actual current count:', actualCurrentCount)
 
-                      const newCount = actualCurrentCount + 1
+                      // FORCE: Always increment from the current displayed state to avoid localStorage lag
+                      const forcedCurrentCount = anonymousMessageCount + 1
+                      console.log('🚨 DEBUG: Forced current count (anonymousMessageCount + 1):', forcedCurrentCount)
+
+                      // Use the forced count to ensure proper increment (React state + 1)
+                      const newCount = forcedCurrentCount
                       updateAnonymousSession(newCount)
                       console.log('🚨 DEBUG: Updated count to:', newCount, 'shouldBlur?', newCount === 4)
 
