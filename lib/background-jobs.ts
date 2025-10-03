@@ -121,7 +121,6 @@ export class BackgroundJobService {
         .select('*')
         .eq('status', 'pending')
         .lte('scheduled_for', now)
-        .lt('attempts', supabase.rpc('max_attempts'))
         .order('scheduled_for', { ascending: true })
         .limit(10)
 
@@ -137,6 +136,10 @@ export class BackgroundJobService {
       console.log(`📋 Processing ${jobs.length} background jobs...`)
 
       for (const job of jobs) {
+        // Skip jobs that have exceeded max attempts
+        if (job.attempts >= job.max_attempts) {
+          continue
+        }
         await this.processJob(job)
       }
     } catch (error) {
