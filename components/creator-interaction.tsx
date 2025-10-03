@@ -778,13 +778,16 @@ export default function CreatorInteraction({
                     if (!session?.user?.id) {
                       const newCount = anonymousMessageCount + 1
                       updateAnonymousSession(newCount)
-                      console.log('📱 Anonymous response completed, count now:', newCount)
+                      console.log('📱 Anonymous response completed, count now:', newCount, 'shouldBlur?', newCount === 4)
 
                       if (newCount === 4) {
-                        console.log('📱 LIMIT REACHED! Will blur and show modal after animation')
+                        console.log('🚨 LIMIT REACHED! Will blur and show modal after animation')
                         shouldBlurAndShowModal = true
+                      } else {
+                        console.log('📱 Not yet at limit. Need count=4, current=', newCount)
                       }
                     }
+                    console.log('🔧 shouldBlurAndShowModal flag set to:', shouldBlurAndShowModal)
 
                     // Start the robust typing animation using ref-based state management
                     startTypingAnimation(accumulatedContent, finalCitations, streamingMessageId, () => {
@@ -805,12 +808,16 @@ export default function CreatorInteraction({
                       }
 
                       // Handle blur and modal after animation completes
+                      console.log('🔧 Animation callback executing, shouldBlurAndShowModal:', shouldBlurAndShowModal)
                       if (shouldBlurAndShowModal) {
-                        console.log('📱 Animation completed - applying blur and showing modal')
+                        console.log('🚨 Animation completed - applying blur and showing modal')
                         setLastResponseBlurred(true)
                         setTimeout(() => {
+                          console.log('🚨 Showing registration modal now!')
                           setShowRegistrationModal(true)
                         }, 500) // Short delay to ensure blur is applied
+                      } else {
+                        console.log('📱 Animation completed but no blur/modal needed')
                       }
 
                       // IMPORTANT: Only set loading to false after animation completes
@@ -819,13 +826,12 @@ export default function CreatorInteraction({
 
                     // Failsafe: If animation doesn't complete, still show modal and unlock after 5 seconds
                     if (shouldBlurAndShowModal) {
+                      console.log('🚨 Setting up 5-second failsafe for modal')
                       setTimeout(() => {
-                        console.log('📱 Failsafe - ensuring modal shows and unlocking input even if animation stuck')
+                        console.log('🚨 FAILSAFE TRIGGERED - ensuring modal shows and unlocking input')
                         setLastResponseBlurred(true)
                         setLoading(false) // Unlock input as failsafe
-                        if (!showRegistrationModal) {
-                          setShowRegistrationModal(true)
-                        }
+                        setShowRegistrationModal(true) // Force show modal
                       }, 5000)
                     } else {
                       // For normal responses, add failsafe to unlock input after 3 seconds
