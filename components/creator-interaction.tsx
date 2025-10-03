@@ -212,7 +212,12 @@ export default function CreatorInteraction({
           console.log('🔍 Assistant messages:', prev.filter(m => m.role === 'assistant').map(m => ({ id: m.id, isStreaming: m.isStreaming })))
           // First try to find by ID
           let updated = prev.map(msg => {
+            console.log(`🔍 Checking message: ${msg.id} (role: ${msg.role}) vs search: ${state.messageId}`)
+            console.log(`🔍 ID match check: ${msg.id} === ${state.messageId} ? ${msg.id === state.messageId}`)
+            console.log(`🔍 Original ID match: ${msg.id} === ${state.originalMessageId} ? ${msg.id === state.originalMessageId}`)
+
             if (msg.id === state.messageId || msg.id === state.originalMessageId) {
+              console.log(`✅ FOUND MESSAGE BY ID! Updating message ${msg.id}`)
               messageFound = true
               // Update the messageId in state if it has changed
               if (msg.id !== state.messageId) {
