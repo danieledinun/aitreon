@@ -202,11 +202,12 @@ export default function CreatorInteraction({
       const currentText = state.content.slice(0, state.currentIndex + 1)
       const isComplete = state.currentIndex + 1 >= state.content.length
 
-      // Find the message by original ID or current ID
+      // Find the message by original ID, current ID, or fallback to last assistant message
       const findAndUpdateMessage = (updateFn: (msg: ChatMessage) => ChatMessage) => {
         let messageFound = false
         setMessages(prev => {
-          const updated = prev.map(msg => {
+          // First try to find by ID
+          let updated = prev.map(msg => {
             if (msg.id === state.messageId || msg.id === state.originalMessageId) {
               messageFound = true
               // Update the messageId in state if it has changed
@@ -219,21 +220,41 @@ export default function CreatorInteraction({
             return msg
           })
 
+          // If not found by ID, try to find the last assistant message that's streaming
+          if (!messageFound) {
+            console.warn(`⚠️ Message not found by ID ${state.messageId}, trying last streaming assistant message`)
+            for (let i = updated.length - 1; i >= 0; i--) {
+              const msg = updated[i]
+              if (msg.role === 'assistant' && msg.isStreaming) {
+                console.log(`🔄 Found streaming assistant message at index ${i}, updating it`)
+                updated[i] = updateFn(msg)
+                // Update the state to use this message's ID
+                state.messageId = msg.id
+                messageFound = true
+                break
+              }
+            }
+          }
+
+          // Last resort: if still not found, force create the message
+          if (!messageFound) {
+            console.warn(`⚠️ No streaming message found, force updating last assistant message`)
+            for (let i = updated.length - 1; i >= 0; i--) {
+              const msg = updated[i]
+              if (msg.role === 'assistant') {
+                console.log(`🔄 Force updating last assistant message at index ${i}`)
+                updated[i] = updateFn(msg)
+                state.messageId = msg.id
+                messageFound = true
+                break
+              }
+            }
+          }
+
           return updated
         })
 
-        // CRITICAL: Stop animation if message not found to prevent infinite loop
-        if (!messageFound) {
-          console.error(`❌ STOPPING ANIMATION - Message not found with ID ${state.messageId} or ${state.originalMessageId}`)
-          state.isActive = false
-          // Call onComplete to unlock the UI
-          if (onComplete) {
-            console.log('🔄 Calling onComplete due to message not found')
-            onComplete()
-          }
-          return false // Indicate failure
-        }
-        return true // Indicate success
+        return messageFound // Return whether we managed to update something
       }
 
       if (isComplete) {
@@ -270,7 +291,13 @@ export default function CreatorInteraction({
       }))
 
       if (!success) {
-        // Animation failed - stop here
+        // Animation failed - stop here and unlock UI
+        console.error(`❌ STOPPING ANIMATION - Could not find any assistant message to update`)
+        state.isActive = false
+        if (onComplete) {
+          console.log('🔄 Calling onComplete due to complete animation failure')
+          onComplete()
+        }
         return
       }
 
