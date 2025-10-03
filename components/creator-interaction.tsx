@@ -821,7 +821,9 @@ export default function CreatorInteraction({
                     console.log('🔧 shouldBlurAndShowModal flag set to:', shouldBlurAndShowModal)
 
                     // Start the robust typing animation using ref-based state management
-                    startTypingAnimation(accumulatedContent, finalCitations, streamingMessageId, () => {
+                    // Add small delay to ensure message is in React state
+                    setTimeout(() => {
+                      startTypingAnimation(accumulatedContent, finalCitations, streamingMessageId, () => {
                       // Apply pending message update after typing animation completes
                       const pendingUpdate = pendingMessageUpdateRef.current
                       if (pendingUpdate) {
@@ -854,6 +856,7 @@ export default function CreatorInteraction({
                       // IMPORTANT: Only set loading to false after animation completes
                       setLoading(false)
                     })
+                    }, 100) // 100ms delay to ensure message is in React state
 
                     // Failsafe: If animation doesn't complete, still show modal and unlock after 5 seconds
                     if (shouldBlurAndShowModal) {
