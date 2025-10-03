@@ -703,9 +703,9 @@ export default function CreatorInteraction({
       setMessageCount(prev => prev - 1)
     } else {
       // Anonymous user - increment by 1 for user message
-      const newCount = anonymousMessageCount + 1
-      updateAnonymousSession(newCount)
-      console.log('📱 Anonymous user sent message, count now:', newCount)
+      const newUserCount = anonymousMessageCount + 1
+      updateAnonymousSession(newUserCount)
+      console.log('📱 Anonymous user sent message, count now:', newUserCount)
     }
 
     // Close voice call modal when user chooses to send a message instead
@@ -767,6 +767,7 @@ export default function CreatorInteraction({
                     setSessionId(data.sessionId)
                   } else if (data.type === 'complete') {
                     // Final response with complete content and citations
+                    console.log('🚨 DEBUG: Entered data.type === complete block')
                     accumulatedContent = data.response
                     finalCitations = data.citations || []
 
@@ -774,8 +775,10 @@ export default function CreatorInteraction({
                     console.log('🔤 Citations received:', finalCitations?.length || 0)
 
                     // For anonymous users, increment count for AI response and check limit
+                    console.log('🚨 DEBUG: Checking if user is anonymous. session?.user?.id:', session?.user?.id)
                     let shouldBlurAndShowModal = false
                     if (!session?.user?.id) {
+                      console.log('🚨 DEBUG: User is anonymous, processing count increment')
                       const newCount = anonymousMessageCount + 1
                       updateAnonymousSession(newCount)
                       console.log('📱 Anonymous response completed, count now:', newCount, 'shouldBlur?', newCount === 4)
