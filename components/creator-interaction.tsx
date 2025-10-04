@@ -243,7 +243,7 @@ export default function CreatorInteraction({
 
         // Always return true since we're updating the last assistant message directly
         // setMessages is async, so messageFound will always be false here
-        console.log('🔍 SIMPLIFIED findAndUpdateMessage returning: true (forced)')
+        console.log('🔍 SIMPLIFIED findAndUpdateMessage returning: true (forced) - FIXED!')
         return true
       }
 
