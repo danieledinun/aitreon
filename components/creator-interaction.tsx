@@ -7,6 +7,7 @@ import { Send, MessageCircle, Phone, ChevronUp, MoreHorizontal, Paperclip, FileT
 import Link from 'next/link'
 import { signOut } from 'next-auth/react'
 import VoiceCallInterface from './voice-call-interface'
+import RegistrationModal from './registration-modal'
 
 interface ChatMessage {
   id: string
@@ -783,11 +784,14 @@ export default function CreatorInteraction({
                       // FORCE: Always increment from the current displayed state to avoid localStorage lag
                       const forcedCurrentCount = anonymousMessageCount + 1
                       console.log('🚨 DEBUG: Forced current count (anonymousMessageCount + 1):', forcedCurrentCount)
+                      console.log('🚨 DEBUG: anonymousMessageCount React state value:', anonymousMessageCount)
+                      console.log('🚨 DEBUG: currentStoredCount localStorage value:', currentStoredCount)
 
                       // Use the forced count to ensure proper increment (React state + 1)
                       const newCount = forcedCurrentCount
                       updateAnonymousSession(newCount)
                       console.log('🚨 DEBUG: Updated count to:', newCount, 'shouldBlur?', newCount === 4)
+                      console.log('🚨 DEBUG: Count progression should be: User1(1) → AI1(2) → User2(3) → AI2(4)')
 
                       if (newCount === 4) {
                         console.log('🚨 LIMIT REACHED! Will blur and show modal after animation')
@@ -1385,7 +1389,10 @@ export default function CreatorInteraction({
     if (session?.user?.id) {
       return messageCount // Authenticated user existing logic
     } else {
-      return Math.max(0, 2 - anonymousMessageCount) // Anonymous user: show remaining from 2
+      // Anonymous user: 2 full interactions = 4 total messages (2 user + 2 AI)
+      // Show remaining interactions, not individual messages
+      const remainingInteractions = Math.max(0, 2 - Math.floor(anonymousMessageCount / 2))
+      return remainingInteractions
     }
   }
 
