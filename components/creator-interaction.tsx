@@ -204,6 +204,7 @@ export default function CreatorInteraction({
 
       // Simplified: Just update the last assistant message directly
       const findAndUpdateMessage = (updateFn: (msg: ChatMessage) => ChatMessage) => {
+        console.log('🔍 SIMPLIFIED: findAndUpdateMessage called')
         let messageFound = false
         setMessages(prev => {
           console.log('🔍 SIMPLIFIED: Updating last assistant message directly')
@@ -211,18 +212,30 @@ export default function CreatorInteraction({
 
           // Find and update the last assistant message
           const updated = [...prev]
+          const assistantMessages = updated.filter(m => m.role === 'assistant')
+          console.log(`🔍 Found ${assistantMessages.length} assistant messages`)
+
           for (let i = updated.length - 1; i >= 0; i--) {
             const msg = updated[i]
             if (msg.role === 'assistant') {
               console.log(`✅ UPDATING last assistant message at index ${i}, ID: ${msg.id}`)
-              updated[i] = updateFn(msg)
-              messageFound = true
-              break
+              try {
+                updated[i] = updateFn(msg)
+                messageFound = true
+                console.log(`✅ Successfully updated message ${msg.id}`)
+                break
+              } catch (error) {
+                console.error('❌ Error updating message:', error)
+              }
             }
           }
 
           if (!messageFound) {
-            console.error('❌ No assistant message found to update!')
+            console.error('❌ No assistant message found to update!', {
+              totalMessages: updated.length,
+              assistantCount: assistantMessages.length,
+              messageTypes: updated.map(m => m.role)
+            })
           }
 
           return updated
