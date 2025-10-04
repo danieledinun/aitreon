@@ -278,6 +278,7 @@ export default function CreatorInteraction({
           return updated
         })
 
+        console.log('🔍 findAndUpdateMessage returning:', messageFound)
         return messageFound // Return whether we managed to update something
       }
 
