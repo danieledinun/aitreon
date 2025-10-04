@@ -793,11 +793,16 @@ export default function CreatorInteraction({
                       console.log('🚨 DEBUG: Updated count to:', newCount, 'shouldBlur?', newCount === 4)
                       console.log('🚨 DEBUG: Count progression should be: User1(1) → AI1(2) → User2(3) → AI2(4)')
 
-                      if (newCount === 4) {
+                      // Check if we've completed 2 full interactions (4 total messages: 2 user + 2 AI)
+                      // OR if the remaining interactions is 0 (2 - messageCount/2 = 0)
+                      const remainingInteractions = Math.max(0, 2 - Math.floor(newCount / 2))
+                      console.log('🚨 DEBUG: remainingInteractions calculation:', remainingInteractions, 'newCount:', newCount)
+
+                      if (newCount === 4 || remainingInteractions === 0) {
                         console.log('🚨 LIMIT REACHED! Will blur and show modal after animation')
                         shouldBlurAndShowModal = true
                       } else {
-                        console.log('📱 Not yet at limit. Need count=4, current=', newCount)
+                        console.log('📱 Not yet at limit. Need 2 interactions (4 messages), current=', newCount, 'remaining=', remainingInteractions)
                       }
                     }
                     console.log('🔧 shouldBlurAndShowModal flag set to:', shouldBlurAndShowModal)
@@ -1558,10 +1563,10 @@ export default function CreatorInteraction({
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), sendMessage())}
-                    placeholder={(!session?.user?.id && anonymousMessageCount >= 2) ? "Sign in to continue chatting" : `Ask ${creator.display_name} a question`}
-                    className={`w-full resize-none border border-gray-200 rounded-2xl px-4 py-3 pr-20 focus:outline-none focus:border-gray-300 text-gray-700 ${(!session?.user?.id && anonymousMessageCount >= 2) ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                    placeholder={(!session?.user?.id && getDisplayMessageCount() === 0) ? "Sign in to continue chatting" : `Ask ${creator.display_name} a question`}
+                    className={`w-full resize-none border border-gray-200 rounded-2xl px-4 py-3 pr-20 focus:outline-none focus:border-gray-300 text-gray-700 ${(!session?.user?.id && getDisplayMessageCount() === 0) ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                     rows={1}
-                    disabled={loading || (!session?.user?.id && anonymousMessageCount >= 2)}
+                    disabled={loading || (!session?.user?.id && getDisplayMessageCount() === 0)}
                   />
                   <div className="absolute right-3 bottom-3 flex items-center space-x-2">
                     <button className="text-gray-400 hover:text-gray-600">
@@ -1869,10 +1874,10 @@ export default function CreatorInteraction({
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), sendMessage())}
-                  placeholder={(!session?.user?.id && anonymousMessageCount >= 2) ? "Sign in to continue chatting" : "Type..."}
-                  className={`w-full resize-none border border-gray-200 rounded-2xl px-4 py-3 pr-20 focus:outline-none focus:border-gray-300 text-gray-700 ${(!session?.user?.id && anonymousMessageCount >= 2) ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                  placeholder={(!session?.user?.id && getDisplayMessageCount() === 0) ? "Sign in to continue chatting" : "Type..."}
+                  className={`w-full resize-none border border-gray-200 rounded-2xl px-4 py-3 pr-20 focus:outline-none focus:border-gray-300 text-gray-700 ${(!session?.user?.id && getDisplayMessageCount() === 0) ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                   rows={1}
-                  disabled={loading || (!session?.user?.id && anonymousMessageCount >= 2)}
+                  disabled={loading || (!session?.user?.id && getDisplayMessageCount() === 0)}
                 />
                 <div className="absolute right-3 bottom-3 flex items-center space-x-2 z-[60]">
                   <Button
