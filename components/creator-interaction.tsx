@@ -656,9 +656,9 @@ export default function CreatorInteraction({
     if (!input.trim() || loading) return
 
     // For anonymous users, check message limit
-    // Allow 2 complete exchanges (4 total messages), block 3rd user message
+    // Allow 1 complete exchange (2 total messages), block 2nd user message
     if (!session?.user?.id) {
-      if (anonymousMessageCount >= 4) {
+      if (anonymousMessageCount >= 2) {
         console.log('📱 Anonymous user reached message limit, current count:', anonymousMessageCount)
         setShowRegistrationModal(true)
         return
@@ -790,19 +790,19 @@ export default function CreatorInteraction({
                       // Use the forced count to ensure proper increment (React state + 1)
                       const newCount = forcedCurrentCount
                       updateAnonymousSession(newCount)
-                      console.log('🚨 DEBUG: Updated count to:', newCount, 'shouldBlur?', newCount === 4)
-                      console.log('🚨 DEBUG: Count progression should be: User1(1) → AI1(2) → User2(3) → AI2(4)')
+                      console.log('🚨 DEBUG: Updated count to:', newCount, 'shouldBlur?', newCount === 2)
+                      console.log('🚨 DEBUG: Count progression should be: User1(1) → AI1(2) → MODAL')
 
-                      // Check if we've completed 2 full interactions (4 total messages: 2 user + 2 AI)
-                      // OR if the remaining interactions is 0 (2 - messageCount/2 = 0)
-                      const remainingInteractions = Math.max(0, 2 - Math.floor(newCount / 2))
+                      // Check if we've completed 1 full interaction (2 total messages: 1 user + 1 AI)
+                      // OR if the remaining interactions is 0 (1 - messageCount/2 = 0)
+                      const remainingInteractions = Math.max(0, 1 - Math.floor(newCount / 2))
                       console.log('🚨 DEBUG: remainingInteractions calculation:', remainingInteractions, 'newCount:', newCount)
 
-                      if (newCount === 4 || remainingInteractions === 0) {
+                      if (newCount === 2 || remainingInteractions === 0) {
                         console.log('🚨 LIMIT REACHED! Will blur and show modal after animation')
                         shouldBlurAndShowModal = true
                       } else {
-                        console.log('📱 Not yet at limit. Need 2 interactions (4 messages), current=', newCount, 'remaining=', remainingInteractions)
+                        console.log('📱 Not yet at limit. Need 1 interaction (2 messages), current=', newCount, 'remaining=', remainingInteractions)
                       }
                     }
                     console.log('🔧 shouldBlurAndShowModal flag set to:', shouldBlurAndShowModal)
@@ -1394,9 +1394,9 @@ export default function CreatorInteraction({
     if (session?.user?.id) {
       return messageCount // Authenticated user existing logic
     } else {
-      // Anonymous user: 2 full interactions = 4 total messages (2 user + 2 AI)
+      // Anonymous user: 1 full interaction = 2 total messages (1 user + 1 AI)
       // Show remaining interactions, not individual messages
-      const remainingInteractions = Math.max(0, 2 - Math.floor(anonymousMessageCount / 2))
+      const remainingInteractions = Math.max(0, 1 - Math.floor(anonymousMessageCount / 2))
       return remainingInteractions
     }
   }
