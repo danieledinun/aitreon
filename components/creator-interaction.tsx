@@ -202,84 +202,34 @@ export default function CreatorInteraction({
       const currentText = state.content.slice(0, state.currentIndex + 1)
       const isComplete = state.currentIndex + 1 >= state.content.length
 
-      // Find the message by original ID, current ID, or fallback to last assistant message
+      // Simplified: Just update the last assistant message directly
       const findAndUpdateMessage = (updateFn: (msg: ChatMessage) => ChatMessage) => {
         let messageFound = false
         setMessages(prev => {
-          console.log('🔍 Animation searching for message. Current messages:', prev.map(m => ({ id: m.id, role: m.role, isStreaming: m.isStreaming, contentLength: m.content.length })))
-          console.log('🔍 Looking for message ID:', state.messageId, 'or original:', state.originalMessageId)
-          console.log('🔍 Actual message IDs in array:', prev.map(m => m.id))
-          console.log('🔍 Assistant messages:', prev.filter(m => m.role === 'assistant').map(m => ({ id: m.id, isStreaming: m.isStreaming })))
-          // First try to find by ID
-          let updated = prev.map(msg => {
-            console.log(`🔍 Checking message: ${msg.id} (role: ${msg.role}) vs search: ${state.messageId}`)
-            console.log(`🔍 ID match check: ${msg.id} === ${state.messageId} ? ${msg.id === state.messageId}`)
-            console.log(`🔍 Original ID match: ${msg.id} === ${state.originalMessageId} ? ${msg.id === state.originalMessageId}`)
+          console.log('🔍 SIMPLIFIED: Updating last assistant message directly')
+          console.log('🔍 Messages array:', prev.map(m => ({ id: m.id, role: m.role, contentLength: m.content.length })))
 
-            if (msg.id === state.messageId || msg.id === state.originalMessageId) {
-              console.log(`✅ FOUND MESSAGE BY ID! Updating message ${msg.id}`)
+          // Find and update the last assistant message
+          const updated = [...prev]
+          for (let i = updated.length - 1; i >= 0; i--) {
+            const msg = updated[i]
+            if (msg.role === 'assistant') {
+              console.log(`✅ UPDATING last assistant message at index ${i}, ID: ${msg.id}`)
+              updated[i] = updateFn(msg)
               messageFound = true
-              // Update the messageId in state if it has changed
-              if (msg.id !== state.messageId) {
-                console.log(`🔄 Message ID changed from ${state.messageId} to ${msg.id}`)
-                state.messageId = msg.id
-              }
-              return updateFn(msg)
-            }
-            return msg
-          })
-
-          // If not found by ID, try to find the last assistant message that's streaming
-          if (!messageFound) {
-            console.warn(`⚠️ Message not found by ID ${state.messageId}, trying last streaming assistant message`)
-            for (let i = updated.length - 1; i >= 0; i--) {
-              const msg = updated[i]
-              if (msg.role === 'assistant' && msg.isStreaming) {
-                console.log(`🔄 Found streaming assistant message at index ${i}, updating it`)
-                updated[i] = updateFn(msg)
-                // Update the state to use this message's ID
-                state.messageId = msg.id
-                messageFound = true
-                break
-              }
+              break
             }
           }
 
-          // Final fallback: find ANY assistant message and force update it
           if (!messageFound) {
-            console.warn(`⚠️ Still no streaming message found, trying ANY assistant message`)
-            for (let i = updated.length - 1; i >= 0; i--) {
-              const msg = updated[i]
-              if (msg.role === 'assistant') {
-                console.log(`🔄 Found ANY assistant message at index ${i}, forcing update`)
-                updated[i] = updateFn(msg)
-                state.messageId = msg.id
-                messageFound = true
-                break
-              }
-            }
-          }
-
-          // Last resort: if still not found, force create the message
-          if (!messageFound) {
-            console.warn(`⚠️ No streaming message found, force updating last assistant message`)
-            for (let i = updated.length - 1; i >= 0; i--) {
-              const msg = updated[i]
-              if (msg.role === 'assistant') {
-                console.log(`🔄 Force updating last assistant message at index ${i}`)
-                updated[i] = updateFn(msg)
-                state.messageId = msg.id
-                messageFound = true
-                break
-              }
-            }
+            console.error('❌ No assistant message found to update!')
           }
 
           return updated
         })
 
-        console.log('🔍 findAndUpdateMessage returning:', messageFound)
-        return messageFound // Return whether we managed to update something
+        console.log('🔍 SIMPLIFIED findAndUpdateMessage returning:', messageFound)
+        return messageFound
       }
 
       if (isComplete) {
