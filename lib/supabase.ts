@@ -1,33 +1,55 @@
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 
-if (!process.env.SUPABASE_URL) {
-  throw new Error('Missing env.SUPABASE_URL')
+// Check if we're on the client side (browser)
+const isClient = typeof window !== 'undefined'
+
+// Get environment variables with fallbacks for client/server contexts
+const supabaseUrl = isClient
+  ? process.env.NEXT_PUBLIC_SUPABASE_URL
+  : (process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL)
+
+const supabaseKey = isClient
+  ? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  : (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+
+if (!supabaseUrl) {
+  throw new Error('Missing env.SUPABASE_URL or NEXT_PUBLIC_SUPABASE_URL')
 }
-if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-  throw new Error('Missing env.SUPABASE_SERVICE_ROLE_KEY')
+if (!supabaseKey) {
+  throw new Error('Missing Supabase key (service role or anon key)')
 }
 
 // Create a single supabase client for interacting with your database
 export const supabase = createSupabaseClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY,
+  supabaseUrl,
+  supabaseKey,
   {
     auth: {
-      autoRefreshToken: false,
-      persistSession: false
+      autoRefreshToken: !isClient, // Only auto-refresh on server
+      persistSession: isClient      // Only persist session on client
     }
   }
 )
 
 // Export the createClient function for other components
 export function createClient() {
+  const isClientSide = typeof window !== 'undefined'
+
+  const url = isClientSide
+    ? process.env.NEXT_PUBLIC_SUPABASE_URL!
+    : (process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL)!
+
+  const key = isClientSide
+    ? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    : (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)!
+
   return createSupabaseClient(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    url,
+    key,
     {
       auth: {
-        autoRefreshToken: false,
-        persistSession: false
+        autoRefreshToken: !isClientSide,
+        persistSession: isClientSide
       }
     }
   )
