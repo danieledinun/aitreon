@@ -12,7 +12,7 @@ import { ArrowLeft, Users, Video, MessageCircle, Sparkles, Play, Star, Mail, Eye
 function SignInContent() {
   const searchParams = useSearchParams()
   const urlUserType = searchParams.get('userType') as 'fan' | 'creator' | null
-  const callbackUrl = searchParams.get('callbackUrl') || (urlUserType === 'fan' ? '/creator' : '/onboarding')
+  const callbackUrl = searchParams.get('callbackUrl') || (urlUserType === 'fan' ? '/dashboard' : '/onboarding')
   const [userType, setUserType] = useState<'fan' | 'creator' | null>(urlUserType)
   const [emailForm, setEmailForm] = useState<'signin' | 'signup'>('signin')
   const [showPassword, setShowPassword] = useState(false)

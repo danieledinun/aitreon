@@ -311,10 +311,19 @@ export const authOptions: NextAuthOptions = {
       console.log('🔄 Redirect callback:', { url, baseUrl })
 
       try {
-        // For sign-in flows, check onboarding status
+        // For sign-in flows, check userType parameter
         if (url.includes('/auth/signin') || url === '/auth/signin') {
-          console.log('🔄 Sign-in flow detected, redirecting to creator dashboard')
-          return `${baseUrl}/creator`
+          // Check if URL contains userType parameter
+          const urlObj = new URL(url.startsWith('http') ? url : `${baseUrl}${url}`)
+          const userType = urlObj.searchParams.get('userType')
+
+          console.log('🔄 Sign-in flow detected, userType:', userType)
+
+          if (userType === 'fan') {
+            return `${baseUrl}/dashboard`
+          } else {
+            return `${baseUrl}/onboarding`
+          }
         }
 
         // If URL starts with base URL, allow it (internal navigation)
@@ -324,13 +333,13 @@ export const authOptions: NextAuthOptions = {
           return fullUrl
         }
 
-        // Default fallback
+        // Default fallback - redirect fans to dashboard, creators to onboarding
         console.log('🔄 Default fallback to dashboard')
-        return `${baseUrl}/creator`
+        return `${baseUrl}/dashboard`
 
       } catch (error) {
         console.error('❌ Redirect callback error:', error)
-        return `${baseUrl}/creator`
+        return `${baseUrl}/dashboard`
       }
     },
     async signIn({ user, account, profile, email, credentials }) {
