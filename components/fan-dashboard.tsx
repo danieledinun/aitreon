@@ -334,13 +334,13 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
 
                 <CardFooter className="pt-0">
                   <div className="w-full flex space-x-2">
-                    <Button asChild className="flex-1">
-                      <Link href={`/${creator.display_name.toLowerCase()}`}>
+                    <Link href={`/${creator.display_name.toLowerCase()}`} className="flex-1">
+                      <Button className="w-full">
                         <MessageCircle className="h-4 w-4 mr-2" />
                         Chat Now
-                      </Link>
-                    </Button>
-                    <Button variant="outline" size="icon">
+                      </Button>
+                    </Link>
+                    <Button variant="outline" className="w-10 h-10 p-0">
                       <Heart className="h-4 w-4" />
                     </Button>
                   </div>
