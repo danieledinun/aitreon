@@ -144,7 +144,7 @@ export default function CreatorLayout({
   )
 }
 
-export const Logo = () => {
+const Logo = () => {
   return (
     <Link
       href="/creator"
@@ -158,7 +158,7 @@ export const Logo = () => {
   )
 }
 
-export const LogoIcon = () => {
+const LogoIcon = () => {
   return (
     <div className="flex items-center justify-center py-3 px-2">
       <Link
