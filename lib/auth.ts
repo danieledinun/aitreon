@@ -320,9 +320,9 @@ export const authOptions: NextAuthOptions = {
           console.log('🔄 Sign-in flow detected, userType:', userType)
 
           if (userType === 'fan') {
-            return `${baseUrl}/dashboard`
+            return `${baseUrl}/fan/dashboard`
           } else {
-            return `${baseUrl}/onboarding`
+            return `${baseUrl}/creator/onboarding`
           }
         }
 
@@ -333,13 +333,13 @@ export const authOptions: NextAuthOptions = {
           return fullUrl
         }
 
-        // Default fallback - redirect fans to dashboard, creators to onboarding
-        console.log('🔄 Default fallback to dashboard')
-        return `${baseUrl}/dashboard`
+        // Default fallback - redirect to fan dashboard (most users are fans)
+        console.log('🔄 Default fallback to fan dashboard')
+        return `${baseUrl}/fan/dashboard`
 
       } catch (error) {
         console.error('❌ Redirect callback error:', error)
-        return `${baseUrl}/dashboard`
+        return `${baseUrl}/fan/dashboard`
       }
     },
     async signIn({ user, account, profile, email, credentials }) {

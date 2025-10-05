@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import FanDashboard from '@/components/fan-dashboard'
 
-export default async function DashboardPage() {
+export default async function FanDashboardPage() {
   const session = await getServerSession(authOptions)
 
   if (!session?.user?.id) {
@@ -34,6 +34,6 @@ export default async function DashboardPage() {
     redirect('/creator')
   }
 
-  // Redirect to new segregated fan dashboard path
-  redirect('/fan/dashboard')
+  // This is a fan - show fan dashboard
+  return <FanDashboard userId={user.id} />
 }

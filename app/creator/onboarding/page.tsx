@@ -1,24 +1,14 @@
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { redirect } from 'next/navigation'
-import { headers } from 'next/headers'
 import { supabase } from '@/lib/supabase'
 import CreatorOnboardingFlow from '@/components/creator-onboarding-flow'
 
-export default async function OnboardingPage({
-  searchParams
-}: {
-  searchParams: { userType?: string; from?: string }
-}) {
+export default async function CreatorOnboardingPage() {
   const session = await getServerSession(authOptions)
 
   if (!session?.user?.id) {
-    redirect('/auth/signin')
-  }
-
-  // If this is a fan, redirect them to the fan dashboard immediately
-  if (searchParams.userType === 'fan') {
-    redirect('/fan/dashboard')
+    redirect('/auth/signin?userType=creator')
   }
 
   // Check if creator already exists using Supabase
@@ -29,7 +19,7 @@ export default async function OnboardingPage({
     .single()
 
   if (!user) {
-    redirect('/auth/signin')
+    redirect('/auth/signin?userType=creator')
   }
 
   const { data: creator } = await supabase
@@ -46,7 +36,7 @@ export default async function OnboardingPage({
     .single()
 
   if (userData?.onboarding_completed) {
-    console.log('🔄 User has completed onboarding, redirecting to dashboard')
+    console.log('🔄 User has completed onboarding, redirecting to creator dashboard')
     redirect('/creator')
   }
 
