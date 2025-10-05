@@ -516,81 +516,222 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
                   </div>
                 )}
               </TabsContent>
-              {/* Following Tab */}
-              <TabsContent value="following" className="space-y-6 mt-0">
+              {/* Following Tab - Stunning Redesign */}
+              <TabsContent value="following" className="space-y-8 mt-0">
                 {subscribed.length === 0 ? (
-                  <div className="text-center py-12">
-                    <div className="w-32 h-32 mx-auto bg-gradient-to-br from-pink-100 to-purple-100 dark:from-gray-700 dark:to-gray-600 rounded-full flex items-center justify-center mb-6">
-                      <Heart className="h-16 w-16 text-pink-500" />
+                  <div className="relative text-center py-20">
+                    {/* Animated background pattern */}
+                    <div className="absolute inset-0 overflow-hidden">
+                      <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-pink-400/20 to-purple-400/20 rounded-full blur-3xl animate-pulse"></div>
+                      <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-indigo-400/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
                     </div>
-                    <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">
-                      No Creators Followed Yet
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-400 mb-8 max-w-md mx-auto">
-                      Start following your favorite creators to see them here and get updates on their latest content
-                    </p>
-                    <Button onClick={() => setActiveTab('discover')} className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white shadow-lg">
-                      <Search className="h-4 w-4 mr-2" />
-                      Discover Creators
-                    </Button>
+
+                    <div className="relative z-10">
+                      {/* Floating hearts animation */}
+                      <div className="relative w-40 h-40 mx-auto mb-8">
+                        <div className="absolute inset-0 bg-gradient-to-br from-pink-100 via-purple-100 to-indigo-100 dark:from-gray-700 dark:to-gray-600 rounded-full flex items-center justify-center shadow-2xl">
+                          <Heart className="h-20 w-20 text-pink-500 animate-pulse" />
+                        </div>
+                        {/* Floating mini hearts */}
+                        <div className="absolute -top-2 -right-2 w-8 h-8 bg-pink-400 rounded-full flex items-center justify-center animate-bounce delay-300">
+                          <Heart className="h-4 w-4 text-white fill-current" />
+                        </div>
+                        <div className="absolute -bottom-2 -left-2 w-6 h-6 bg-purple-400 rounded-full flex items-center justify-center animate-bounce delay-700">
+                          <Heart className="h-3 w-3 text-white fill-current" />
+                        </div>
+                        <div className="absolute top-1/2 -left-4 w-5 h-5 bg-indigo-400 rounded-full flex items-center justify-center animate-bounce delay-1000">
+                          <Heart className="h-2.5 w-2.5 text-white fill-current" />
+                        </div>
+                      </div>
+
+                      <h3 className="text-3xl font-bold bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-4">
+                        Your Creator Galaxy Awaits
+                      </h3>
+                      <p className="text-lg text-gray-600 dark:text-gray-400 mb-10 max-w-lg mx-auto leading-relaxed">
+                        Start following your favorite creators to unlock exclusive content, personalized interactions, and join their vibrant communities
+                      </p>
+
+                      <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                        <Button
+                          onClick={() => setActiveTab('discover')}
+                          className="group bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 hover:from-pink-600 hover:via-purple-600 hover:to-indigo-600 text-white shadow-2xl hover:shadow-pink-500/25 transition-all duration-500 transform hover:scale-105 px-8 py-3 text-lg"
+                        >
+                          <Search className="h-5 w-5 mr-3 group-hover:animate-spin" />
+                          Discover Amazing Creators
+                        </Button>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                          ✨ Over 1,000+ creators waiting to connect
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 ) : (
-                  <div>
-                    <div className="flex items-center justify-between mb-6">
-                      <div>
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                          Following ({subscribed.length})
-                        </h2>
-                        <p className="text-gray-600 dark:text-gray-400">
-                          Creators you're following
-                        </p>
+                  <div className="space-y-8">
+                    {/* Enhanced Header Section */}
+                    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-pink-50 via-purple-50 to-indigo-50 dark:from-gray-800/50 dark:via-gray-700/50 dark:to-gray-800/50 p-8">
+                      {/* Background decoration */}
+                      <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-pink-200/30 to-purple-200/30 rounded-full blur-3xl -translate-y-32 translate-x-32"></div>
+
+                      <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div className="space-y-2">
+                          <h2 className="text-4xl font-bold bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
+                            Following ({subscribed.length})
+                          </h2>
+                          <p className="text-lg text-gray-600 dark:text-gray-400">
+                            Your curated collection of amazing creators
+                          </p>
+                          <div className="flex items-center space-x-4 text-sm text-gray-500">
+                            <div className="flex items-center space-x-2">
+                              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                              <span>{subscribed.length} Active</span>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <Star className="h-4 w-4 text-yellow-500 fill-current" />
+                              <span>Premium Content Available</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center space-x-3">
+                          <Button variant="outline" className="group hover:bg-gradient-to-r hover:from-pink-50 hover:to-purple-50 border-pink-200 hover:border-pink-300">
+                            <Filter className="h-4 w-4 mr-2 group-hover:text-pink-600" />
+                            Filter
+                          </Button>
+                          <Button variant="outline" className="group hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 border-blue-200 hover:border-blue-300">
+                            <Users className="h-4 w-4 mr-2 group-hover:text-blue-600" />
+                            Manage
+                          </Button>
+                        </div>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {subscribed.map((creator) => (
-                        <Card key={creator.id} className="group hover:shadow-xl hover:shadow-pink-500/10 transition-all duration-300 border-0 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm hover:bg-white dark:hover:bg-gray-800">
-                          <CardHeader className="pb-4">
-                            <div className="flex items-center space-x-3">
-                              <Avatar className="h-12 w-12 ring-2 ring-pink-500/30">
-                                <AvatarImage src={creator.avatar_url || creator.profile_image} />
-                                <AvatarFallback className="bg-gradient-to-br from-pink-500 to-purple-500 text-white font-semibold">
-                                  {getInitials(creator.display_name)}
-                                </AvatarFallback>
-                              </Avatar>
-                              <div className="flex-1">
-                                <CardTitle className="text-lg">{creator.display_name}</CardTitle>
-                                <p className="text-sm text-gray-500 dark:text-gray-400">Following since recently</p>
+                    {/* Enhanced Creator Cards Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                      {subscribed.map((creator, index) => (
+                        <Card key={creator.id} className="group relative overflow-hidden bg-gradient-to-br from-white via-white to-gray-50/50 dark:from-gray-800 dark:via-gray-800 dark:to-gray-900/50 border-0 shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 hover:scale-[1.02]">
+                          {/* Animated background glow */}
+                          <div className="absolute inset-0 bg-gradient-to-br from-pink-500/10 via-purple-500/10 to-indigo-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+                          {/* Floating badge */}
+                          <div className="absolute top-4 right-4 z-20">
+                            <div className="bg-gradient-to-r from-pink-500 to-purple-500 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-lg animate-pulse">
+                              Following
+                            </div>
+                          </div>
+
+                          <CardHeader className="pb-6 relative z-10">
+                            <div className="flex flex-col items-center text-center space-y-4">
+                              {/* Enhanced Avatar with rings */}
+                              <div className="relative">
+                                <div className="absolute inset-0 bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 rounded-full animate-spin-slow"></div>
+                                <div className="absolute inset-1 bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400 rounded-full animate-pulse"></div>
+                                <Avatar className="relative h-20 w-20 ring-4 ring-white dark:ring-gray-800 shadow-xl">
+                                  <AvatarImage src={creator.avatar_url || creator.profile_image} className="object-cover" />
+                                  <AvatarFallback className="bg-gradient-to-br from-pink-500 to-purple-500 text-white text-2xl font-bold">
+                                    {getInitials(creator.display_name)}
+                                  </AvatarFallback>
+                                </Avatar>
+                                {/* Online indicator */}
+                                <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 border-3 border-white dark:border-gray-800 rounded-full flex items-center justify-center">
+                                  <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                                </div>
                               </div>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleFollowCreator(creator.id)}
-                                className="text-pink-600 hover:text-pink-700 hover:bg-pink-50"
-                              >
-                                <Heart className="h-4 w-4 fill-current" />
-                              </Button>
+
+                              {/* Creator info */}
+                              <div className="space-y-2">
+                                <CardTitle className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
+                                  {creator.display_name}
+                                </CardTitle>
+                                <p className="text-sm text-pink-600 dark:text-pink-400 font-medium">
+                                  Following since {new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                                </p>
+
+                                {/* Rating stars */}
+                                <div className="flex items-center justify-center space-x-1">
+                                  {[...Array(5)].map((_, i) => (
+                                    <Star key={i} className={`h-4 w-4 ${i < 4 ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} />
+                                  ))}
+                                  <span className="text-sm text-gray-500 ml-2">4.8</span>
+                                </div>
+                              </div>
                             </div>
                           </CardHeader>
-                          <CardContent className="pb-4">
-                            <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-4">
-                              {creator.bio || 'Amazing creator sharing valuable content with the community.'}
-                            </p>
-                            <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
-                              <span>{formatSubscriberCount(creator.subscriber_count || 1000)} followers</span>
-                              <span className="text-green-600 font-medium">Active</span>
+
+                          <CardContent className="pb-6 relative z-10">
+                            <div className="space-y-4">
+                              {/* Bio */}
+                              <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-3 text-center leading-relaxed">
+                                {creator.bio || 'Amazing creator sharing valuable content and connecting with their community through AI-powered conversations.'}
+                              </p>
+
+                              {/* Stats row */}
+                              <div className="flex items-center justify-between p-3 bg-gradient-to-r from-gray-50 to-gray-100/50 dark:from-gray-700/50 dark:to-gray-800/50 rounded-xl">
+                                <div className="text-center">
+                                  <div className="text-lg font-bold text-pink-600">{formatSubscriberCount(creator.subscriber_count || 1000)}</div>
+                                  <div className="text-xs text-gray-500">Followers</div>
+                                </div>
+                                <div className="text-center">
+                                  <div className="text-lg font-bold text-purple-600">{Math.floor(Math.random() * 500) + 100}</div>
+                                  <div className="text-xs text-gray-500">Chats</div>
+                                </div>
+                                <div className="text-center">
+                                  <div className="text-lg font-bold text-green-600">Online</div>
+                                  <div className="text-xs text-gray-500">Status</div>
+                                </div>
+                              </div>
                             </div>
                           </CardContent>
-                          <CardFooter className="pt-0">
-                            <Link href={`/${creator.display_name.toLowerCase()}`} className="w-full" onClick={() => handleVisitCreator(creator.id)}>
-                              <Button className="w-full bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white">
-                                <MessageCircle className="h-4 w-4 mr-2" />
-                                Continue Chatting
-                              </Button>
-                            </Link>
+
+                          <CardFooter className="pt-0 pb-6 relative z-10">
+                            <div className="w-full space-y-3">
+                              {/* Main action button */}
+                              <Link href={`/${creator.display_name.toLowerCase()}`} className="block" onClick={() => handleVisitCreator(creator.id)}>
+                                <Button className="w-full group bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 hover:from-pink-600 hover:via-purple-600 hover:to-indigo-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 py-3">
+                                  <MessageCircle className="h-4 w-4 mr-2 group-hover:animate-bounce" />
+                                  Continue Conversation
+                                </Button>
+                              </Link>
+
+                              {/* Action buttons row */}
+                              <div className="flex space-x-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleFollowCreator(creator.id)}
+                                  className="flex-1 group hover:bg-pink-50 hover:border-pink-200 dark:hover:bg-pink-900/20"
+                                >
+                                  <Heart className="h-3 w-3 mr-1 text-pink-500 fill-current group-hover:animate-pulse" />
+                                  Following
+                                </Button>
+                                <Button variant="outline" size="sm" className="flex-1 group hover:bg-blue-50 hover:border-blue-200 dark:hover:bg-blue-900/20">
+                                  <Star className="h-3 w-3 mr-1 text-blue-500 group-hover:animate-spin" />
+                                  Premium
+                                </Button>
+                                <Button variant="outline" size="sm" className="group hover:bg-gray-50 hover:border-gray-200 dark:hover:bg-gray-700/50">
+                                  <Bookmark className="h-3 w-3 text-gray-500 group-hover:text-gray-700" />
+                                </Button>
+                              </div>
+                            </div>
                           </CardFooter>
                         </Card>
                       ))}
+                    </div>
+
+                    {/* Call to action for more creators */}
+                    <div className="text-center py-8">
+                      <div className="inline-flex items-center space-x-2 text-gray-500 dark:text-gray-400 text-sm mb-4">
+                        <div className="w-8 h-0.5 bg-gradient-to-r from-transparent to-gray-300"></div>
+                        <span>Discover more amazing creators</span>
+                        <div className="w-8 h-0.5 bg-gradient-to-l from-transparent to-gray-300"></div>
+                      </div>
+                      <Button
+                        onClick={() => setActiveTab('discover')}
+                        variant="outline"
+                        className="group hover:bg-gradient-to-r hover:from-pink-50 hover:to-purple-50 border-pink-200 hover:border-pink-300"
+                      >
+                        <Search className="h-4 w-4 mr-2 group-hover:animate-spin" />
+                        Explore More Creators
+                      </Button>
                     </div>
                   </div>
                 )}
