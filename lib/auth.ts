@@ -311,19 +311,44 @@ export const authOptions: NextAuthOptions = {
       console.log('🔄 Redirect callback:', { url, baseUrl })
 
       try {
-        // For sign-in flows, check userType parameter
-        if (url.includes('/auth/signin') || url === '/auth/signin') {
-          // Check if URL contains userType parameter
+        // Parse both the URL and any callbackUrl to check for userType
+        let userType = null
+
+        // Check for userType in the main URL
+        if (url.includes('userType=')) {
           const urlObj = new URL(url.startsWith('http') ? url : `${baseUrl}${url}`)
-          const userType = urlObj.searchParams.get('userType')
+          userType = urlObj.searchParams.get('userType')
+        }
 
-          console.log('🔄 Sign-in flow detected, userType:', userType)
-
-          if (userType === 'fan') {
-            return `${baseUrl}/fan/dashboard`
-          } else {
-            return `${baseUrl}/creator/onboarding`
+        // If no userType found, check if there's a callbackUrl with userType
+        if (!userType && url.includes('callbackUrl=')) {
+          const urlObj = new URL(url.startsWith('http') ? url : `${baseUrl}${url}`)
+          const callbackUrl = urlObj.searchParams.get('callbackUrl')
+          if (callbackUrl) {
+            try {
+              const callbackUrlObj = new URL(decodeURIComponent(callbackUrl))
+              userType = callbackUrlObj.searchParams.get('userType')
+            } catch (e) {
+              // Ignore parsing errors
+            }
           }
+        }
+
+        console.log('🔄 Detected userType:', userType)
+
+        // Route based on userType
+        if (userType === 'fan') {
+          console.log('🔄 Redirecting fan to fan dashboard')
+          return `${baseUrl}/fan/dashboard`
+        } else if (userType === 'creator') {
+          console.log('🔄 Redirecting creator to creator onboarding')
+          return `${baseUrl}/creator/onboarding`
+        }
+
+        // For sign-in flows without userType, default to fan dashboard
+        if (url.includes('/auth/signin') || url === '/auth/signin') {
+          console.log('🔄 Sign-in flow without userType - defaulting to fan dashboard')
+          return `${baseUrl}/fan/dashboard`
         }
 
         // If URL starts with base URL, allow it (internal navigation)

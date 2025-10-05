@@ -22,18 +22,7 @@ export default async function FanDashboardPage() {
     redirect('/auth/signin?userType=fan')
   }
 
-  // Check if this user is a creator (has creator profile)
-  const { data: creator } = await supabase
-    .from('creators')
-    .select('id')
-    .eq('user_id', user.id)
-    .single()
-
-  // If user is a creator, redirect to creator dashboard
-  if (creator) {
-    redirect('/creator')
-  }
-
-  // This is a fan - show fan dashboard
+  // Fan dashboard should always be accessible to any user
+  // Users can be both fans AND creators - they choose which experience to use
   return <FanDashboard userId={user.id} />
 }

@@ -22,18 +22,7 @@ export default async function DashboardPage() {
     redirect('/auth/signin?userType=fan')
   }
 
-  // Check if this user is a creator (has creator profile)
-  const { data: creator } = await supabase
-    .from('creators')
-    .select('id')
-    .eq('user_id', user.id)
-    .single()
-
-  // If user is a creator, redirect to creator dashboard
-  if (creator) {
-    redirect('/creator')
-  }
-
-  // Redirect to new segregated fan dashboard path
+  // Default dashboard route - redirect to fan dashboard for all users
+  // Users with creator profiles can access creator dashboard via direct URL
   redirect('/fan/dashboard')
 }

@@ -38,16 +38,30 @@ export default async function OnboardingPage({
     .eq('user_id', user.id)
     .single()
 
-  // Simple logic: if user has completed onboarding, redirect to dashboard
+  // Only show creator onboarding if user explicitly chose to be a creator
+  // AND hasn't completed onboarding yet
   const { data: userData } = await supabase
     .from('users')
     .select('onboarding_completed')
     .eq('email', session.user.email!)
     .single()
 
-  if (userData?.onboarding_completed) {
-    console.log('🔄 User has completed onboarding, redirecting to dashboard')
+  // If user has completed onboarding AND has a creator profile, redirect to creator dashboard
+  if (userData?.onboarding_completed && creator) {
+    console.log('🔄 Creator has completed onboarding, redirecting to creator dashboard')
     redirect('/creator')
+  }
+
+  // If user has completed onboarding but NO creator profile, they're a fan
+  if (userData?.onboarding_completed && !creator) {
+    console.log('🔄 Fan user accessing onboarding - redirecting to fan dashboard')
+    redirect('/fan/dashboard')
+  }
+
+  // If no userType specified or userType is fan, redirect to fan dashboard
+  if (!searchParams.userType || searchParams.userType === 'fan') {
+    console.log('🔄 No creator intent detected - redirecting to fan dashboard')
+    redirect('/fan/dashboard')
   }
 
   return <CreatorOnboardingFlow userId={session.user.id} />
