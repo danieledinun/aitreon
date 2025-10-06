@@ -12,6 +12,7 @@ import { Search, MessageCircle, Play, Star, Users, Video, Filter, Grid, List, He
 import { supabase } from '@/lib/supabase'
 import { useSession, signOut } from 'next-auth/react'
 import Link from 'next/link'
+import { FocusCards } from '@/components/ui/focus-cards'
 
 interface Creator {
   id: string
@@ -479,101 +480,12 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
                     </p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {filteredCreators.map((creator, index) => (
-                      <Card key={creator.id} className="group hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 border-0 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm hover:bg-white dark:hover:bg-gray-800 hover:-translate-y-1">
-                        <CardHeader className="pb-4">
-                          <div className="flex items-start justify-between">
-                            <div className="flex items-center space-x-3">
-                              <div className="relative">
-                                <Avatar className="h-14 w-14 ring-2 ring-blue-500/20 group-hover:ring-blue-500/40 transition-all">
-                                  <AvatarImage src={creator.avatar_url} />
-                                  <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white font-semibold">
-                                    {getInitials(creator.display_name)}
-                                  </AvatarFallback>
-                                </Avatar>
-                                {creator.verification_status === 'verified' && (
-                                  <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center ring-2 ring-white">
-                                    <span className="text-white text-xs">✓</span>
-                                  </div>
-                                )}
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <CardTitle className="text-lg group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-1">
-                                  {creator.display_name}
-                                </CardTitle>
-                                <div className="flex items-center space-x-2 mt-1">
-                                  <Badge variant="secondary" className="text-xs px-2 py-1">
-                                    {creator.category || 'Creator'}
-                                  </Badge>
-                                  <div className="flex items-center space-x-1">
-                                    {[...Array(5)].map((_, i) => (
-                                      <Star key={i} className={`h-3 w-3 ${i < 4 ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} />
-                                    ))}
-                                    <span className="text-xs text-gray-500 ml-1">4.8</span>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <Button variant="ghost" size="sm" className="p-2 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <Bookmark className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </CardHeader>
-
-                        <CardContent className="pb-4">
-                          <CardDescription className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-4">
-                            {creator.bio || 'Passionate creator sharing amazing content with the community.'}
-                          </CardDescription>
-
-                          <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mb-4">
-                            <div className="flex items-center space-x-1">
-                              <Users className="h-3 w-3" />
-                              <span>{formatSubscriberCount(creator.subscriber_count || 1000)} followers</span>
-                            </div>
-                            <div className="flex items-center space-x-1">
-                              <Eye className="h-3 w-3" />
-                              <span>{creator.video_count || 50} videos</span>
-                            </div>
-                            <div className="flex items-center space-x-1">
-                              <MessageCircle className="h-3 w-3" />
-                              <span>{Math.floor(Math.random() * 500) + 100} chats</span>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center justify-between mb-3">
-                            <span className="text-sm font-medium text-gray-900 dark:text-white">Response time</span>
-                            <span className="text-sm text-green-600 font-medium">Instant</span>
-                          </div>
-                        </CardContent>
-
-                        <CardFooter className="pt-0 pb-6">
-                          <div className="w-full space-y-2">
-                            <Link href={`/${creator.display_name.toLowerCase()}`} className="block" onClick={() => handleVisitCreator(creator.id)}>
-                              <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200">
-                                <MessageCircle className="h-4 w-4 mr-2" />
-                                Start Chatting
-                              </Button>
-                            </Link>
-                            <div className="flex space-x-2">
-                              <Button
-                                variant="outline"
-                                className={`flex-1 text-xs transition-all ${isCreatorFollowed(creator.id) ? 'bg-pink-50 text-pink-600 border-pink-200 hover:bg-pink-100' : 'hover:bg-pink-50 hover:text-pink-600 hover:border-pink-200'}`}
-                                onClick={() => handleFollowCreator(creator.id)}
-                              >
-                                <Heart className={`h-3 w-3 mr-1 ${isCreatorFollowed(creator.id) ? 'fill-current' : ''}`} />
-                                {isCreatorFollowed(creator.id) ? 'Following' : 'Follow'}
-                              </Button>
-                              <Button variant="outline" className="flex-1 text-xs hover:bg-yellow-50 hover:text-yellow-600 hover:border-yellow-200">
-                                <Star className="h-3 w-3 mr-1" />
-                                Subscribe
-                              </Button>
-                            </div>
-                          </div>
-                        </CardFooter>
-                      </Card>
-                    ))}
-                  </div>
+                  <FocusCards
+                    creators={filteredCreators}
+                    onStartChat={handleVisitCreator}
+                    onToggleFollow={handleFollowCreator}
+                    isFollowed={isCreatorFollowed}
+                  />
                 )}
               </TabsContent>
               {/* Following Tab - Stunning Redesign */}
