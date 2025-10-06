@@ -151,13 +151,29 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
       }
 
       if (subscriptions && subscriptions.length > 0) {
-        // Extract creator data from subscriptions
+        // Extract creator data from subscriptions and ensure proper typing
         const subscribedCreators = subscriptions
           .filter(sub => sub.creators)
-          .map(sub => ({
-            ...sub.creators,
-            subscription_date: sub.created_at
-          }))
+          .map(sub => {
+            const creator = sub.creators as any // Supabase relation typing
+            return {
+              id: creator.id,
+              display_name: creator.display_name,
+              bio: creator.bio,
+              profile_image: creator.profile_image,
+              youtube_channel_url: creator.youtube_channel_url,
+              verification_status: creator.verification_status,
+              subscriber_count: creator.subscriber_count,
+              video_count: creator.video_count,
+              is_active: creator.is_active,
+              user_id: creator.user_id,
+              username: creator.username,
+              created_at: creator.created_at,
+              category: undefined,
+              avatar_url: creator.profile_image,
+              subscription_date: sub.created_at
+            } as Creator
+          })
         setSubscribed(subscribedCreators)
       } else {
         setSubscribed([])
