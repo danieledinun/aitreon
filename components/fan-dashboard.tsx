@@ -119,24 +119,52 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
 
   const fetchSubscribed = async () => {
     try {
-      // For now, get subscribed from localStorage
-      const subscribedList = JSON.parse(localStorage.getItem('subscribedCreators') || '[]')
+      // Fetch real subscriptions from database
+      const { data: subscriptions, error } = await supabase
+        .from('subscriptions')
+        .select(`
+          creator_id,
+          created_at,
+          status,
+          creators (
+            id,
+            display_name,
+            bio,
+            profile_image,
+            youtube_channel_url,
+            verification_status,
+            subscriber_count,
+            video_count,
+            is_active,
+            user_id,
+            username,
+            created_at
+          )
+        `)
+        .eq('user_id', userId)
+        .eq('status', 'active')
 
-      if (subscribedList.length > 0 && creators.length > 0) {
-        const subscribedCreators = creators.filter(creator =>
-          subscribedList.includes(creator.id)
-        )
+      if (error) {
+        console.error('Error fetching subscriptions:', error)
+        setSubscribed([])
+        return
+      }
+
+      if (subscriptions && subscriptions.length > 0) {
+        // Extract creator data from subscriptions
+        const subscribedCreators = subscriptions
+          .filter(sub => sub.creators)
+          .map(sub => ({
+            ...sub.creators,
+            subscription_date: sub.created_at
+          }))
         setSubscribed(subscribedCreators)
       } else {
-        // Mock some subscribed data if none exists
-        const mockSubscribed = creators.slice(1, 4)
-        setSubscribed(mockSubscribed)
+        setSubscribed([])
       }
     } catch (error) {
       console.error('Error fetching subscribed creators:', error)
-      // Fallback to mock data
-      const mockSubscribed = creators.slice(1, 4)
-      setSubscribed(mockSubscribed)
+      setSubscribed([])
     }
   }
 
@@ -151,33 +179,48 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
     }
   }
 
-  const handleFollowCreator = (creatorId: string) => {
+  const handleFollowCreator = async (creatorId: string) => {
     try {
-      const subscribedList = JSON.parse(localStorage.getItem('subscribedCreators') || '[]')
-      let updatedList
+      const isFollowed = subscribed.some(creator => creator.id === creatorId)
 
-      if (subscribedList.includes(creatorId)) {
-        // Unfollow
-        updatedList = subscribedList.filter((id: string) => id !== creatorId)
+      if (isFollowed) {
+        // Unfollow - delete subscription
+        const { error } = await supabase
+          .from('subscriptions')
+          .delete()
+          .eq('user_id', userId)
+          .eq('creator_id', creatorId)
+
+        if (error) {
+          console.error('Error unfollowing creator:', error)
+          return
+        }
       } else {
-        // Follow
-        updatedList = [...subscribedList, creatorId]
+        // Follow - create subscription
+        const { error } = await supabase
+          .from('subscriptions')
+          .insert({
+            user_id: userId,
+            creator_id: creatorId,
+            status: 'active',
+            tier: 'free'
+          })
+
+        if (error) {
+          console.error('Error following creator:', error)
+          return
+        }
       }
 
-      localStorage.setItem('subscribedCreators', JSON.stringify(updatedList))
-      fetchSubscribed()
+      // Refresh the subscriptions data
+      await fetchSubscribed()
     } catch (error) {
-      console.error('Error updating subscriptions:', error)
+      console.error('Error updating subscription:', error)
     }
   }
 
   const isCreatorFollowed = (creatorId: string) => {
-    try {
-      const subscribedList = JSON.parse(localStorage.getItem('subscribedCreators') || '[]')
-      return subscribedList.includes(creatorId)
-    } catch (error) {
-      return false
-    }
+    return subscribed.some(creator => creator.id === creatorId)
   }
 
   const filterCreators = () => {
@@ -631,10 +674,6 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
                                     {getInitials(creator.display_name)}
                                   </AvatarFallback>
                                 </Avatar>
-                                {/* Online indicator */}
-                                <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 border-3 border-white dark:border-gray-800 rounded-full flex items-center justify-center">
-                                  <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-                                </div>
                               </div>
 
                               {/* Creator info */}
@@ -642,17 +681,11 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
                                 <CardTitle className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
                                   {creator.display_name}
                                 </CardTitle>
-                                <p className="text-sm text-pink-600 dark:text-pink-400 font-medium">
-                                  Following since {new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
-                                </p>
-
-                                {/* Rating stars */}
-                                <div className="flex items-center justify-center space-x-1">
-                                  {[...Array(5)].map((_, i) => (
-                                    <Star key={i} className={`h-4 w-4 ${i < 4 ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} />
-                                  ))}
-                                  <span className="text-sm text-gray-500 ml-2">4.8</span>
-                                </div>
+                                {creator.verification_status === 'verified' && (
+                                  <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                    ✓ Verified Creator
+                                  </Badge>
+                                )}
                               </div>
                             </div>
                           </CardHeader>
@@ -660,22 +693,28 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
                           <CardContent className="pb-6 relative z-10">
                             <div className="space-y-4">
                               {/* Bio */}
-                              <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-3 text-center leading-relaxed">
-                                {creator.bio || 'Amazing creator sharing valuable content and connecting with their community through AI-powered conversations.'}
-                              </p>
+                              {creator.bio && (
+                                <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-3 text-center leading-relaxed">
+                                  {creator.bio}
+                                </p>
+                              )}
 
-                              {/* Stats row */}
+                              {/* Real Stats row */}
                               <div className="flex items-center justify-between p-3 bg-gradient-to-r from-gray-50 to-gray-100/50 dark:from-gray-700/50 dark:to-gray-800/50 rounded-xl">
+                                {creator.subscriber_count && (
+                                  <div className="text-center">
+                                    <div className="text-lg font-bold text-pink-600">{formatSubscriberCount(creator.subscriber_count)}</div>
+                                    <div className="text-xs text-gray-500">Subscribers</div>
+                                  </div>
+                                )}
+                                {creator.video_count && (
+                                  <div className="text-center">
+                                    <div className="text-lg font-bold text-purple-600">{creator.video_count}</div>
+                                    <div className="text-xs text-gray-500">Videos</div>
+                                  </div>
+                                )}
                                 <div className="text-center">
-                                  <div className="text-lg font-bold text-pink-600">{formatSubscriberCount(creator.subscriber_count || 1000)}</div>
-                                  <div className="text-xs text-gray-500">Followers</div>
-                                </div>
-                                <div className="text-center">
-                                  <div className="text-lg font-bold text-purple-600">{Math.floor(Math.random() * 500) + 100}</div>
-                                  <div className="text-xs text-gray-500">Chats</div>
-                                </div>
-                                <div className="text-center">
-                                  <div className="text-lg font-bold text-green-600">Online</div>
+                                  <div className="text-lg font-bold text-blue-600">{creator.is_active ? 'Active' : 'Inactive'}</div>
                                   <div className="text-xs text-gray-500">Status</div>
                                 </div>
                               </div>
