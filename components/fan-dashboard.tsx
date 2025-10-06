@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Search, MessageCircle, Play, Star, Users, Video, Filter, Grid, List, Heart, Clock, TrendingUp, Bookmark, Eye, Crown } from 'lucide-react'
+import { Search, MessageCircle, Play, Star, Users, Video, Filter, Grid, List, Heart, Clock, TrendingUp, Bookmark, Eye, Crown, User, CreditCard, Settings, Mail, Phone, MapPin, Calendar, Shield, Edit, CheckCircle, Lock, Plus, MoreHorizontal, Check } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useSession, signOut } from 'next-auth/react'
 import Link from 'next/link'
@@ -48,6 +48,19 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('discover')
 
+  // Profile state
+  const [profileData, setProfileData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    location: '',
+    bio: '',
+    avatar_url: ''
+  })
+  const [isEditingProfile, setIsEditingProfile] = useState(false)
+  const [subscriptions, setSubscriptions] = useState<any[]>([])
+  const [paymentMethods, setPaymentMethods] = useState<any[]>([])
+
   const categories = [
     { value: 'all', label: 'All Categories' },
     { value: 'fitness', label: 'Fitness & Health' },
@@ -72,6 +85,9 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
     fetchCreators()
     fetchRecentlyVisited()
     fetchSubscribed()
+    fetchProfileData()
+    fetchSubscriptions()
+    fetchPaymentMethods()
   }, [])
 
   useEffect(() => {
@@ -183,6 +199,123 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
     } catch (error) {
       console.error('Error fetching subscribed creators:', error)
       setSubscribed([])
+    }
+  }
+
+  const fetchProfileData = async () => {
+    try {
+      if (!session?.user?.id) return
+
+      const { data: user, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', session.user.id)
+        .single()
+
+      if (error) {
+        console.error('Error fetching profile data:', error)
+        return
+      }
+
+      if (user) {
+        setProfileData({
+          name: user.name || '',
+          email: user.email || '',
+          phone: user.phone || '',
+          location: user.location || '',
+          bio: user.bio || '',
+          avatar_url: user.image || ''
+        })
+      }
+    } catch (error) {
+      console.error('Error fetching profile:', error)
+    }
+  }
+
+  const fetchSubscriptions = async () => {
+    try {
+      if (!session?.user?.id) return
+
+      const { data, error } = await supabase
+        .from('subscriptions')
+        .select(`
+          id,
+          status,
+          created_at,
+          updated_at,
+          plan_type,
+          amount,
+          creators (
+            id,
+            display_name,
+            profile_image,
+            verification_status
+          )
+        `)
+        .eq('user_id', session.user.id)
+        .order('created_at', { ascending: false })
+
+      if (error) {
+        console.error('Error fetching subscriptions:', error)
+        return
+      }
+
+      setSubscriptions(data || [])
+    } catch (error) {
+      console.error('Error fetching subscriptions:', error)
+    }
+  }
+
+  const fetchPaymentMethods = async () => {
+    try {
+      if (!session?.user?.id) return
+
+      // For demo purposes, we'll simulate payment methods
+      // In production, this would integrate with Stripe or similar
+      const mockPaymentMethods = [
+        {
+          id: '1',
+          type: 'card',
+          last_four: '4242',
+          brand: 'visa',
+          exp_month: 12,
+          exp_year: 2025,
+          is_default: true
+        }
+      ]
+
+      setPaymentMethods(mockPaymentMethods)
+    } catch (error) {
+      console.error('Error fetching payment methods:', error)
+    }
+  }
+
+  const updateProfile = async () => {
+    try {
+      if (!session?.user?.id) return
+
+      const updateData = {
+        name: profileData.name,
+        phone: profileData.phone,
+        location: profileData.location,
+        bio: profileData.bio,
+      }
+
+      const { error } = await supabase
+        .from('users')
+        .update(updateData)
+        .eq('id', session.user.id)
+
+      if (error) {
+        console.error('Error updating profile:', error)
+        return false
+      }
+
+      setIsEditingProfile(false)
+      return true
+    } catch (error) {
+      console.error('Error updating profile:', error)
+      return false
     }
   }
 
@@ -380,18 +513,22 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
         {/* Tabs Navigation */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
           <div className="flex flex-col lg:flex-row gap-6 items-start">
-            <TabsList className="grid w-full lg:w-auto grid-cols-3 lg:grid-cols-1 lg:flex-col h-auto p-1">
+            <TabsList className="grid w-full lg:w-auto grid-cols-4 lg:grid-cols-1 lg:flex-col h-auto p-1">
               <TabsTrigger value="discover" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">
                 <Search className="h-4 w-4 mr-2" />
                 Discover
               </TabsTrigger>
-              <TabsTrigger value="following" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">
-                <Heart className="h-4 w-4 mr-2" />
-                Following
+              <TabsTrigger value="subscriptions" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+                <CreditCard className="h-4 w-4 mr-2" />
+                Subscriptions
               </TabsTrigger>
               <TabsTrigger value="recent" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">
                 <Clock className="h-4 w-4 mr-2" />
                 Recent
+              </TabsTrigger>
+              <TabsTrigger value="profile" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+                <User className="h-4 w-4 mr-2" />
+                Profile
               </TabsTrigger>
             </TabsList>
 
@@ -488,218 +625,93 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
                   />
                 )}
               </TabsContent>
-              {/* Following Tab - Stunning Redesign */}
-              <TabsContent value="following" className="space-y-8 mt-0">
-                {subscribed.length === 0 ? (
-                  <div className="relative text-center py-20">
-                    {/* Animated background pattern */}
-                    <div className="absolute inset-0 overflow-hidden">
-                      <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-pink-400/20 to-purple-400/20 rounded-full blur-3xl animate-pulse"></div>
-                      <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-indigo-400/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+              {/* Subscriptions Tab - Subscription Management */}
+              <TabsContent value="subscriptions" className="space-y-8 mt-0">
+                {subscriptions.length === 0 ? (
+                  <div className="text-center py-12">
+                    <div className="w-32 h-32 mx-auto bg-gradient-to-br from-purple-100 to-pink-100 dark:from-gray-700 dark:to-gray-600 rounded-full flex items-center justify-center mb-6">
+                      <CreditCard className="h-16 w-16 text-purple-500" />
                     </div>
-
-                    <div className="relative z-10">
-                      {/* Floating hearts animation */}
-                      <div className="relative w-40 h-40 mx-auto mb-8">
-                        <div className="absolute inset-0 bg-gradient-to-br from-pink-100 via-purple-100 to-indigo-100 dark:from-gray-700 dark:to-gray-600 rounded-full flex items-center justify-center shadow-2xl">
-                          <Heart className="h-20 w-20 text-pink-500 animate-pulse" />
-                        </div>
-                        {/* Floating mini hearts */}
-                        <div className="absolute -top-2 -right-2 w-8 h-8 bg-pink-400 rounded-full flex items-center justify-center animate-bounce delay-300">
-                          <Heart className="h-4 w-4 text-white fill-current" />
-                        </div>
-                        <div className="absolute -bottom-2 -left-2 w-6 h-6 bg-purple-400 rounded-full flex items-center justify-center animate-bounce delay-700">
-                          <Heart className="h-3 w-3 text-white fill-current" />
-                        </div>
-                        <div className="absolute top-1/2 -left-4 w-5 h-5 bg-indigo-400 rounded-full flex items-center justify-center animate-bounce delay-1000">
-                          <Heart className="h-2.5 w-2.5 text-white fill-current" />
-                        </div>
-                      </div>
-
-                      <h3 className="text-3xl font-bold bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-4">
-                        Your Creator Galaxy Awaits
-                      </h3>
-                      <p className="text-lg text-gray-600 dark:text-gray-400 mb-10 max-w-lg mx-auto leading-relaxed">
-                        Start following your favorite creators to unlock exclusive content, personalized interactions, and join their vibrant communities
-                      </p>
-
-                      <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                        <Button
-                          onClick={() => setActiveTab('discover')}
-                          className="group bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 hover:from-pink-600 hover:via-purple-600 hover:to-indigo-600 text-white shadow-2xl hover:shadow-pink-500/25 transition-all duration-500 transform hover:scale-105 px-8 py-3 text-lg"
-                        >
-                          <Search className="h-5 w-5 mr-3 group-hover:animate-spin" />
-                          Discover Amazing Creators
-                        </Button>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                          ✨ Over 1,000+ creators waiting to connect
-                        </div>
-                      </div>
-                    </div>
+                    <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">
+                      No Active Subscriptions
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-400 mb-8 max-w-md mx-auto">
+                      Subscribe to creators to unlock exclusive content and support their work
+                    </p>
+                    <Button
+                      onClick={() => setActiveTab('discover')}
+                      className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg"
+                    >
+                      <Search className="h-4 w-4 mr-2" />
+                      Discover Creators
+                    </Button>
                   </div>
                 ) : (
-                  <div className="space-y-8">
-                    {/* Enhanced Header Section */}
-                    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-pink-50 via-purple-50 to-indigo-50 dark:from-gray-800/50 dark:via-gray-700/50 dark:to-gray-800/50 p-8">
-                      {/* Background decoration */}
-                      <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-pink-200/30 to-purple-200/30 rounded-full blur-3xl -translate-y-32 translate-x-32"></div>
-
-                      <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                        <div className="space-y-2">
-                          <h2 className="text-4xl font-bold bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
-                            Following ({subscribed.length})
-                          </h2>
-                          <p className="text-lg text-gray-600 dark:text-gray-400">
-                            Your curated collection of amazing creators
-                          </p>
-                          <div className="flex items-center space-x-4 text-sm text-gray-500">
-                            <div className="flex items-center space-x-2">
-                              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                              <span>{subscribed.length} Active</span>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <Star className="h-4 w-4 text-yellow-500 fill-current" />
-                              <span>Premium Content Available</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center space-x-3">
-                          <Button variant="outline" className="group hover:bg-gradient-to-r hover:from-pink-50 hover:to-purple-50 border-pink-200 hover:border-pink-300">
-                            <Filter className="h-4 w-4 mr-2 group-hover:text-pink-600" />
-                            Filter
-                          </Button>
-                          <Button variant="outline" className="group hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 border-blue-200 hover:border-blue-300">
-                            <Users className="h-4 w-4 mr-2 group-hover:text-blue-600" />
-                            Manage
-                          </Button>
-                        </div>
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between mb-6">
+                      <div>
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                          Active Subscriptions
+                        </h2>
+                        <p className="text-gray-600 dark:text-gray-400">
+                          Manage your creator subscriptions and billing
+                        </p>
                       </div>
+                      <Button variant="outline">
+                        <Settings className="h-4 w-4 mr-2" />
+                        Manage Billing
+                      </Button>
                     </div>
 
-                    {/* Enhanced Creator Cards Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-                      {subscribed.map((creator, index) => (
-                        <Card key={creator.id} className="group relative overflow-hidden bg-gradient-to-br from-white via-white to-gray-50/50 dark:from-gray-800 dark:via-gray-800 dark:to-gray-900/50 border-0 shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 hover:scale-[1.02]">
-                          {/* Animated background glow */}
-                          <div className="absolute inset-0 bg-gradient-to-br from-pink-500/10 via-purple-500/10 to-indigo-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-
-                          {/* Floating badge */}
-                          <div className="absolute top-4 right-4 z-20">
-                            <div className="bg-gradient-to-r from-pink-500 to-purple-500 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-lg animate-pulse">
-                              Following
-                            </div>
-                          </div>
-
-                          <CardHeader className="pb-6 relative z-10">
-                            <div className="flex flex-col items-center text-center space-y-4">
-                              {/* Enhanced Avatar with rings */}
-                              <div className="relative">
-                                <div className="absolute inset-0 bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 rounded-full animate-spin-slow"></div>
-                                <div className="absolute inset-1 bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400 rounded-full animate-pulse"></div>
-                                <Avatar className="relative h-20 w-20 ring-4 ring-white dark:ring-gray-800 shadow-xl">
-                                  <AvatarImage src={creator.avatar_url || creator.profile_image} className="object-cover" />
-                                  <AvatarFallback className="bg-gradient-to-br from-pink-500 to-purple-500 text-white text-2xl font-bold">
-                                    {getInitials(creator.display_name)}
+                    <div className="space-y-4">
+                      {subscriptions.map((subscription, index) => (
+                        <Card key={index} className="border-0 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm">
+                          <CardContent className="p-6">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center space-x-4">
+                                <Avatar className="h-12 w-12">
+                                  <AvatarImage src={subscription.creator?.profile_image} />
+                                  <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white font-semibold">
+                                    {getInitials(subscription.creator?.display_name || 'Unknown')}
                                   </AvatarFallback>
                                 </Avatar>
+                                <div>
+                                  <h3 className="font-semibold text-gray-900 dark:text-white">
+                                    {subscription.creator?.display_name}
+                                  </h3>
+                                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                                    {subscription.plan_type} Plan • ${subscription.amount}/month
+                                  </p>
+                                </div>
                               </div>
-
-                              {/* Creator info */}
-                              <div className="space-y-2">
-                                <CardTitle className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
-                                  {creator.display_name}
-                                </CardTitle>
-                                {creator.verification_status === 'verified' && (
-                                  <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                                    ✓ Verified Creator
-                                  </Badge>
-                                )}
+                              <div className="flex items-center space-x-4">
+                                <Badge
+                                  className={subscription.status === 'active'
+                                    ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                                    : "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200"
+                                  }
+                                >
+                                  {subscription.status}
+                                </Badge>
+                                <Button variant="ghost" size="sm">
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
                               </div>
                             </div>
-                          </CardHeader>
-
-                          <CardContent className="pb-6 relative z-10">
-                            <div className="space-y-4">
-                              {/* Bio */}
-                              {creator.bio && (
-                                <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-3 text-center leading-relaxed">
-                                  {creator.bio}
-                                </p>
-                              )}
-
-                              {/* Real Stats row */}
-                              <div className="flex items-center justify-between p-3 bg-gradient-to-r from-gray-50 to-gray-100/50 dark:from-gray-700/50 dark:to-gray-800/50 rounded-xl">
-                                {creator.subscriber_count && (
-                                  <div className="text-center">
-                                    <div className="text-lg font-bold text-pink-600">{formatSubscriberCount(creator.subscriber_count)}</div>
-                                    <div className="text-xs text-gray-500">Subscribers</div>
-                                  </div>
-                                )}
-                                {creator.video_count && (
-                                  <div className="text-center">
-                                    <div className="text-lg font-bold text-purple-600">{creator.video_count}</div>
-                                    <div className="text-xs text-gray-500">Videos</div>
-                                  </div>
-                                )}
-                                <div className="text-center">
-                                  <div className="text-lg font-bold text-blue-600">{creator.is_active ? 'Active' : 'Inactive'}</div>
-                                  <div className="text-xs text-gray-500">Status</div>
-                                </div>
+                            <div className="mt-4 flex items-center justify-between text-sm text-gray-500">
+                              <span>Next billing: {new Date(subscription.updated_at).toLocaleDateString()}</span>
+                              <div className="flex space-x-2">
+                                <Button variant="outline" size="sm">
+                                  Modify
+                                </Button>
+                                <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
+                                  Cancel
+                                </Button>
                               </div>
                             </div>
                           </CardContent>
-
-                          <CardFooter className="pt-0 pb-6 relative z-10">
-                            <div className="w-full space-y-3">
-                              {/* Main action button */}
-                              <Link href={`/${creator.display_name.toLowerCase()}`} className="block" onClick={() => handleVisitCreator(creator.id)}>
-                                <Button className="w-full group bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 hover:from-pink-600 hover:via-purple-600 hover:to-indigo-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 py-3">
-                                  <MessageCircle className="h-4 w-4 mr-2 group-hover:animate-bounce" />
-                                  Continue Conversation
-                                </Button>
-                              </Link>
-
-                              {/* Action buttons row */}
-                              <div className="flex space-x-2">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handleFollowCreator(creator.id)}
-                                  className="flex-1 group hover:bg-pink-50 hover:border-pink-200 dark:hover:bg-pink-900/20"
-                                >
-                                  <Heart className="h-3 w-3 mr-1 text-pink-500 fill-current group-hover:animate-pulse" />
-                                  Following
-                                </Button>
-                                <Button variant="outline" size="sm" className="flex-1 group hover:bg-blue-50 hover:border-blue-200 dark:hover:bg-blue-900/20">
-                                  <Star className="h-3 w-3 mr-1 text-blue-500 group-hover:animate-spin" />
-                                  Premium
-                                </Button>
-                                <Button variant="outline" size="sm" className="group hover:bg-gray-50 hover:border-gray-200 dark:hover:bg-gray-700/50">
-                                  <Bookmark className="h-3 w-3 text-gray-500 group-hover:text-gray-700" />
-                                </Button>
-                              </div>
-                            </div>
-                          </CardFooter>
                         </Card>
                       ))}
-                    </div>
-
-                    {/* Call to action for more creators */}
-                    <div className="text-center py-8">
-                      <div className="inline-flex items-center space-x-2 text-gray-500 dark:text-gray-400 text-sm mb-4">
-                        <div className="w-8 h-0.5 bg-gradient-to-r from-transparent to-gray-300"></div>
-                        <span>Discover more amazing creators</span>
-                        <div className="w-8 h-0.5 bg-gradient-to-l from-transparent to-gray-300"></div>
-                      </div>
-                      <Button
-                        onClick={() => setActiveTab('discover')}
-                        variant="outline"
-                        className="group hover:bg-gradient-to-r hover:from-pink-50 hover:to-purple-50 border-pink-200 hover:border-pink-300"
-                      >
-                        <Search className="h-4 w-4 mr-2 group-hover:animate-spin" />
-                        Explore More Creators
-                      </Button>
                     </div>
                   </div>
                 )}
@@ -794,6 +806,268 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
                     </div>
                   </div>
                 )}
+              </TabsContent>
+
+              {/* Profile Tab */}
+              <TabsContent value="profile" className="space-y-6 mt-0">
+                <div>
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                        Profile Settings
+                      </h2>
+                      <p className="text-gray-600 dark:text-gray-400">
+                        Manage your personal information and account settings
+                      </p>
+                    </div>
+                    <Button
+                      variant={isEditingProfile ? "default" : "outline"}
+                      onClick={async () => {
+                        if (isEditingProfile) {
+                          await updateProfile()
+                        } else {
+                          setIsEditingProfile(true)
+                        }
+                      }}
+                      className={isEditingProfile ? "bg-green-600 hover:bg-green-700" : ""}
+                    >
+                      {isEditingProfile ? (
+                        <>
+                          <Check className="h-4 w-4 mr-2" />
+                          Save Changes
+                        </>
+                      ) : (
+                        <>
+                          <Edit className="h-4 w-4 mr-2" />
+                          Edit Profile
+                        </>
+                      )}
+                    </Button>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Profile Information Card */}
+                    <Card className="lg:col-span-2 border-0 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm">
+                      <CardHeader>
+                        <CardTitle className="flex items-center">
+                          <User className="h-5 w-5 mr-2 text-blue-600" />
+                          Personal Information
+                        </CardTitle>
+                        <CardDescription>
+                          Update your personal details and contact information
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+                              Full Name
+                            </label>
+                            {isEditingProfile ? (
+                              <Input
+                                value={profileData.name}
+                                onChange={(e) => setProfileData(prev => ({ ...prev, name: e.target.value }))}
+                                placeholder="Enter your full name"
+                                className="w-full"
+                              />
+                            ) : (
+                              <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-md text-gray-900 dark:text-gray-100">
+                                {profileData.name || "Not set"}
+                              </div>
+                            )}
+                          </div>
+                          <div>
+                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+                              Email Address
+                            </label>
+                            <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-md text-gray-900 dark:text-gray-100">
+                              {profileData.email || "Not set"}
+                              <Badge variant="secondary" className="ml-2 text-xs">Verified</Badge>
+                            </div>
+                          </div>
+                          <div>
+                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+                              Phone Number
+                            </label>
+                            {isEditingProfile ? (
+                              <Input
+                                value={profileData.phone}
+                                onChange={(e) => setProfileData(prev => ({ ...prev, phone: e.target.value }))}
+                                placeholder="Enter your phone number"
+                                className="w-full"
+                              />
+                            ) : (
+                              <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-md text-gray-900 dark:text-gray-100">
+                                {profileData.phone || "Not set"}
+                              </div>
+                            )}
+                          </div>
+                          <div>
+                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+                              Location
+                            </label>
+                            {isEditingProfile ? (
+                              <Input
+                                value={profileData.location}
+                                onChange={(e) => setProfileData(prev => ({ ...prev, location: e.target.value }))}
+                                placeholder="Enter your location"
+                                className="w-full"
+                              />
+                            ) : (
+                              <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-md text-gray-900 dark:text-gray-100">
+                                {profileData.location || "Not set"}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+                            Bio
+                          </label>
+                          {isEditingProfile ? (
+                            <textarea
+                              value={profileData.bio}
+                              onChange={(e) => setProfileData(prev => ({ ...prev, bio: e.target.value }))}
+                              placeholder="Tell us about yourself"
+                              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 resize-none"
+                              rows={3}
+                            />
+                          ) : (
+                            <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-md text-gray-900 dark:text-gray-100 min-h-[80px]">
+                              {profileData.bio || "Not set"}
+                            </div>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Account Overview Card */}
+                    <Card className="border-0 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm">
+                      <CardHeader>
+                        <CardTitle className="flex items-center">
+                          <Shield className="h-5 w-5 mr-2 text-green-600" />
+                          Account Overview
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                          <div className="flex items-center">
+                            <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
+                            <span className="text-sm font-medium">Account Status</span>
+                          </div>
+                          <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                            Active
+                          </Badge>
+                        </div>
+                        <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                          <div className="flex items-center">
+                            <Mail className="h-5 w-5 text-blue-600 mr-2" />
+                            <span className="text-sm font-medium">Email Verified</span>
+                          </div>
+                          <CheckCircle className="h-5 w-5 text-green-600" />
+                        </div>
+                        <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                          <div className="flex items-center">
+                            <Calendar className="h-5 w-5 text-gray-600 mr-2" />
+                            <span className="text-sm font-medium">Member Since</span>
+                          </div>
+                          <span className="text-sm text-gray-600 dark:text-gray-400">
+                            {new Date().toLocaleDateString()}
+                          </span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Payment Methods Section */}
+                  <Card className="border-0 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm">
+                    <CardHeader>
+                      <CardTitle className="flex items-center">
+                        <CreditCard className="h-5 w-5 mr-2 text-purple-600" />
+                        Payment Methods
+                      </CardTitle>
+                      <CardDescription>
+                        Manage your payment methods and billing information
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      {paymentMethods.length === 0 ? (
+                        <div className="text-center py-8">
+                          <CreditCard className="h-16 w-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+                          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                            No Payment Methods
+                          </h3>
+                          <p className="text-gray-600 dark:text-gray-400 mb-4">
+                            Add a payment method to subscribe to creators
+                          </p>
+                          <Button className="bg-purple-600 hover:bg-purple-700 text-white">
+                            <Plus className="h-4 w-4 mr-2" />
+                            Add Payment Method
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          {paymentMethods.map((method, index) => (
+                            <div key={index} className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+                              <div className="flex items-center">
+                                <CreditCard className="h-5 w-5 text-gray-400 mr-3" />
+                                <div>
+                                  <div className="font-medium">•••• •••• •••• {method.last4}</div>
+                                  <div className="text-sm text-gray-500">Expires {method.expiry}</div>
+                                </div>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                {method.isDefault && (
+                                  <Badge variant="outline" className="text-xs">Default</Badge>
+                                )}
+                                <Button variant="ghost" size="sm">
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                          <Button variant="outline" className="w-full">
+                            <Plus className="h-4 w-4 mr-2" />
+                            Add Another Payment Method
+                          </Button>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  {/* Account Security Section */}
+                  <Card className="border-0 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm">
+                    <CardHeader>
+                      <CardTitle className="flex items-center">
+                        <Lock className="h-5 w-5 mr-2 text-red-600" />
+                        Account Security
+                      </CardTitle>
+                      <CardDescription>
+                        Manage your account security and privacy settings
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+                        <div>
+                          <div className="font-medium">Password</div>
+                          <div className="text-sm text-gray-500">Last updated 30 days ago</div>
+                        </div>
+                        <Button variant="outline" size="sm">
+                          Change Password
+                        </Button>
+                      </div>
+                      <div className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+                        <div>
+                          <div className="font-medium">Two-Factor Authentication</div>
+                          <div className="text-sm text-gray-500">Add an extra layer of security</div>
+                        </div>
+                        <Button variant="outline" size="sm">
+                          Enable 2FA
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
               </TabsContent>
             </div>
           </div>
