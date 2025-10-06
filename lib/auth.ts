@@ -314,40 +314,61 @@ export const authOptions: NextAuthOptions = {
         // Parse both the URL and any callbackUrl to check for userType
         let userType = null
 
-        // Check for userType in the main URL
+        // Enhanced userType detection - check multiple sources
+        const fullUrl = url.startsWith('http') ? url : `${baseUrl}${url}`
+
+        // Method 1: Check for userType in the main URL
         if (url.includes('userType=')) {
-          const urlObj = new URL(url.startsWith('http') ? url : `${baseUrl}${url}`)
+          const urlObj = new URL(fullUrl)
           userType = urlObj.searchParams.get('userType')
+          console.log('🔄 Found userType in main URL:', userType)
         }
 
-        // If no userType found, check if there's a callbackUrl with userType
+        // Method 2: Check if there's a callbackUrl with userType
         if (!userType && url.includes('callbackUrl=')) {
-          const urlObj = new URL(url.startsWith('http') ? url : `${baseUrl}${url}`)
+          const urlObj = new URL(fullUrl)
           const callbackUrl = urlObj.searchParams.get('callbackUrl')
           if (callbackUrl) {
             try {
-              const callbackUrlObj = new URL(decodeURIComponent(callbackUrl))
-              userType = callbackUrlObj.searchParams.get('userType')
+              const decodedCallbackUrl = decodeURIComponent(callbackUrl)
+              console.log('🔄 Checking callbackUrl:', decodedCallbackUrl)
+
+              if (decodedCallbackUrl.includes('userType=')) {
+                const callbackUrlObj = new URL(decodedCallbackUrl.startsWith('http') ? decodedCallbackUrl : `${baseUrl}${decodedCallbackUrl}`)
+                userType = callbackUrlObj.searchParams.get('userType')
+                console.log('🔄 Found userType in callbackUrl:', userType)
+              }
             } catch (e) {
-              // Ignore parsing errors
+              console.log('🔄 Error parsing callbackUrl:', e.message)
             }
           }
         }
 
-        console.log('🔄 Detected userType:', userType)
+        // Method 3: Check if the URL itself indicates the target path
+        if (!userType) {
+          if (url.includes('/fan/dashboard') || url.includes('userType%3Dfan')) {
+            userType = 'fan'
+            console.log('🔄 Inferred userType from URL path: fan')
+          } else if (url.includes('/creator/onboarding') || url.includes('userType%3Dcreator')) {
+            userType = 'creator'
+            console.log('🔄 Inferred userType from URL path: creator')
+          }
+        }
 
-        // Route based on userType
+        console.log('🔄 Final detected userType:', userType)
+
+        // EXPLICIT routing based on userType with logging
         if (userType === 'fan') {
-          console.log('🔄 Redirecting fan to fan dashboard')
+          console.log('🔄 ✅ ROUTING FAN TO: /fan/dashboard')
           return `${baseUrl}/fan/dashboard`
         } else if (userType === 'creator') {
-          console.log('🔄 Redirecting creator to creator onboarding')
+          console.log('🔄 ✅ ROUTING CREATOR TO: /creator/onboarding')
           return `${baseUrl}/creator/onboarding`
         }
 
-        // For sign-in flows without userType, default to fan dashboard
+        // For sign-in flows without userType, FORCE default to fan dashboard
         if (url.includes('/auth/signin') || url === '/auth/signin') {
-          console.log('🔄 Sign-in flow without userType - defaulting to fan dashboard')
+          console.log('🔄 ✅ SIGN-IN WITHOUT USERTYPE - FORCING FAN DASHBOARD')
           return `${baseUrl}/fan/dashboard`
         }
 
@@ -358,12 +379,13 @@ export const authOptions: NextAuthOptions = {
           return fullUrl
         }
 
-        // Default fallback - redirect to fan dashboard (most users are fans)
-        console.log('🔄 Default fallback to fan dashboard')
+        // ABSOLUTE fallback - ALWAYS redirect to fan dashboard
+        console.log('🔄 ✅ ABSOLUTE FALLBACK - FORCING FAN DASHBOARD')
         return `${baseUrl}/fan/dashboard`
 
       } catch (error) {
         console.error('❌ Redirect callback error:', error)
+        console.log('🔄 ✅ ERROR FALLBACK - FORCING FAN DASHBOARD')
         return `${baseUrl}/fan/dashboard`
       }
     },
