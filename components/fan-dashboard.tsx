@@ -233,24 +233,24 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
 
       if (user) {
         setProfileData({
-          name: user.name || session.user.name || '',
-          email: user.email || session.user.email || '',
+          name: user.name || session?.user?.name || '',
+          email: user.email || session?.user?.email || '',
           phone: user.phone || '',
           location: user.location || '',
           bio: user.bio || '',
-          avatar_url: user.image || session.user.image || ''
+          avatar_url: user.image || session?.user?.image || ''
         })
       }
     } catch (error) {
       console.error('Error fetching profile:', error)
       // Use session data as fallback on error
       setProfileData({
-        name: session.user.name || '',
-        email: session.user.email || '',
+        name: session?.user?.name || '',
+        email: session?.user?.email || '',
         phone: '',
         location: '',
         bio: '',
-        avatar_url: session.user.image || ''
+        avatar_url: session?.user?.image || ''
       })
     }
   }
