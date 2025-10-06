@@ -339,7 +339,7 @@ export const authOptions: NextAuthOptions = {
                 console.log('🔄 Found userType in callbackUrl:', userType)
               }
             } catch (e) {
-              console.log('🔄 Error parsing callbackUrl:', e.message)
+              console.log('🔄 Error parsing callbackUrl:', e instanceof Error ? e.message : String(e))
             }
           }
         }
