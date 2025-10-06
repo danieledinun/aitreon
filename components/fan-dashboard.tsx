@@ -84,11 +84,16 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
   useEffect(() => {
     fetchCreators()
     fetchRecentlyVisited()
-    fetchSubscribed()
-    fetchProfileData()
-    fetchSubscriptions()
-    fetchPaymentMethods()
   }, [])
+
+  useEffect(() => {
+    if (session?.user?.id) {
+      fetchSubscribed()
+      fetchProfileData()
+      fetchSubscriptions()
+      fetchPaymentMethods()
+    }
+  }, [session?.user?.id])
 
   useEffect(() => {
     filterCreators()
@@ -214,21 +219,39 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
 
       if (error) {
         console.error('Error fetching profile data:', error)
+        // Use session data as fallback if database fetch fails
+        setProfileData({
+          name: session.user.name || '',
+          email: session.user.email || '',
+          phone: '',
+          location: '',
+          bio: '',
+          avatar_url: session.user.image || ''
+        })
         return
       }
 
       if (user) {
         setProfileData({
-          name: user.name || '',
-          email: user.email || '',
+          name: user.name || session.user.name || '',
+          email: user.email || session.user.email || '',
           phone: user.phone || '',
           location: user.location || '',
           bio: user.bio || '',
-          avatar_url: user.image || ''
+          avatar_url: user.image || session.user.image || ''
         })
       }
     } catch (error) {
       console.error('Error fetching profile:', error)
+      // Use session data as fallback on error
+      setProfileData({
+        name: session.user.name || '',
+        email: session.user.email || '',
+        phone: '',
+        location: '',
+        bio: '',
+        avatar_url: session.user.image || ''
+      })
     }
   }
 
