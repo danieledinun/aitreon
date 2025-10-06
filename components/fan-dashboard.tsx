@@ -28,6 +28,7 @@ interface Creator {
   profile_image?: string
   username?: string
   is_active?: boolean
+  subscription_date?: string
 }
 
 interface FanDashboardProps {
