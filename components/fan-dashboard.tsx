@@ -159,13 +159,15 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
 
   const fetchSubscribed = async () => {
     try {
-      // Fetch real subscriptions from database
+      console.log('🔄 Fetching subscriptions for user:', userId)
+      // Fetch real subscriptions from database using user_subscriptions table
       const { data: subscriptions, error } = await supabase
-        .from('subscriptions')
+        .from('user_subscriptions')
         .select(`
           creator_id,
           created_at,
-          status,
+          subscription_type,
+          is_active,
           creators (
             id,
             display_name,
@@ -174,7 +176,6 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
             youtube_channel_url,
             verification_status,
             subscriber_count,
-            video_count,
             is_active,
             user_id,
             username,
@@ -182,13 +183,15 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
           )
         `)
         .eq('user_id', userId)
-        .eq('status', 'active')
+        .eq('is_active', true)
 
       if (error) {
-        console.error('Error fetching subscriptions:', error)
+        console.error('❌ Error fetching subscriptions:', error)
         setSubscribed([])
         return
       }
+
+      console.log('✅ Subscriptions fetched:', subscriptions?.length || 0)
 
       if (subscriptions && subscriptions.length > 0) {
         // Extract creator data from subscriptions and ensure proper typing
@@ -204,7 +207,7 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
               youtube_channel_url: creator.youtube_channel_url,
               verification_status: creator.verification_status,
               subscriber_count: creator.subscriber_count,
-              video_count: creator.video_count,
+              conversation_count: 0, // Will be populated by fetchCreators
               is_active: creator.is_active,
               user_id: creator.user_id,
               username: creator.username,
@@ -215,11 +218,13 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
             } as Creator
           })
         setSubscribed(subscribedCreators)
+        console.log('✅ Subscribed creators set:', subscribedCreators.length)
       } else {
         setSubscribed([])
+        console.log('ℹ️ No subscriptions found')
       }
     } catch (error) {
-      console.error('Error fetching subscribed creators:', error)
+      console.error('❌ Error fetching subscribed creators:', error)
       setSubscribed([])
     }
   }
@@ -372,41 +377,48 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
 
   const handleFollowCreator = async (creatorId: string) => {
     try {
+      console.log('🔄 Toggle follow for creator:', creatorId, 'user:', userId)
       const isFollowed = subscribed.some(creator => creator.id === creatorId)
+      console.log('Current follow status:', isFollowed)
 
       if (isFollowed) {
         // Unfollow - delete subscription
+        console.log('🔄 Unfollowing creator...')
         const { error } = await supabase
-          .from('subscriptions')
+          .from('user_subscriptions')
           .delete()
           .eq('user_id', userId)
           .eq('creator_id', creatorId)
 
         if (error) {
-          console.error('Error unfollowing creator:', error)
+          console.error('❌ Error unfollowing creator:', error)
           return
         }
+        console.log('✅ Successfully unfollowed creator')
       } else {
         // Follow - create subscription
+        console.log('🔄 Following creator...')
         const { error } = await supabase
-          .from('subscriptions')
+          .from('user_subscriptions')
           .insert({
             user_id: userId,
             creator_id: creatorId,
-            status: 'active',
-            tier: 'free'
+            subscription_type: 'follow',
+            is_active: true
           })
 
         if (error) {
-          console.error('Error following creator:', error)
+          console.error('❌ Error following creator:', error)
           return
         }
+        console.log('✅ Successfully followed creator')
       }
 
       // Refresh the subscriptions data
+      console.log('🔄 Refreshing subscriptions...')
       await fetchSubscribed()
     } catch (error) {
-      console.error('Error updating subscription:', error)
+      console.error('❌ Error updating subscription:', error)
     }
   }
 
