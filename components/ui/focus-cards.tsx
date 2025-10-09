@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
-import { MessageCircle, Users, Video, Heart, CheckCircle } from 'lucide-react'
+import { MessageCircle, Users, Heart, CheckCircle } from 'lucide-react'
 import Link from 'next/link'
 
 interface Creator {
@@ -18,7 +18,7 @@ interface Creator {
   youtube_channel_url?: string
   verification_status?: string
   subscriber_count?: number
-  video_count?: number
+  conversation_count?: number
   category?: string
   username?: string
   is_active?: boolean
@@ -135,12 +135,12 @@ function CreatorCard({
 
             <div className="text-center p-3 rounded-xl bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-100 dark:border-purple-800/50">
               <div className="flex items-center justify-center mb-1">
-                <Video className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                <MessageCircle className="h-4 w-4 text-purple-600 dark:text-purple-400" />
               </div>
               <div className="text-lg font-bold text-purple-700 dark:text-purple-300">
-                {formatCount(creator.video_count)}
+                {formatCount(creator.conversation_count)}
               </div>
-              <div className="text-xs text-purple-600 dark:text-purple-400">Videos</div>
+              <div className="text-xs text-purple-600 dark:text-purple-400">Conversations</div>
             </div>
           </div>
 

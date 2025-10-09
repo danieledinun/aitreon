@@ -101,14 +101,31 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
 
   const fetchCreators = async () => {
     try {
-      const { data, error } = await supabase
+      // First get creators
+      const { data: creatorsData, error: creatorsError } = await supabase
         .from('creators')
         .select('*')
         .eq('is_active', true)
         .order('created_at', { ascending: false })
 
-      if (error) throw error
-      setCreators(data || [])
+      if (creatorsError) throw creatorsError
+
+      // Then get conversation count for each creator
+      const creatorsWithConversationCount = await Promise.all(
+        (creatorsData || []).map(async (creator) => {
+          const { count } = await supabase
+            .from('chat_sessions')
+            .select('*', { count: 'exact', head: true })
+            .eq('creator_id', creator.id)
+
+          return {
+            ...creator,
+            conversation_count: count || 0
+          }
+        })
+      )
+
+      setCreators(creatorsWithConversationCount)
     } catch (error) {
       console.error('Error fetching creators:', error)
     } finally {
