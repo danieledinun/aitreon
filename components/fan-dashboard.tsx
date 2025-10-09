@@ -554,19 +554,19 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
           <div className="flex flex-col lg:flex-row gap-6 items-start">
             <TabsList className="grid w-full lg:w-auto grid-cols-4 lg:grid-cols-1 lg:flex-col h-auto p-1">
-              <TabsTrigger value="discover" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+              <TabsTrigger value="discover" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white justify-start">
                 <Search className="h-4 w-4 mr-2" />
                 Discover
               </TabsTrigger>
-              <TabsTrigger value="subscriptions" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+              <TabsTrigger value="subscriptions" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white justify-start">
                 <CreditCard className="h-4 w-4 mr-2" />
                 Subscriptions
               </TabsTrigger>
-              <TabsTrigger value="recent" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+              <TabsTrigger value="recent" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white justify-start">
                 <Clock className="h-4 w-4 mr-2" />
                 Recent
               </TabsTrigger>
-              <TabsTrigger value="profile" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+              <TabsTrigger value="profile" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white justify-start">
                 <User className="h-4 w-4 mr-2" />
                 Profile
               </TabsTrigger>
