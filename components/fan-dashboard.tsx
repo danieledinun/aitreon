@@ -392,6 +392,7 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
 
         if (error) {
           console.error('❌ Error unfollowing creator:', error)
+          console.error('❌ Error details:', JSON.stringify(error, null, 2))
           return
         }
         console.log('✅ Successfully unfollowed creator')
@@ -409,6 +410,7 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
 
         if (error) {
           console.error('❌ Error following creator:', error)
+          console.error('❌ Error details:', JSON.stringify(error, null, 2))
           return
         }
         console.log('✅ Successfully followed creator')
