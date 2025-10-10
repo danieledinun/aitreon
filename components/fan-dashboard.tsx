@@ -678,18 +678,18 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
                   />
                 )}
               </TabsContent>
-              {/* Subscriptions Tab - Subscription Management */}
+              {/* Subscriptions Tab - Show Followed Creators */}
               <TabsContent value="subscriptions" className="space-y-8 mt-0">
-                {subscriptions.length === 0 ? (
+                {subscribed.length === 0 ? (
                   <div className="text-center py-12">
                     <div className="w-32 h-32 mx-auto bg-gradient-to-br from-purple-100 to-pink-100 dark:from-gray-700 dark:to-gray-600 rounded-full flex items-center justify-center mb-6">
-                      <CreditCard className="h-16 w-16 text-purple-500" />
+                      <Users className="h-16 w-16 text-purple-500" />
                     </div>
                     <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">
-                      No Active Subscriptions
+                      No Followed Creators
                     </h3>
                     <p className="text-gray-600 dark:text-gray-400 mb-8 max-w-md mx-auto">
-                      Subscribe to creators to unlock exclusive content and support their work
+                      Follow creators to see their content and chat with their AI replicas
                     </p>
                     <Button
                       onClick={() => setActiveTab('discover')}
@@ -704,68 +704,23 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
                     <div className="flex items-center justify-between mb-6">
                       <div>
                         <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                          Active Subscriptions
+                          Followed Creators
                         </h2>
                         <p className="text-gray-600 dark:text-gray-400">
-                          Manage your creator subscriptions and billing
+                          Creators you're following and can chat with
                         </p>
                       </div>
-                      <Button variant="outline">
-                        <Settings className="h-4 w-4 mr-2" />
-                        Manage Billing
-                      </Button>
+                      <Badge variant="secondary" className="text-sm">
+                        {subscribed.length} {subscribed.length === 1 ? 'Creator' : 'Creators'}
+                      </Badge>
                     </div>
 
-                    <div className="space-y-4">
-                      {subscriptions.map((subscription, index) => (
-                        <Card key={index} className="border-0 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm">
-                          <CardContent className="p-6">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center space-x-4">
-                                <Avatar className="h-12 w-12">
-                                  <AvatarImage src={subscription.creator?.profile_image} />
-                                  <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white font-semibold">
-                                    {getInitials(subscription.creator?.display_name || 'Unknown')}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <div>
-                                  <h3 className="font-semibold text-gray-900 dark:text-white">
-                                    {subscription.creator?.display_name}
-                                  </h3>
-                                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                                    {subscription.plan_type} Plan • ${subscription.amount}/month
-                                  </p>
-                                </div>
-                              </div>
-                              <div className="flex items-center space-x-4">
-                                <Badge
-                                  className={subscription.status === 'active'
-                                    ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                                    : "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200"
-                                  }
-                                >
-                                  {subscription.status}
-                                </Badge>
-                                <Button variant="ghost" size="sm">
-                                  <MoreHorizontal className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </div>
-                            <div className="mt-4 flex items-center justify-between text-sm text-gray-500">
-                              <span>Next billing: {new Date(subscription.updated_at).toLocaleDateString()}</span>
-                              <div className="flex space-x-2">
-                                <Button variant="outline" size="sm">
-                                  Modify
-                                </Button>
-                                <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
-                                  Cancel
-                                </Button>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
+                    <FocusCards
+                      creators={subscribed}
+                      onStartChat={handleStartChat}
+                      onToggleFollow={handleFollowCreator}
+                      isFollowed={isCreatorFollowed}
+                    />
                   </div>
                 )}
               </TabsContent>
