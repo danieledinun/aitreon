@@ -148,6 +148,8 @@ export default async function CreatorDashboard() {
   let engagementData = { rate: 0, responseTime: 0, userSatisfaction: 0 }
   let sentimentData = { positive: 0, negative: 0, neutral: 0, total: 0 }
   let topActiveUsers: any[] = []
+  let followers: any[] = []
+  let followerCount = 0
 
   // userSubscriptions is already defined from the Supabase query above
 
@@ -265,6 +267,28 @@ export default async function CreatorDashboard() {
       topActiveUsers = Array.from(userMessageCounts.values())
         .sort((a, b) => b.count - a.count)
         .slice(0, 3)
+
+      // Get follower data from user_subscriptions table
+      const { data: followerData } = await supabase
+        .from('user_subscriptions')
+        .select(`
+          *,
+          user:users(
+            id,
+            name,
+            email,
+            image
+          )
+        `)
+        .eq('creator_id', analyticsCreatorId)
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
+
+      console.log('👥 Followers Debug - Found followers:', followerData?.length || 0)
+      console.log('👥 Followers Debug - Follower data:', followerData)
+
+      followers = followerData || []
+      followerCount = followers.length
 
     } catch (error) {
       console.error('Error fetching analytics data:', error)
@@ -410,11 +434,11 @@ export default async function CreatorDashboard() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <Card className="bg-white/50 dark:bg-neutral-900/50 border-gray-300 dark:border-neutral-700 hover:bg-gray-50/70 dark:hover:bg-neutral-900/70 transition-colors">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600 dark:text-neutral-300">Active Subscribers</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600 dark:text-neutral-300">Followers</CardTitle>
               <Users className="h-4 w-4 text-blue-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-gray-900 dark:text-white">{effectiveCreator?._count?.subscriptions || 0}</div>
+              <div className="text-2xl font-bold text-gray-900 dark:text-white">{followerCount}</div>
               <p className="text-xs text-gray-500 dark:text-neutral-400">
                 <span className="text-green-400">+{monthlyGrowth}%</span> from last month
               </p>
@@ -626,6 +650,90 @@ export default async function CreatorDashboard() {
                       </div>
                     </div>
                   </>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Followers Management */}
+            <Card className="bg-white/50 dark:bg-neutral-900/50 border-gray-300 dark:border-neutral-700">
+              <CardHeader>
+                <CardTitle className="text-gray-900 dark:text-white flex items-center gap-2">
+                  <Users className="w-5 h-5 text-blue-400" />
+                  Your Followers
+                </CardTitle>
+                <CardDescription className="text-gray-500 dark:text-neutral-400">
+                  Fans following your AI replica
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between p-3 rounded-lg bg-blue-50/50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+                  <div className="flex items-center space-x-3">
+                    <div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900">
+                      <Users className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div>
+                      <div className="text-lg font-bold text-blue-700 dark:text-blue-300">{followerCount}</div>
+                      <div className="text-sm text-blue-600 dark:text-blue-400">Total Followers</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-xs text-blue-600 dark:text-blue-400">
+                      {followers.filter(f => {
+                        const followDate = new Date(f.created_at)
+                        const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+                        return followDate > weekAgo
+                      }).length} new this week
+                    </div>
+                  </div>
+                </div>
+
+                {followers.length > 0 ? (
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-medium text-gray-900 dark:text-white">Recent Followers</h4>
+                    <div className="space-y-2 max-h-64 overflow-y-auto">
+                      {followers.slice(0, 10).map((follower) => (
+                        <div key={follower.id} className="flex items-center justify-between p-3 rounded-lg bg-gray-50/50 dark:bg-neutral-800/50 border border-gray-200 dark:border-neutral-700">
+                          <div className="flex items-center space-x-3">
+                            <Avatar className="h-8 w-8">
+                              <AvatarImage src={follower.user?.image || undefined} />
+                              <AvatarFallback className="bg-gradient-to-br from-blue-600 to-purple-600 text-white text-xs">
+                                {follower.user?.name?.charAt(0)?.toUpperCase() || 'U'}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <div className="text-sm font-medium text-gray-900 dark:text-white">
+                                {follower.user?.name || 'Anonymous User'}
+                              </div>
+                              <div className="text-xs text-gray-500 dark:text-neutral-400">
+                                {follower.user?.email}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-xs text-gray-500 dark:text-neutral-400">
+                              {new Date(follower.created_at).toLocaleDateString()}
+                            </div>
+                            <div className="text-xs text-green-600 dark:text-green-400">
+                              {follower.subscription_type === 'follow' ? 'Following' : follower.subscription_type}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    {followers.length > 10 && (
+                      <div className="text-center pt-2">
+                        <span className="text-xs text-gray-500 dark:text-neutral-400">
+                          And {followers.length - 10} more followers...
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-center py-6">
+                    <Users className="h-8 w-8 mx-auto text-gray-400 dark:text-neutral-600 mb-2" />
+                    <p className="text-sm text-gray-500 dark:text-neutral-400">No followers yet</p>
+                    <p className="text-xs text-gray-400 dark:text-neutral-500">Share your profile to get your first followers!</p>
+                  </div>
                 )}
               </CardContent>
             </Card>
