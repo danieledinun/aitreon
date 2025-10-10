@@ -174,8 +174,6 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
             bio,
             profile_image,
             youtube_channel_url,
-            verification_status,
-            subscriber_count,
             is_active,
             user_id,
             username,
@@ -207,8 +205,8 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
               bio: creator.bio,
               profile_image: creator.profile_image,
               youtube_channel_url: creator.youtube_channel_url,
-              verification_status: creator.verification_status,
-              subscriber_count: creator.subscriber_count,
+              verification_status: undefined, // Not available in creators table
+              subscriber_count: undefined, // Not available in creators table
               conversation_count: 0, // Will be populated by fetchCreators
               is_active: creator.is_active,
               user_id: creator.user_id,
