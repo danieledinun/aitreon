@@ -185,6 +185,8 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
         .eq('user_id', userId)
         .eq('is_active', true)
 
+      console.log('🔍 Query params - user_id:', userId, 'is_active: true')
+
       if (error) {
         console.error('❌ Error fetching subscriptions:', error)
         setSubscribed([])
@@ -382,11 +384,11 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
       console.log('Current follow status:', isFollowed)
 
       if (isFollowed) {
-        // Unfollow - delete subscription
+        // Unfollow - deactivate subscription
         console.log('🔄 Unfollowing creator...')
         const { error } = await supabase
           .from('user_subscriptions')
-          .delete()
+          .update({ is_active: false })
           .eq('user_id', userId)
           .eq('creator_id', creatorId)
 
@@ -397,15 +399,17 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
         }
         console.log('✅ Successfully unfollowed creator')
       } else {
-        // Follow - create subscription
+        // Follow - create or reactivate subscription
         console.log('🔄 Following creator...')
         const { error } = await supabase
           .from('user_subscriptions')
-          .insert({
+          .upsert({
             user_id: userId,
             creator_id: creatorId,
             subscription_type: 'follow',
             is_active: true
+          }, {
+            onConflict: 'user_id,creator_id'
           })
 
         if (error) {
