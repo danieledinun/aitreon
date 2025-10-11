@@ -211,16 +211,34 @@ export async function POST(request: NextRequest) {
 
           // Send final response with citations
           try {
+            // Ensure response content is properly cleaned for JSON
+            const cleanResponse = typeof ragResponse.response === 'string'
+              ? ragResponse.response.replace(/[\u0000-\u001F\u007F-\u009F]/g, '') // Remove control characters
+              : ragResponse.response
+
+            const responseData = {
+              type: 'complete',
+              response: cleanResponse,
+              citations: ragResponse.citations,
+              confidence: ragResponse.confidence
+            }
+
             controller.enqueue(
-              encoder.encode(`data: ${JSON.stringify({ 
-                type: 'complete',
-                response: ragResponse.response,
-                citations: ragResponse.citations,
-                confidence: ragResponse.confidence
-              })}\n\n`)
+              encoder.encode(`data: ${JSON.stringify(responseData)}\n\n`)
             )
           } catch (error) {
-            console.log('Stream complete error (controller closed):', error instanceof Error ? error.message : String(error))
+            console.error('Stream complete error:', error)
+            // Send error response if JSON serialization fails
+            try {
+              controller.enqueue(
+                encoder.encode(`data: ${JSON.stringify({
+                  type: 'error',
+                  error: 'Failed to serialize response'
+                })}\n\n`)
+              )
+            } catch (fallbackError) {
+              console.log('Fallback error (controller closed):', fallbackError instanceof Error ? fallbackError.message : String(fallbackError))
+            }
           }
 
           // Save AI message to database (only for authenticated users)
