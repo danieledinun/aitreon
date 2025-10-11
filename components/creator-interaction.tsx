@@ -78,6 +78,9 @@ export default function CreatorInteraction({
   const [sessionId, setSessionId] = useState<string>()
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [messageCount, setMessageCount] = useState(49)
+  const [userTier, setUserTier] = useState<'free' | 'follower' | 'paid'>('free')
+  const [dailyUsage, setDailyUsage] = useState(0)
+  const [tierMessageLimit, setTierMessageLimit] = useState(2)
   const [suggestedQuestions, setSuggestedQuestions] = useState<SuggestedQuestion[]>([])
   const [questionsLoading, setQuestionsLoading] = useState(true)
 
@@ -170,6 +173,65 @@ export default function CreatorInteraction({
       }
     }
   }, [session?.user?.id, creator.id])
+
+  // Fetch user tier and daily usage for authenticated users
+  useEffect(() => {
+    const fetchUserTierAndUsage = async () => {
+      if (!session?.user?.id) {
+        // For anonymous users, keep existing logic
+        setUserTier('free')
+        setTierMessageLimit(2)
+        setDailyUsage(anonymousMessageCount)
+        return
+      }
+
+      try {
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+        const todayISO = today.toISOString().split('T')[0]
+
+        // Check if user is a paid subscriber
+        const paidSubResponse = await fetch('/api/user/subscription-status', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ creatorId: creator.id })
+        })
+
+        if (paidSubResponse.ok) {
+          const subData = await paidSubResponse.json()
+
+          if (subData.isPaidSubscriber) {
+            setUserTier('paid')
+            setTierMessageLimit(-1) // Unlimited
+            setMessageCount(999)
+            setDailyUsage(0)
+            return
+          }
+
+          if (subData.isFollowing) {
+            setUserTier('follower')
+            setTierMessageLimit(5)
+          } else {
+            setUserTier('free')
+            setTierMessageLimit(2)
+          }
+
+          // Get daily usage
+          setDailyUsage(subData.dailyUsage || 0)
+          const remaining = Math.max(0, (subData.isFollowing ? 5 : 2) - (subData.dailyUsage || 0))
+          setMessageCount(remaining)
+        }
+      } catch (error) {
+        console.error('Failed to fetch user tier and usage:', error)
+        // Fallback to free tier
+        setUserTier('free')
+        setTierMessageLimit(2)
+        setMessageCount(2)
+      }
+    }
+
+    fetchUserTierAndUsage()
+  }, [session?.user?.id, creator.id, anonymousMessageCount])
 
   // Function to update anonymous session data
   const updateAnonymousSession = (messageCount: number) => {
@@ -700,8 +762,11 @@ export default function CreatorInteraction({
 
     // Update message counting based on user type
     if (session?.user?.id) {
-      // Authenticated user - use existing logic
-      setMessageCount(prev => prev - 1)
+      // Authenticated user - update tier-based counter
+      if (userTier !== 'paid') {
+        setMessageCount(prev => Math.max(0, prev - 1))
+        setDailyUsage(prev => prev + 1)
+      }
     } else {
       // Anonymous user - increment by 1 for user message
       const newUserCount = anonymousMessageCount + 1
@@ -1953,7 +2018,9 @@ export default function CreatorInteraction({
               </div>
             </div>
             <div className="text-center text-sm text-gray-500 mt-2">
-              {session?.user?.id ? `${messageCount} Messages Remaining` : `${getDisplayMessageCount()} Messages Remaining (Anonymous)`}
+              {session?.user?.id ?
+                (userTier === 'paid' ? 'Unlimited Messages' : `${messageCount} of ${tierMessageLimit} Messages Remaining Today`)
+                : `${getDisplayMessageCount()} Messages Remaining (Anonymous)`}
             </div>
           </div>
         </div>
