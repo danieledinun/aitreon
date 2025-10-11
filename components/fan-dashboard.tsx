@@ -486,33 +486,7 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
                 <span className="ml-3 text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Aitrion</span>
               </Link>
 
-              {/* Navigation Pills */}
-              <nav className="hidden md:flex items-center space-x-1">
-                <Button
-                  variant={activeTab === 'discover' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setActiveTab('discover')}
-                  className="rounded-full"
-                >
-                  Discover
-                </Button>
-                <Button
-                  variant={activeTab === 'following' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setActiveTab('following')}
-                  className="rounded-full"
-                >
-                  Following
-                </Button>
-                <Button
-                  variant={activeTab === 'recent' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setActiveTab('recent')}
-                  className="rounded-full"
-                >
-                  Recent
-                </Button>
-              </nav>
+              {/* Navigation handled by proper Tabs component below */}
             </div>
 
             <div className="flex items-center space-x-4">
@@ -572,8 +546,8 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
                 Discover
               </TabsTrigger>
               <TabsTrigger value="subscriptions" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white justify-start">
-                <CreditCard className="h-4 w-4 mr-2" />
-                Subscriptions
+                <Users className="h-4 w-4 mr-2" />
+                Following
               </TabsTrigger>
               <TabsTrigger value="recent" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white justify-start">
                 <Clock className="h-4 w-4 mr-2" />
@@ -704,7 +678,7 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
                     <div className="flex items-center justify-between mb-6">
                       <div>
                         <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                          Followed Creators
+                          Following
                         </h2>
                         <p className="text-gray-600 dark:text-gray-400">
                           Creators you're following and can chat with

@@ -150,6 +150,8 @@ export default async function CreatorDashboard() {
   let topActiveUsers: any[] = []
   let followers: any[] = []
   let followerCount = 0
+  let subscribers: any[] = []
+  let subscriberCount = 0
 
   // userSubscriptions is already defined from the Supabase query above
 
@@ -290,6 +292,28 @@ export default async function CreatorDashboard() {
       followers = followerData || []
       followerCount = followers.length
 
+      // Get paid subscriber data from subscriptions table
+      const { data: subscriberData } = await supabase
+        .from('subscriptions')
+        .select(`
+          *,
+          user:users(
+            id,
+            name,
+            email,
+            image
+          )
+        `)
+        .eq('creator_id', analyticsCreatorId)
+        .eq('status', 'ACTIVE')
+        .order('created_at', { ascending: false })
+
+      console.log('💰 Subscribers Debug - Found subscribers:', subscriberData?.length || 0)
+      console.log('💰 Subscribers Debug - Subscriber data:', subscriberData)
+
+      subscribers = subscriberData || []
+      subscriberCount = subscribers.length
+
     } catch (error) {
       console.error('Error fetching analytics data:', error)
     }
@@ -346,8 +370,8 @@ export default async function CreatorDashboard() {
     availableCreators = creatorsWithCounts
   }
 
-  // Calculate growth metrics
-  const monthlyGrowth = effectiveCreator?._count?.subscriptions || 0 > 0 ?
+  // Calculate growth metrics based on subscriber count
+  const monthlyGrowth = subscriberCount > 0 ?
     Math.round(Math.random() * 20 + 5) : 0 // Simplified growth calculation
 
   // Debug the final values
@@ -434,13 +458,26 @@ export default async function CreatorDashboard() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <Card className="bg-white/50 dark:bg-neutral-900/50 border-gray-300 dark:border-neutral-700 hover:bg-gray-50/70 dark:hover:bg-neutral-900/70 transition-colors">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600 dark:text-neutral-300">Subscribers</CardTitle>
+              <DollarSign className="h-4 w-4 text-green-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-gray-900 dark:text-white">{subscriberCount}</div>
+              <p className="text-xs text-gray-500 dark:text-neutral-400">
+                Paid subscribers generating revenue
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white/50 dark:bg-neutral-900/50 border-gray-300 dark:border-neutral-700 hover:bg-gray-50/70 dark:hover:bg-neutral-900/70 transition-colors">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-gray-600 dark:text-neutral-300">Followers</CardTitle>
               <Users className="h-4 w-4 text-blue-400" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-gray-900 dark:text-white">{followerCount}</div>
               <p className="text-xs text-gray-500 dark:text-neutral-400">
-                <span className="text-green-400">+{monthlyGrowth}%</span> from last month
+                Free followers interested in your content
               </p>
             </CardContent>
           </Card>
@@ -457,29 +494,16 @@ export default async function CreatorDashboard() {
               </p>
             </CardContent>
           </Card>
-          
+
           <Card className="bg-white/50 dark:bg-neutral-900/50 border-gray-300 dark:border-neutral-700 hover:bg-gray-50/70 dark:hover:bg-neutral-900/70 transition-colors">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-gray-600 dark:text-neutral-300">Chat Sessions</CardTitle>
               <MessageCircle className="h-4 w-4 text-purple-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-gray-900 dark:text-white">{effectiveCreator?._count?.chat_sessions || 0}</div>
+              <div className="text-2xl font-bold text-gray-900 dark:text-white">{totalChatSessionsCount}</div>
               <p className="text-xs text-gray-500 dark:text-neutral-400">
                 {totalMessages} total messages exchanged
-              </p>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-white/50 dark:bg-neutral-900/50 border-gray-300 dark:border-neutral-700 hover:bg-gray-50/70 dark:hover:bg-neutral-900/70 transition-colors">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600 dark:text-neutral-300">Engagement Rate</CardTitle>
-              <TrendingUp className="h-4 w-4 text-yellow-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-gray-900 dark:text-white">{engagementData.rate || 0}%</div>
-              <p className="text-xs text-gray-500 dark:text-neutral-400">
-                Active conversation quality
               </p>
             </CardContent>
           </Card>
