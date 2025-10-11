@@ -486,7 +486,30 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
                 <span className="ml-3 text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Aitrion</span>
               </Link>
 
-              {/* Navigation handled by proper Tabs component below */}
+              {/* Quick Navigation */}
+              <nav className="flex items-center space-x-4">
+                <Button
+                  variant={activeTab === 'discover' ? 'default' : 'ghost'}
+                  onClick={() => setActiveTab('discover')}
+                  size="sm"
+                >
+                  Discover
+                </Button>
+                <Button
+                  variant={activeTab === 'subscriptions' ? 'default' : 'ghost'}
+                  onClick={() => setActiveTab('subscriptions')}
+                  size="sm"
+                >
+                  Following
+                </Button>
+                <Button
+                  variant={activeTab === 'recent' ? 'default' : 'ghost'}
+                  onClick={() => setActiveTab('recent')}
+                  size="sm"
+                >
+                  Recent
+                </Button>
+              </nav>
             </div>
 
             <div className="flex items-center space-x-4">
@@ -691,7 +714,7 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
 
                     <FocusCards
                       creators={subscribed}
-                      onStartChat={handleStartChat}
+                      onStartChat={handleVisitCreator}
                       onToggleFollow={handleFollowCreator}
                       isFollowed={isCreatorFollowed}
                     />
