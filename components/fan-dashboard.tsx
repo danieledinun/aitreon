@@ -158,7 +158,9 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
 
   const fetchSubscribed = async () => {
     try {
-      console.log('🔄 Fetching subscriptions for user:', userId)
+      console.log('🔄 Fan Dashboard: Fetching subscriptions for user:', userId)
+      console.log('🔍 Fan Dashboard: Session user ID:', session?.user?.id)
+
       // Fetch real subscriptions from database using user_subscriptions table
       const { data: subscriptions, error } = await supabase
         .from('user_subscriptions')
@@ -173,24 +175,22 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
             bio,
             profile_image,
             youtube_channel_url,
-            is_active,
-            user_id,
-            username,
-            created_at
+            username
           )
         `)
         .eq('user_id', userId)
         .eq('is_active', true)
 
-      console.log('🔍 Query params - user_id:', userId, 'is_active: true')
+      console.log('🔍 Fan Dashboard: Query params - user_id:', userId, 'is_active: true')
 
       if (error) {
-        console.error('❌ Error fetching subscriptions:', error)
+        console.error('❌ Fan Dashboard: Error fetching subscriptions:', error)
         setSubscribed([])
         return
       }
 
-      console.log('✅ Subscriptions fetched:', subscriptions?.length || 0)
+      console.log('✅ Fan Dashboard: Subscriptions fetched:', subscriptions?.length || 0)
+      console.log('📄 Fan Dashboard: Subscription data:', subscriptions)
 
       if (subscriptions && subscriptions.length > 0) {
         // Extract creator data from subscriptions and ensure proper typing
@@ -206,10 +206,10 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
               youtube_channel_url: creator.youtube_channel_url,
               subscriber_count: undefined, // Not available in creators table
               conversation_count: 0, // Will be populated by fetchCreators
-              is_active: creator.is_active,
-              user_id: creator.user_id,
+              is_active: true, // Assume active since we're filtering by is_active
+              user_id: '', // Not needed for display
               username: creator.username,
-              created_at: creator.created_at,
+              created_at: sub.created_at, // Use subscription date
               category: undefined,
               avatar_url: creator.profile_image,
               subscription_date: sub.created_at
