@@ -496,11 +496,18 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
                   Discover
                 </Button>
                 <Button
+                  variant={activeTab === 'following' ? 'default' : 'ghost'}
+                  onClick={() => setActiveTab('following')}
+                  size="sm"
+                >
+                  Following
+                </Button>
+                <Button
                   variant={activeTab === 'subscriptions' ? 'default' : 'ghost'}
                   onClick={() => setActiveTab('subscriptions')}
                   size="sm"
                 >
-                  Following
+                  Subscriptions
                 </Button>
                 <Button
                   variant={activeTab === 'recent' ? 'default' : 'ghost'}
@@ -563,14 +570,18 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
         {/* Tabs Navigation */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
           <div className="flex flex-col lg:flex-row gap-6 items-start">
-            <TabsList className="grid w-full lg:w-auto grid-cols-4 lg:grid-cols-1 lg:flex-col h-auto p-1">
+            <TabsList className="grid w-full lg:w-auto grid-cols-2 md:grid-cols-4 lg:grid-cols-1 lg:flex-col h-auto p-1">
               <TabsTrigger value="discover" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white justify-start">
                 <Search className="h-4 w-4 mr-2" />
                 Discover
               </TabsTrigger>
-              <TabsTrigger value="subscriptions" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white justify-start">
+              <TabsTrigger value="following" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white justify-start">
                 <Users className="h-4 w-4 mr-2" />
                 Following
+              </TabsTrigger>
+              <TabsTrigger value="subscriptions" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white justify-start">
+                <CreditCard className="h-4 w-4 mr-2" />
+                Subscriptions
               </TabsTrigger>
               <TabsTrigger value="recent" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white justify-start">
                 <Clock className="h-4 w-4 mr-2" />
@@ -675,8 +686,8 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
                   />
                 )}
               </TabsContent>
-              {/* Subscriptions Tab - Show Followed Creators */}
-              <TabsContent value="subscriptions" className="space-y-8 mt-0">
+              {/* Following Tab - Show Followed Creators (Free) */}
+              <TabsContent value="following" className="space-y-8 mt-0">
                 {subscribed.length === 0 ? (
                   <div className="text-center py-12">
                     <div className="w-32 h-32 mx-auto bg-gradient-to-br from-purple-100 to-pink-100 dark:from-gray-700 dark:to-gray-600 rounded-full flex items-center justify-center mb-6">
@@ -718,6 +729,98 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
                       onToggleFollow={handleFollowCreator}
                       isFollowed={isCreatorFollowed}
                     />
+                  </div>
+                )}
+              </TabsContent>
+
+              {/* Subscriptions Tab - Show Paid Subscriptions */}
+              <TabsContent value="subscriptions" className="space-y-8 mt-0">
+                {subscriptions.length === 0 ? (
+                  <div className="text-center py-12">
+                    <div className="w-32 h-32 mx-auto bg-gradient-to-br from-green-100 to-emerald-100 dark:from-gray-700 dark:to-gray-600 rounded-full flex items-center justify-center mb-6">
+                      <CreditCard className="h-16 w-16 text-green-500" />
+                    </div>
+                    <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">
+                      No Active Subscriptions
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-400 mb-8 max-w-md mx-auto">
+                      Subscribe to creators to unlock exclusive content and support their work
+                    </p>
+                    <Button
+                      onClick={() => setActiveTab('discover')}
+                      className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white shadow-lg"
+                    >
+                      <Search className="h-4 w-4 mr-2" />
+                      Discover Creators
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between mb-6">
+                      <div>
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                          Active Subscriptions
+                        </h2>
+                        <p className="text-gray-600 dark:text-gray-400">
+                          Your paid subscriptions and premium content access
+                        </p>
+                      </div>
+                      <Badge variant="secondary" className="text-sm">
+                        {subscriptions.length} {subscriptions.length === 1 ? 'Subscription' : 'Subscriptions'}
+                      </Badge>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {subscriptions.map((subscription: any) => (
+                        <Card key={subscription.id} className="group hover:shadow-xl transition-all duration-300 border-0 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm hover:bg-white dark:hover:bg-gray-800">
+                          <CardHeader className="pb-4">
+                            <div className="flex items-center space-x-3">
+                              <Avatar className="h-12 w-12 ring-2 ring-green-500/30">
+                                <AvatarImage src={subscription.creators?.profile_image} />
+                                <AvatarFallback className="bg-gradient-to-br from-green-500 to-emerald-500 text-white font-semibold">
+                                  {getInitials(subscription.creators?.display_name || 'Creator')}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div className="flex-1">
+                                <CardTitle className="text-lg">{subscription.creators?.display_name}</CardTitle>
+                                <Badge className="mt-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                  {subscription.status === 'ACTIVE' ? 'Active' : subscription.status}
+                                </Badge>
+                              </div>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="pb-4">
+                            <div className="space-y-3">
+                              <div className="flex justify-between text-sm">
+                                <span className="text-gray-600 dark:text-gray-400">Plan:</span>
+                                <span className="font-medium">{subscription.plan_type || 'Premium'}</span>
+                              </div>
+                              <div className="flex justify-between text-sm">
+                                <span className="text-gray-600 dark:text-gray-400">Amount:</span>
+                                <span className="font-medium">${subscription.amount || '0'}/month</span>
+                              </div>
+                              <div className="flex justify-between text-sm">
+                                <span className="text-gray-600 dark:text-gray-400">Since:</span>
+                                <span className="font-medium">
+                                  {new Date(subscription.created_at).toLocaleDateString()}
+                                </span>
+                              </div>
+                            </div>
+                          </CardContent>
+                          <CardFooter className="pt-0">
+                            <Link
+                              href={`/${subscription.creators?.username || subscription.creators?.display_name?.toLowerCase().replace(/\\s+/g, '')}`}
+                              className="w-full"
+                            >
+                              <Button className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white">
+                                <MessageCircle className="h-4 w-4 mr-2" />
+                                Premium Chat
+                              </Button>
+                            </Link>
+                          </CardFooter>
+                        </Card>
+                      ))}
+                    </div>
                   </div>
                 )}
               </TabsContent>
