@@ -33,12 +33,70 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Creator not found' }, { status: 404 })
     }
 
-    // Daily usage limits removed - unlimited chat access
+    // Check user's subscription tier and daily usage limits
     const today = new Date()
     today.setHours(0, 0, 0, 0)
+    const todayISO = today.toISOString().split('T')[0]
 
-    // Note: Daily limit check has been disabled for unlimited access
-    // Previous implementation limited users to 5 messages per day without subscription
+    // Check if user is a paid subscriber for this creator
+    const { data: paidSubscription } = await supabase
+      .from('subscriptions')
+      .select('*')
+      .eq('user_id', session.user.id)
+      .eq('creator_id', creatorId)
+      .eq('status', 'ACTIVE')
+      .single()
+
+    // Check if user is following this creator (free follow)
+    const { data: followSubscription } = await supabase
+      .from('user_subscriptions')
+      .select('*')
+      .eq('user_id', session.user.id)
+      .eq('creator_id', creatorId)
+      .eq('is_active', true)
+      .single()
+
+    // Determine user tier and message limits
+    let messageLimit = 2 // Free tier: 2 messages per day
+    let userTier = 'free'
+
+    if (paidSubscription) {
+      messageLimit = -1 // Unlimited for paid subscribers
+      userTier = 'paid'
+    } else if (followSubscription) {
+      messageLimit = 5 // Follower tier: 5 messages per day
+      userTier = 'follower'
+    }
+
+    // Check daily usage only if not unlimited (paid subscriber)
+    if (messageLimit > 0) {
+      // Get today's usage
+      const { data: dailyUsage } = await supabase
+        .from('daily_usage')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .eq('creator_id', creatorId)
+        .eq('date', todayISO)
+        .single()
+
+      const currentUsage = dailyUsage?.message_count || 0
+
+      if (currentUsage >= messageLimit) {
+        const upgradeMessage = userTier === 'free'
+          ? 'You\'ve reached your daily limit of 2 messages. Follow this creator to get 5 messages per day, or upgrade to a paid subscription for unlimited messages!'
+          : 'You\'ve reached your daily limit of 5 messages. Upgrade to a paid subscription for unlimited messages!'
+
+        return NextResponse.json({
+          error: 'Daily limit reached',
+          errorType: 'LIMIT_REACHED',
+          userTier,
+          currentUsage,
+          messageLimit,
+          upgradeMessage,
+          showUpgradeModal: true
+        }, { status: 429 })
+      }
+    }
 
     // Get or create chat session
     let chatSession
@@ -163,50 +221,52 @@ export async function POST(request: NextRequest) {
     // Attach citations to the message for response
     aiMessage.citations = citationData
 
-    // Update daily usage
-    console.log('💾 Step 4: Updating daily usage...')
-    const todayStr = today.toISOString().split('T')[0]
-    const { data: existingUsage, error: usageSelectError } = await supabase
-      .from('daily_usage')
-      .select('message_count')
-      .eq('user_id', session.user.id)
-      .eq('creator_id', creatorId)
-      .eq('date', todayStr)
-      .single()
-
-    if (usageSelectError && usageSelectError.code !== 'PGRST116') {
-      console.error('❌ Error checking daily usage:', usageSelectError)
-    }
-
-    if (existingUsage) {
-      console.log('📊 Updating existing daily usage count...')
-      const { error: updateError } = await supabase
+    // Update daily usage (only for users with limits)
+    if (messageLimit > 0) {
+      console.log('💾 Step 4: Updating daily usage...')
+      const todayStr = todayISO
+      const { data: existingUsage, error: usageSelectError } = await supabase
         .from('daily_usage')
-        .update({ message_count: existingUsage.message_count + 1 })
+        .select('message_count')
         .eq('user_id', session.user.id)
         .eq('creator_id', creatorId)
         .eq('date', todayStr)
+        .single()
 
-      if (updateError) {
-        console.error('❌ Failed to update daily usage:', updateError)
-      } else {
-        console.log('✅ Daily usage updated successfully')
+      if (usageSelectError && usageSelectError.code !== 'PGRST116') {
+        console.error('❌ Error checking daily usage:', usageSelectError)
       }
-    } else {
-      console.log('📊 Creating new daily usage record...')
-      const { error: insertError } = await supabase
-        .from('daily_usage')
-        .insert({
-          user_id: session.user.id,
-          creator_id: creatorId,
-          date: todayStr,
-          message_count: 1
-        })
 
-      if (insertError) {
-        console.error('❌ Failed to create daily usage:', insertError)
+      if (existingUsage) {
+        console.log('📊 Updating existing daily usage count...')
+        const { error: updateError } = await supabase
+          .from('daily_usage')
+          .update({ message_count: existingUsage.message_count + 1 })
+          .eq('user_id', session.user.id)
+          .eq('creator_id', creatorId)
+          .eq('date', todayStr)
+
+        if (updateError) {
+          console.error('❌ Failed to update daily usage:', updateError)
+        } else {
+          console.log('✅ Daily usage updated successfully')
+        }
       } else {
-        console.log('✅ Daily usage created successfully')
+        console.log('📊 Creating new daily usage record...')
+        const { error: insertError } = await supabase
+          .from('daily_usage')
+          .insert({
+            user_id: session.user.id,
+            creator_id: creatorId,
+            date: todayStr,
+            message_count: 1
+          })
+
+        if (insertError) {
+          console.error('❌ Failed to create daily usage:', insertError)
+        } else {
+          console.log('✅ Daily usage created successfully')
+        }
       }
     }
 

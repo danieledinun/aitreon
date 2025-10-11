@@ -8,6 +8,7 @@ import Link from 'next/link'
 import { signOut } from 'next-auth/react'
 import VoiceCallInterface from './voice-call-interface'
 import RegistrationModal from './registration-modal'
+import { UpgradeModal } from './ui/upgrade-modal'
 
 interface ChatMessage {
   id: string
@@ -85,6 +86,15 @@ export default function CreatorInteraction({
   const [anonymousMessageCount, setAnonymousMessageCount] = useState(0)
   const [showRegistrationModal, setShowRegistrationModal] = useState(false)
   const [lastResponseBlurred, setLastResponseBlurred] = useState(false)
+
+  // Upgrade modal state
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false)
+  const [upgradeModalData, setUpgradeModalData] = useState<{
+    userTier: 'free' | 'follower' | 'paid'
+    currentUsage: number
+    messageLimit: number
+    upgradeMessage: string
+  } | null>(null)
   const [showAllCitations, setShowAllCitations] = useState<string | null>(null)
   const [showActionCenter, setShowActionCenter] = useState(false)
   const [likedMessages, setLikedMessages] = useState<Set<string>>(new Set())
@@ -725,6 +735,25 @@ export default function CreatorInteraction({
       console.log('📡 Streaming response received:', { status: response.status, ok: response.ok })
 
       if (!response.ok) {
+        // Handle rate limit (429) specifically for upgrade modal
+        if (response.status === 429) {
+          try {
+            const errorData = await response.json()
+            if (errorData.errorType === 'LIMIT_REACHED' && errorData.showUpgradeModal) {
+              setUpgradeModalData({
+                userTier: errorData.userTier,
+                currentUsage: errorData.currentUsage,
+                messageLimit: errorData.messageLimit,
+                upgradeMessage: errorData.upgradeMessage
+              })
+              setShowUpgradeModal(true)
+              setLoading(false)
+              return
+            }
+          } catch (parseError) {
+            console.error('Failed to parse rate limit response:', parseError)
+          }
+        }
         throw new Error('Failed to send message')
       }
 
@@ -906,6 +935,36 @@ export default function CreatorInteraction({
       // Note: setLoading(false) is now handled in animation completion callback
       // This prevents users from sending messages while typing animation is playing
     }
+  }
+
+  // Follow creator function
+  const handleFollowCreator = async () => {
+    try {
+      const response = await fetch('/api/follow', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          creatorId: creator.id
+        }),
+      })
+
+      if (response.ok) {
+        // Refresh the page to update the user's tier
+        window.location.reload()
+      } else {
+        console.error('Failed to follow creator')
+      }
+    } catch (error) {
+      console.error('Error following creator:', error)
+    }
+  }
+
+  // Upgrade to subscription function
+  const handleUpgradeSubscription = () => {
+    // Redirect to subscription page
+    window.location.href = `/subscribe/${creator.username || creator.id}`
   }
 
   const handleSuggestionClick = (question: string) => {
@@ -2041,6 +2100,22 @@ export default function CreatorInteraction({
         <PipVideoPlayer
           video={pipVideo}
           onClose={() => setPipVideo(null)}
+        />
+      )}
+
+      {/* Upgrade Modal for Message Limits */}
+      {showUpgradeModal && upgradeModalData && (
+        <UpgradeModal
+          isOpen={showUpgradeModal}
+          onClose={() => setShowUpgradeModal(false)}
+          userTier={upgradeModalData.userTier}
+          currentUsage={upgradeModalData.currentUsage}
+          messageLimit={upgradeModalData.messageLimit}
+          upgradeMessage={upgradeModalData.upgradeMessage}
+          creatorName={creator.display_name || creator.displayName || 'Creator'}
+          creatorId={creator.id}
+          onFollow={handleFollowCreator}
+          onUpgradeSubscription={handleUpgradeSubscription}
         />
       )}
 

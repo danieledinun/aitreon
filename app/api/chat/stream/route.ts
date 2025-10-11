@@ -33,6 +33,75 @@ export async function POST(request: NextRequest) {
       return new Response('Creator not found', { status: 404 })
     }
 
+    // Check user's subscription tier and daily usage limits (for authenticated users only)
+    if (isAuthenticated) {
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      const todayISO = today.toISOString().split('T')[0]
+
+      // Check if user is a paid subscriber for this creator
+      const { data: paidSubscription } = await supabase
+        .from('subscriptions')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('creator_id', creatorId)
+        .eq('status', 'ACTIVE')
+        .single()
+
+      // Check if user is following this creator (free follow)
+      const { data: followSubscription } = await supabase
+        .from('user_subscriptions')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('creator_id', creatorId)
+        .eq('is_active', true)
+        .single()
+
+      // Determine user tier and message limits
+      let messageLimit = 2 // Free tier: 2 messages per day
+      let userTier = 'free'
+
+      if (paidSubscription) {
+        messageLimit = -1 // Unlimited for paid subscribers
+        userTier = 'paid'
+      } else if (followSubscription) {
+        messageLimit = 5 // Follower tier: 5 messages per day
+        userTier = 'follower'
+      }
+
+      // Check daily usage only if not unlimited (paid subscriber)
+      if (messageLimit > 0) {
+        // Get today's usage
+        const { data: dailyUsage } = await supabase
+          .from('daily_usage')
+          .select('*')
+          .eq('user_id', userId)
+          .eq('creator_id', creatorId)
+          .eq('date', todayISO)
+          .single()
+
+        const currentUsage = dailyUsage?.message_count || 0
+
+        if (currentUsage >= messageLimit) {
+          const upgradeMessage = userTier === 'free'
+            ? 'You\'ve reached your daily limit of 2 messages. Follow this creator to get 5 messages per day, or upgrade to a paid subscription for unlimited messages!'
+            : 'You\'ve reached your daily limit of 5 messages. Upgrade to a paid subscription for unlimited messages!'
+
+          return new Response(JSON.stringify({
+            error: 'Daily limit reached',
+            errorType: 'LIMIT_REACHED',
+            userTier,
+            currentUsage,
+            messageLimit,
+            upgradeMessage,
+            showUpgradeModal: true
+          }), {
+            status: 429,
+            headers: { 'Content-Type': 'application/json' }
+          })
+        }
+      }
+    }
 
     // Get or create chat session
     let chatSession
