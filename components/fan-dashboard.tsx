@@ -29,6 +29,8 @@ interface Creator {
   username?: string
   is_active?: boolean
   subscription_date?: string
+  last_conversation?: string
+  conversation_count?: number
 }
 
 interface FanDashboardProps {
@@ -134,22 +136,67 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
 
   const fetchRecentlyVisited = async () => {
     try {
-      // For now, get recently visited from localStorage
-      const recentVisits = JSON.parse(localStorage.getItem('recentlyVisited') || '[]')
-      const recentCreatorIds = recentVisits.slice(0, 6) // Last 6 visited
+      if (!session?.user?.id) return
 
-      if (recentCreatorIds.length > 0 && creators.length > 0) {
-        const recentCreators = creators.filter(creator =>
-          recentCreatorIds.includes(creator.id)
-        )
-        setRecentlyVisited(recentCreators)
-      } else {
-        // Mock some recent data if none exists
+      // Fetch recent conversations from chat_sessions table
+      const { data: recentSessions, error } = await supabase
+        .from('chat_sessions')
+        .select(`
+          id,
+          creator_id,
+          updated_at,
+          created_at,
+          creators (
+            id,
+            display_name,
+            bio,
+            profile_image,
+            username
+          )
+        `)
+        .eq('user_id', session.user.id)
+        .order('updated_at', { ascending: false })
+        .limit(6)
+
+      if (error) {
+        console.error('Error fetching recent conversations:', error)
+        // Fallback to mock data
         const mockRecent = creators.slice(0, 3)
         setRecentlyVisited(mockRecent)
+        return
+      }
+
+      if (recentSessions && recentSessions.length > 0) {
+        // Convert chat sessions to creator format with last conversation date
+        const recentCreators = recentSessions
+          .filter(session => session.creators)
+          .map(session => {
+            const creator = session.creators as any
+            return {
+              id: creator.id,
+              display_name: creator.display_name,
+              bio: creator.bio,
+              profile_image: creator.profile_image,
+              username: creator.username,
+              user_id: '',
+              created_at: session.created_at,
+              last_conversation: session.updated_at,
+              is_active: true,
+              category: undefined,
+              avatar_url: creator.profile_image,
+              subscriber_count: undefined,
+              conversation_count: undefined
+            } as Creator
+          })
+
+        setRecentlyVisited(recentCreators)
+        console.log('✅ Recent conversations fetched:', recentCreators.length)
+      } else {
+        // No recent conversations, show empty state
+        setRecentlyVisited([])
       }
     } catch (error) {
-      console.error('Error fetching recently visited:', error)
+      console.error('Error fetching recent conversations:', error)
       // Fallback to mock data
       const mockRecent = creators.slice(0, 3)
       setRecentlyVisited(mockRecent)
@@ -507,7 +554,7 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
                   onClick={() => setActiveTab('subscriptions')}
                   size="sm"
                 >
-                  Subscriptions
+                  Subscribed
                 </Button>
                 <Button
                   variant={activeTab === 'recent' ? 'default' : 'ghost'}
@@ -581,7 +628,7 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
               </TabsTrigger>
               <TabsTrigger value="subscriptions" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white justify-start">
                 <CreditCard className="h-4 w-4 mr-2" />
-                Subscriptions
+                Subscribed
               </TabsTrigger>
               <TabsTrigger value="recent" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white justify-start">
                 <Clock className="h-4 w-4 mr-2" />
