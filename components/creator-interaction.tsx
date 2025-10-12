@@ -2019,7 +2019,7 @@ export default function CreatorInteraction({
             </div>
             <div className="text-center text-sm text-gray-500 mt-2">
               {session?.user?.id ?
-                (userTier === 'paid' ? 'Unlimited Messages' : `${messageCount} of ${tierMessageLimit} Messages Remaining Today`)
+                (userTier === 'paid' ? 'Unlimited Messages' : `${messageCount} of ${tierMessageLimit} Messages Remaining This Month`)
                 : `${getDisplayMessageCount()} Messages Remaining (Anonymous)`}
             </div>
           </div>
