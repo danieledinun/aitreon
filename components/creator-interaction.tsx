@@ -216,9 +216,9 @@ export default function CreatorInteraction({
             setTierMessageLimit(2)
           }
 
-          // Get daily usage
-          setDailyUsage(subData.dailyUsage || 0)
-          const remaining = Math.max(0, (subData.isFollowing ? 5 : 2) - (subData.dailyUsage || 0))
+          // Get monthly usage
+          setDailyUsage(subData.monthlyUsage || 0)
+          const remaining = Math.max(0, (subData.isFollowing ? 5 : 2) - (subData.monthlyUsage || 0))
           setMessageCount(remaining)
         }
       } catch (error) {

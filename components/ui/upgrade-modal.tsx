@@ -46,7 +46,7 @@ export function UpgradeModal({
             )}
           </div>
           <DialogTitle className="text-center text-xl font-bold">
-            Daily Message Limit Reached
+            Monthly Message Limit Reached
           </DialogTitle>
           <DialogDescription className="text-center text-gray-600 dark:text-gray-400">
             {upgradeMessage}
@@ -57,7 +57,7 @@ export function UpgradeModal({
           {/* Current Usage */}
           <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">Today's Usage:</span>
+              <span className="text-sm font-medium">This Month's Usage:</span>
               <Badge variant="secondary">
                 {currentUsage} / {messageLimit} messages
               </Badge>
@@ -89,12 +89,12 @@ export function UpgradeModal({
                       </Badge>
                     </div>
                     <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
-                      Get 5 messages per day with any creator you follow
+                      Get 5 messages per month with any creator you follow
                     </p>
                     <div className="flex items-center space-x-4 mt-2 text-xs text-blue-600 dark:text-blue-400">
                       <div className="flex items-center space-x-1">
                         <MessageCircle className="w-3 h-3" />
-                        <span>5 messages/day</span>
+                        <span>5 messages/month</span>
                       </div>
                       <div className="flex items-center space-x-1">
                         <Users className="w-3 h-3" />

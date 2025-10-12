@@ -33,11 +33,12 @@ export async function POST(request: NextRequest) {
       return new Response('Creator not found', { status: 404 })
     }
 
-    // Check user's subscription tier and daily usage limits (for authenticated users only)
+    // Check user's subscription tier and monthly usage limits (for authenticated users only)
     if (isAuthenticated) {
-      const today = new Date()
-      today.setHours(0, 0, 0, 0)
-      const todayISO = today.toISOString().split('T')[0]
+      const now = new Date()
+      // Get first day of current month
+      const currentMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+      const monthKey = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}`
 
       // Check if user is a paid subscriber for this creator
       const { data: paidSubscription } = await supabase
@@ -58,37 +59,55 @@ export async function POST(request: NextRequest) {
         .single()
 
       // Determine user tier and message limits
-      let messageLimit = 2 // Free tier: 2 messages per day
+      let messageLimit = 2 // Free tier: 2 messages per month
       let userTier = 'free'
 
       if (paidSubscription) {
         messageLimit = -1 // Unlimited for paid subscribers
         userTier = 'paid'
       } else if (followSubscription) {
-        messageLimit = 5 // Follower tier: 5 messages per day
+        messageLimit = 5 // Follower tier: 5 messages per month
         userTier = 'follower'
       }
 
-      // Check daily usage only if not unlimited (paid subscriber)
+      console.log('🔍 Stream API Debug:', {
+        userId,
+        creatorId,
+        isPaidSubscriber: !!paidSubscription,
+        isFollowing: !!followSubscription,
+        userTier,
+        messageLimit,
+        monthKey
+      })
+
+      // Check monthly usage only if not unlimited (paid subscriber)
       if (messageLimit > 0) {
-        // Get today's usage
-        const { data: dailyUsage } = await supabase
+        // Get this month's usage
+        const { data: monthlyUsage } = await supabase
           .from('daily_usage')
           .select('*')
           .eq('user_id', userId)
           .eq('creator_id', creatorId)
-          .eq('date', todayISO)
+          .eq('date', monthKey)
           .single()
 
-        const currentUsage = dailyUsage?.message_count || 0
+        const currentUsage = monthlyUsage?.message_count || 0
+
+        console.log('📊 Usage Check:', {
+          currentUsage,
+          messageLimit,
+          monthlyUsageRecord: monthlyUsage,
+          monthKey,
+          shouldBlock: currentUsage >= messageLimit
+        })
 
         if (currentUsage >= messageLimit) {
           const upgradeMessage = userTier === 'free'
-            ? 'You\'ve reached your daily limit of 2 messages. Follow this creator to get 5 messages per day, or upgrade to a paid subscription for unlimited messages!'
-            : 'You\'ve reached your daily limit of 5 messages. Upgrade to a paid subscription for unlimited messages!'
+            ? 'You\'ve reached your monthly limit of 2 messages. Follow this creator to get 5 messages per month, or upgrade to a paid subscription for unlimited messages!'
+            : 'You\'ve reached your monthly limit of 5 messages. Upgrade to a paid subscription for unlimited messages!'
 
           return new Response(JSON.stringify({
-            error: 'Daily limit reached',
+            error: 'Monthly limit reached',
             errorType: 'LIMIT_REACHED',
             userTier,
             currentUsage,
@@ -281,18 +300,18 @@ export async function POST(request: NextRequest) {
             }
           }
 
-          // Update daily usage (only for authenticated users)
+          // Update monthly usage (only for authenticated users)
           if (isAuthenticated && userId) {
-            const today = new Date()
-            today.setHours(0, 0, 0, 0)
-            const todayStr = today.toISOString().split('T')[0]
+            const now = new Date()
+            const currentMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+            const monthKey = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}`
 
             const { data: existingUsage, error: usageSelectError } = await supabase
               .from('daily_usage')
               .select('message_count')
               .eq('user_id', userId)
               .eq('creator_id', creatorId)
-              .eq('date', todayStr)
+              .eq('date', monthKey)
               .single()
 
             if (existingUsage) {
@@ -301,10 +320,10 @@ export async function POST(request: NextRequest) {
                 .update({ message_count: existingUsage.message_count + 1 })
                 .eq('user_id', userId)
                 .eq('creator_id', creatorId)
-                .eq('date', todayStr)
+                .eq('date', monthKey)
 
               if (updateError) {
-                console.error('Failed to update daily usage:', (updateError as any).message)
+                console.error('Failed to update monthly usage:', (updateError as any).message)
               }
             } else {
               const { error: insertError } = await supabase
@@ -312,12 +331,12 @@ export async function POST(request: NextRequest) {
                 .insert({
                   user_id: userId,
                   creator_id: creatorId,
-                  date: todayStr,
+                  date: monthKey,
                   message_count: 1
                 })
 
               if (insertError) {
-                console.error('Failed to create daily usage:', (insertError as any).message)
+                console.error('Failed to create monthly usage:', (insertError as any).message)
               }
             }
           }

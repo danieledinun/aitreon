@@ -18,9 +18,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { creatorId } = subscriptionStatusSchema.parse(body)
 
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    const todayISO = today.toISOString().split('T')[0]
+    const now = new Date()
+    // Get first day of current month
+    const currentMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+    const monthKey = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}`
 
     // Check if user is a paid subscriber for this creator
     const { data: paidSubscription } = await supabase
@@ -40,19 +41,19 @@ export async function POST(request: NextRequest) {
       .eq('is_active', true)
       .single()
 
-    // Get today's daily usage
-    const { data: dailyUsage } = await supabase
+    // Get this month's usage
+    const { data: monthlyUsage } = await supabase
       .from('daily_usage')
       .select('*')
       .eq('user_id', session.user.id)
       .eq('creator_id', creatorId)
-      .eq('date', todayISO)
+      .eq('date', monthKey)
       .single()
 
     // Determine user tier and limits
     const isPaidSubscriber = !!paidSubscription
     const isFollowing = !!followSubscription
-    const currentUsage = dailyUsage?.message_count || 0
+    const currentUsage = monthlyUsage?.message_count || 0
 
     let userTier: 'free' | 'follower' | 'paid' = 'free'
     let messageLimit = 2
@@ -73,7 +74,7 @@ export async function POST(request: NextRequest) {
       isFollowing,
       userTier,
       messageLimit,
-      dailyUsage: currentUsage,
+      monthlyUsage: currentUsage,
       remainingMessages
     })
   } catch (error) {
