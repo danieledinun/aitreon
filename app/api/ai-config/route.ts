@@ -187,15 +187,45 @@ export async function POST(request: NextRequest) {
       translate_display: configData.translateDisplay !== undefined ? configData.translateDisplay : false
     }
 
-    // Upsert AI configuration
-    const { data: aiConfig } = await supabase
+    // Check if config exists
+    const { data: existingConfig } = await supabase
       .from('ai_config')
-      .upsert({
-        creator_id: creator.id,
-        ...aiConfigData
-      })
-      .select()
+      .select('id')
+      .eq('creator_id', creator.id)
       .single()
+
+    let aiConfig
+    if (existingConfig) {
+      // Update existing config
+      const { data, error } = await supabase
+        .from('ai_config')
+        .update(aiConfigData)
+        .eq('creator_id', creator.id)
+        .select()
+        .single()
+
+      if (error) {
+        console.error('Error updating AI config:', error)
+        throw error
+      }
+      aiConfig = data
+    } else {
+      // Insert new config
+      const { data, error } = await supabase
+        .from('ai_config')
+        .insert({
+          creator_id: creator.id,
+          ...aiConfigData
+        })
+        .select()
+        .single()
+
+      if (error) {
+        console.error('Error inserting AI config:', error)
+        throw error
+      }
+      aiConfig = data
+    }
 
     return NextResponse.json({ success: true, config: aiConfig })
   } catch (error) {
