@@ -741,6 +741,7 @@ REMEMBER: Build your response ONLY from the content chunks above. Do not add ext
 
   /**
    * Generate system prompt for admin panel display
+   * UPDATED: Uses UnifiedPromptService for consistency
    */
   static async generateSystemPromptForAdmin(
     creatorId: string,
@@ -748,75 +749,15 @@ REMEMBER: Build your response ONLY from the content chunks above. Do not add ext
     sampleContext: string
   ): Promise<string> {
     try {
-      const { supabase } = await import('./supabase')
+      const { UnifiedPromptService } = await import('./unified-prompt-service')
 
-      // Get creator information
-      const { data: creator, error: creatorError } = await supabase
-        .from('creators')
-        .select('id, username, display_name')
-        .eq('id', creatorId)
-        .single()
-
-      if (creatorError || !creator) {
-        return `Error: Creator not found with ID: ${creatorId}`
-      }
-
-      // Get AI configuration for enhanced prompting
-      const { data: aiConfig } = await supabase
-        .from('ai_config')
-        .select('*')
-        .eq('creator_id', creatorId)
-        .single()
-
-      // Build AI personality-aware system prompt
-      const agentName = aiConfig?.agent_name || creator.display_name
-      const agentIntro = aiConfig?.agent_intro || `a content creator named ${creator.display_name}`
-
-      // Build personality traits from AI config
-      let personalityTraits = ''
-      if (aiConfig) {
-        const traits = []
-        if (aiConfig.directness) traits.push(`Directness level: ${aiConfig.directness}/5`)
-        if (aiConfig.humor) traits.push(`Humor level: ${aiConfig.humor}/5`)
-        if (aiConfig.empathy) traits.push(`Empathy level: ${aiConfig.empathy}/5`)
-        if (aiConfig.formality) traits.push(`Formality level: ${aiConfig.formality}/5`)
-        if (aiConfig.spiciness) traits.push(`Energy level: ${aiConfig.spiciness}/5`)
-        if (aiConfig.catchphrases?.length) {
-          const phrases = Array.isArray(aiConfig.catchphrases) ? aiConfig.catchphrases : JSON.parse(aiConfig.catchphrases || '[]')
-          if (phrases.length > 0) traits.push(`Catchphrases: ${phrases.join(', ')}`)
-        }
-        if (traits.length > 0) {
-          personalityTraits = `\n\nPersonality Configuration:\n${traits.join('\n')}`
-        }
-      }
-
-      // Build base system prompt with proper citation format
-      const baseSystemPrompt = `You are ${agentName}, ${agentIntro}. You should respond in their voice and personality based on their content and configured personality.
-
-IMPORTANT RULES:
-1. Only answer questions using information from the provided context
-2. If you don't have relevant information in the context, politely say you don't have enough information about that topic
-3. Always cite specific videos and timestamps when referencing information
-4. Maintain the creator's personality and speaking style based on their content and configuration
-5. Be helpful and engaging, just like the real creator would be
-6. Focus on practical advice and actionable insights
-
-${personalityTraits}
-
-Relevant Content Context:
-${sampleContext}
-
-If no relevant content is provided above, respond that you don't have information about that topic in your available content.`
-
-      // Enhance prompt with AI Style Card if available
-      const enhancedPrompt = await StyleAdapterService.generateChatPrompt(
+      // Use the unified prompt service for admin display
+      return await UnifiedPromptService.generateDebugPrompt(
         creatorId,
-        baseSystemPrompt,
-        agentName,
-        agentIntro
+        '', // Creator name will be loaded from database
+        sampleQuery,
+        sampleContext
       )
-
-      return enhancedPrompt
 
     } catch (error) {
       console.error('❌ Error generating system prompt for admin:', error)

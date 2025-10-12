@@ -9,6 +9,7 @@ import { SupabaseVectorService } from './supabase-vector-service'
 import { StyleAdapterService } from './style-adapter'
 import { CitationValidationService, type CitationCandidate } from './citation-validation-service'
 import { DeepInfraEmbeddingService, type RerankCandidate } from './deepinfra-embedding-service'
+import { UnifiedPromptService } from './unified-prompt-service'
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -210,6 +211,7 @@ export class EnhancedRAGService {
 
   /**
    * Generate AI response with citations and full AI configuration
+   * UPDATED: Uses UnifiedPromptService for production-ready prompts
    */
   private static async generateAIResponse(
     creatorId: string,
@@ -218,16 +220,6 @@ export class EnhancedRAGService {
     citations: any[],
     conversationHistory: Array<{ role: string; content: string }>
   ): Promise<string> {
-    // Get AI config
-    const { data: aiConfig } = await supabase
-      .from('ai_config')
-      .select('*')
-      .eq('creator_id', creatorId)
-      .single()
-
-    // Build dynamic personality prompt based on AI configuration
-    const personalityPrompt = this.buildPersonalityPrompt(aiConfig, creatorName)
-
     // Debug: Log citation content mapping
     console.log(`🔍 Citation mapping debug for "${userQuery.substring(0, 30)}...":`)
     citations.forEach((citation, i) => {
@@ -236,24 +228,22 @@ export class EnhancedRAGService {
       console.log(`    Score: ${citation.relevanceScore} | Rerank: ${citation.rerankScore || 'N/A'}`)
     })
 
-    // Build system prompt with citations and full AI configuration
-    const systemPrompt = `${personalityPrompt}
+    // Format citations for the unified prompt service
+    const relevantContent = citations.map((citation, i) => ({
+      videoTitle: citation.videoTitle || 'Unknown Video',
+      timestamp: citation.startTime ? `${Math.floor(citation.startTime)}s` : 'unknown time',
+      content: citation.content,
+      citationNumber: i + 1
+    }))
 
-CONTENT CITATIONS (${citations.length} available):
-${citations.map((citation, i) =>
-  `[${i + 1}] From "${citation.videoTitle}" at ${citation.startTime ? `${Math.floor(citation.startTime)}s` : 'unknown time'}:
-${citation.content}`
-).join('\n\n')}
+    // Generate system prompt using unified service
+    const systemPrompt = await UnifiedPromptService.generateCreatorPrompt({
+      creatorId,
+      creatorName,
+      relevantContent
+    })
 
-RESPONSE RULES:
-- Build your response ONLY from the citations above
-- You MUST use ALL ${citations.length} citations provided - do not skip any
-- CRITICAL: When you reference [1], only use content from citation [1]. When you reference [2], only use content from citation [2], etc.
-- NEVER mix content from one citation with a different citation number
-- Use citations in sequential order: [1], [2], [3], [4], [5], etc. - no gaps or jumps
-- Each citation [1]-[${citations.length}] must appear at least once in your response
-- Double-check that the content you're describing matches the citation number you're using
-- Follow ALL personality and style guidelines specified above`
+    console.log(`✅ Generated unified prompt for ${creatorName} with ${citations.length} citations`)
 
     const response = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
@@ -272,138 +262,6 @@ RESPONSE RULES:
     return response.choices[0]?.message?.content || "I couldn't generate a response."
   }
 
-  /**
-   * Build dynamic personality prompt from AI configuration
-   */
-  private static buildPersonalityPrompt(aiConfig: any, fallbackCreatorName: string): string {
-    // Basic identity
-    const agentName = aiConfig?.agent_name || fallbackCreatorName
-    const agentIntro = aiConfig?.agent_intro || `a content creator named ${fallbackCreatorName}`
-
-    let prompt = `You are ${agentName}, ${agentIntro}.\n\n`
-
-    if (!aiConfig) {
-      return prompt + "Respond in a helpful, engaging manner."
-    }
-
-    // Personality traits (1-5 scale)
-    const traits = []
-    if (aiConfig.directness) {
-      const level = aiConfig.directness
-      if (level <= 2) traits.push("diplomatic and gentle in delivery")
-      else if (level >= 4) traits.push("direct and straightforward")
-      else traits.push("balanced in directness")
-    }
-
-    if (aiConfig.humor) {
-      const level = aiConfig.humor
-      if (level <= 2) traits.push("maintaining a serious, professional tone")
-      else if (level >= 4) traits.push("playful and using humor when appropriate")
-      else traits.push("occasionally lighthearted")
-    }
-
-    if (aiConfig.empathy) {
-      const level = aiConfig.empathy
-      if (level <= 2) traits.push("objective and factual")
-      else if (level >= 4) traits.push("warm, understanding, and empathetic")
-      else traits.push("considerate and supportive")
-    }
-
-    if (aiConfig.formality) {
-      const level = aiConfig.formality
-      if (level <= 2) traits.push("casual and friendly")
-      else if (level >= 4) traits.push("professional and formal")
-      else traits.push("conversational yet respectful")
-    }
-
-    if (traits.length > 0) {
-      prompt += `PERSONALITY: Be ${traits.join(", ")}.\n\n`
-    }
-
-    // Content style preferences
-    const styleRules = []
-
-    if (aiConfig.sentence_length) {
-      switch (aiConfig.sentence_length) {
-        case 'SHORT':
-          styleRules.push("Use short, punchy sentences (5-10 words when possible)")
-          break
-        case 'LONG':
-          styleRules.push("Provide detailed explanations with longer sentences (20+ words)")
-          break
-        default:
-          styleRules.push("Use medium-length sentences (10-20 words)")
-      }
-    }
-
-    if (aiConfig.format_default) {
-      switch (aiConfig.format_default) {
-        case 'BULLETS':
-          styleRules.push("Format responses using bullet points when listing information")
-          break
-        case 'PARAGRAPH':
-          styleRules.push("Format responses in paragraph form")
-          break
-        default:
-          styleRules.push("Mix paragraphs and bullet points as appropriate")
-      }
-    }
-
-    if (aiConfig.use_emojis) {
-      switch (aiConfig.use_emojis) {
-        case 'NEVER':
-          styleRules.push("Never use emojis")
-          break
-        case 'OFTEN':
-          styleRules.push("Use emojis frequently to enhance expression")
-          break
-        default:
-          styleRules.push("Occasionally use emojis when they add value")
-      }
-    }
-
-    if (styleRules.length > 0) {
-      prompt += `CONTENT STYLE: ${styleRules.join(". ")}.\n\n`
-    }
-
-    // Signature elements
-    if (aiConfig.catchphrases && Array.isArray(aiConfig.catchphrases) && aiConfig.catchphrases.length > 0) {
-      const phrases = aiConfig.catchphrases.filter((p: string) => p && p.trim())
-      if (phrases.length > 0) {
-        prompt += `SIGNATURE PHRASES: Naturally incorporate these phrases when appropriate: ${phrases.map((p: string) => `"${p}"`).join(", ")}.\n\n`
-      }
-    }
-
-    if (aiConfig.avoid_words && Array.isArray(aiConfig.avoid_words) && aiConfig.avoid_words.length > 0) {
-      const words = aiConfig.avoid_words.filter((w: string) => w && w.trim())
-      if (words.length > 0) {
-        prompt += `AVOID WORDS: Don't use these words/phrases: ${words.join(", ")}.\n\n`
-      }
-    }
-
-    // Content boundaries
-    if (aiConfig.red_lines && Array.isArray(aiConfig.red_lines) && aiConfig.red_lines.length > 0) {
-      const boundaries = aiConfig.red_lines.filter((r: string) => r && r.trim())
-      if (boundaries.length > 0) {
-        prompt += `CONTENT BOUNDARIES: Handle these topics carefully or redirect: ${boundaries.join(", ")}.\n\n`
-      }
-    }
-
-    if (aiConfig.competitor_policy) {
-      switch (aiConfig.competitor_policy) {
-        case 'SUPPORTIVE':
-          prompt += `COMPETITOR MENTIONS: Be supportive when discussing competitors.\n\n`
-          break
-        case 'AVOID':
-          prompt += `COMPETITOR MENTIONS: Avoid discussing competitors, redirect to your own content.\n\n`
-          break
-        default:
-          prompt += `COMPETITOR MENTIONS: Stay neutral and objective when competitors are mentioned.\n\n`
-      }
-    }
-
-    return prompt
-  }
 
   /**
    * Default response when no content found
