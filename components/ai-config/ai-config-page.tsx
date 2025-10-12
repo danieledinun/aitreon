@@ -107,6 +107,36 @@ export default function AiConfigPage({ creatorId }: AiConfigPageProps) {
         )}
       </div>
 
+      {/* AI Setup Status Recap */}
+      <Card className="bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border-purple-200 dark:border-purple-800/30">
+        <div className="p-6">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+            <Settings className="w-5 h-5 text-purple-500" />
+            Configuration Overview
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="flex items-center justify-between p-4 bg-white/70 dark:bg-neutral-800/70 rounded-lg border border-gray-200 dark:border-neutral-700">
+              <span className="text-sm text-gray-600 dark:text-neutral-300">AI Personality</span>
+              <Badge variant={currentConfig?.personality ? "default" : "secondary"} className={currentConfig?.personality ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300" : "bg-gray-100 text-gray-600 dark:bg-neutral-700 dark:text-neutral-400"}>
+                {currentConfig?.personality ? 'Configured' : 'Default'}
+              </Badge>
+            </div>
+            <div className="flex items-center justify-between p-4 bg-white/70 dark:bg-neutral-800/70 rounded-lg border border-gray-200 dark:border-neutral-700">
+              <span className="text-sm text-gray-600 dark:text-neutral-300">Questions</span>
+              <Badge variant={currentConfig?.suggested_questions ? "default" : "secondary"} className={currentConfig?.suggested_questions ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300" : "bg-gray-100 text-gray-600 dark:bg-neutral-700 dark:text-neutral-400"}>
+                {currentConfig?.suggested_questions ? 'Configured' : 'None'}
+              </Badge>
+            </div>
+            <div className="flex items-center justify-between p-4 bg-white/70 dark:bg-neutral-800/70 rounded-lg border border-gray-200 dark:border-neutral-700">
+              <span className="text-sm text-gray-600 dark:text-neutral-300">Voice Settings</span>
+              <Badge variant="secondary" className="bg-gray-100 text-gray-600 dark:bg-neutral-700 dark:text-neutral-400">
+                Configure in Voice Settings
+              </Badge>
+            </div>
+          </div>
+        </div>
+      </Card>
+
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full max-w-2xl grid-cols-3 mb-8 bg-gray-100 dark:bg-neutral-900 border-gray-300 dark:border-neutral-700">
           <TabsTrigger value="quickstart" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:dark:bg-neutral-800 data-[state=active]:text-gray-900 data-[state=active]:dark:text-white">

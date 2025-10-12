@@ -762,57 +762,6 @@ export default async function CreatorDashboard() {
               </CardContent>
             </Card>
 
-            {/* Quick Setup Status */}
-            <Card className="bg-white/50 dark:bg-neutral-900/50 border-gray-300 dark:border-neutral-700">
-              <CardHeader>
-                <CardTitle className="text-gray-900 dark:text-white flex items-center gap-2">
-                  <Bot className="w-5 h-5 text-purple-400" />
-                  AI Setup Status
-                </CardTitle>
-                <CardDescription className="text-gray-500 dark:text-neutral-400">
-                  Configuration overview
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600 dark:text-neutral-300">AI Personality</span>
-                    <Badge variant={effectiveCreator?.ai_config ? "default" : "secondary"} className={effectiveCreator?.ai_config ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300" : "bg-gray-100 text-gray-600 dark:bg-neutral-700 dark:text-neutral-400"}>
-                      {effectiveCreator?.ai_config ? 'Configured' : 'Default'}
-                    </Badge>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600 dark:text-neutral-300">Questions</span>
-                    <Badge variant={effectiveCreator?.suggested_questions ? "default" : "secondary"} className={effectiveCreator?.suggested_questions ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300" : "bg-gray-100 text-gray-600 dark:bg-neutral-700 dark:text-neutral-400"}>
-                      {effectiveCreator?.suggested_questions ? 'Configured' : 'None'}
-                    </Badge>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600 dark:text-neutral-300">Voice Settings</span>
-                    <Badge variant={effectiveCreator?.voice_settings ? "default" : "secondary"} className={effectiveCreator?.voice_settings ? "bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300" : "bg-gray-100 text-gray-600 dark:bg-neutral-700 dark:text-neutral-400"}>
-                      {effectiveCreator?.voice_settings ? 'Active' : 'Not Set'}
-                    </Badge>
-                  </div>
-                </div>
-
-                <Separator className="bg-gray-300 dark:bg-neutral-700" />
-                
-                <div className="space-y-2">
-                  <Link href="/creator/ai-config" className="flex items-center">
-                    <Button size="sm" className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 flex items-center">
-                      <Bot className="w-4 h-4 mr-2" />
-                      Configure AI
-                    </Button>
-                  </Link>
-                  <Link href="/creator/voice-settings" className="flex items-center">
-                    <Button size="sm" variant="outline" className="w-full border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-neutral-300 flex items-center">
-                      <Settings className="w-4 h-4 mr-2" />
-                      Voice Setup
-                    </Button>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
           </div>
 
           {/* Recent Activity with Expandable Transcripts */}
