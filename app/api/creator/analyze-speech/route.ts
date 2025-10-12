@@ -159,49 +159,36 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Creator profile not found' }, { status: 404 })
     }
 
-    // Get existing ai_config to check if patterns exist
-    const { data: aiConfig } = await supabase
-      .from('ai_config')
-      .select('*')
+    // Get speech analysis data from speech_analysis table
+    const { data: speechAnalysis } = await supabase
+      .from('speech_analysis')
+      .select('signature_phrases, communication_metrics, created_at')
       .eq('creator_id', creators.id)
+      .order('created_at', { ascending: false })
+      .limit(1)
       .single()
 
-    if (!aiConfig) {
+    if (!speechAnalysis) {
       return NextResponse.json({
         hasPatterns: false,
         message: 'No speech patterns analyzed yet. Run analysis to extract patterns from your videos.'
       })
     }
 
-    // Check if we have any style-related data (the new Python analysis updates updated_at)
-    const hasRecentAnalysis = aiConfig.updated_at &&
-      new Date(aiConfig.updated_at) > new Date('2024-01-01') // Any recent update indicates analysis was run
+    // Convert signature phrases object to sorted array with frequencies
+    const signaturePhrases = speechAnalysis.signature_phrases || {}
+    const phraseArray = Object.entries(signaturePhrases)
+      .sort((a: [string, any], b: [string, any]) => (b[1] as number) - (a[1] as number))
+      .map(([phrase, frequency]) => ({ phrase, frequency: frequency as number }))
 
-    if (!hasRecentAnalysis) {
-      return NextResponse.json({
-        hasPatterns: false,
-        message: 'No recent speech patterns analyzed. Run analysis to extract patterns.'
-      })
-    }
-
-    // Return mock patterns since the Python script doesn't store structured patterns yet
-    const patterns = {
-      catchphrases: ['going to', 'want to', 'like this'],
-      openingPatterns: ['hey everyone', 'alright', 'so'],
-      closingPatterns: ['thanks for watching', 'see you next time'],
-      goToVerbs: ['going', 'want', 'like', 'get', 'see'],
-      avoidWords: [],
-      speakingStyle: {
-        sentenceStructure: 'short and punchy',
-        energyLevel: 'high',
-        tonality: 'educational',
-        pacing: 'fast'
-      }
-    }
+    // Get communication metrics
+    const communicationMetrics = speechAnalysis.communication_metrics || {}
 
     return NextResponse.json({
       hasPatterns: true,
-      patterns
+      signaturePhrases: phraseArray,
+      communicationMetrics,
+      analyzedAt: speechAnalysis.created_at
     })
 
   } catch (error) {
