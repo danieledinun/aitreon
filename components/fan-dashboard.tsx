@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
@@ -39,6 +40,7 @@ interface FanDashboardProps {
 
 export default function FanDashboard({ userId }: FanDashboardProps) {
   const { data: session } = useSession()
+  const searchParams = useSearchParams()
   const [creators, setCreators] = useState<Creator[]>([])
   const [filteredCreators, setFilteredCreators] = useState<Creator[]>([])
   const [recentlyVisited, setRecentlyVisited] = useState<Creator[]>([])
@@ -47,7 +49,7 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [sortBy, setSortBy] = useState('popularity')
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState('discover')
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'discover')
 
   // Profile state
   const [profileData, setProfileData] = useState({

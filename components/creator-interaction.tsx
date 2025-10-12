@@ -1187,10 +1187,10 @@ export default function CreatorInteraction({
           </div>
           
           <div className="p-2">
-            <button 
+            <button
               onClick={() => {
                 setShowUserDropdown(false)
-                alert('Profile page coming soon!')
+                window.location.href = '/fan/dashboard?tab=profile'
               }}
               className="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors text-left"
             >
@@ -1198,10 +1198,10 @@ export default function CreatorInteraction({
               <span className="text-gray-900">Profile Settings</span>
             </button>
             
-            <button 
+            <button
               onClick={() => {
                 setShowUserDropdown(false)
-                alert('Subscription management coming soon!')
+                window.location.href = '/fan/dashboard?tab=subscribed'
               }}
               className="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors text-left"
             >
