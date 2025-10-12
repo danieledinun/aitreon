@@ -186,26 +186,21 @@ export default function CreatorOnboardingFlow({ userId }: OnboardingFlowProps) {
     youtubeChannelUrl: false
   })
 
-  // Step 3: AI Configuration (Quickstart style)
+  // Step 3: AI Configuration (Unified style)
   const [aiConfig, setAiConfig] = useState({
     agentName: '',
-    audiences: [] as string[],
-    toneSliders: {
-      directness: 3,
-      playfulness: 3,
-      formality: 3,
-      optimism: 3
-    },
-    sentenceLength: 'medium',
-    formatPreference: 'bullets',
-    emojiUsage: 'sometimes',
-    signaturePhrases: [''],
+    agentIntro: '',
+    directness: 3,
+    humor: 3,
+    empathy: 4,
+    formality: 3,
+    sentenceLength: 'MEDIUM',
+    useEmojis: 'SOMETIMES',
+    formatDefault: 'BULLETS',
+    catchphrases: [''],
     avoidWords: [''],
-    answerShape: 'stance-bullets',
-    evidencePolicy: 'factual-only',
-    boundaries: [],
-    uncertaintyHandling: 'not-found',
-    approvalPolicy: 'immediate'
+    redLines: [''],
+    competitorPolicy: 'NEUTRAL'
   })
 
   // Step 4: Questions
@@ -308,36 +303,6 @@ export default function CreatorOnboardingFlow({ userId }: OnboardingFlowProps) {
     setVideos(prev => prev.map(video => ({ ...video, selected: !allSelected })))
   }
 
-  // AI Config handlers
-  const handleAudienceChange = (audience: string, checked: boolean) => {
-    setAiConfig(prev => ({
-      ...prev,
-      audiences: checked 
-        ? [...prev.audiences, audience]
-        : prev.audiences.filter(a => a !== audience)
-    }))
-  }
-
-  const handlePhraseChange = (index: number, value: string, type: 'signaturePhrases' | 'avoidWords') => {
-    setAiConfig(prev => ({
-      ...prev,
-      [type]: prev[type].map((phrase, i) => i === index ? value : phrase)
-    }))
-  }
-
-  const addPhrase = (type: 'signaturePhrases' | 'avoidWords') => {
-    setAiConfig(prev => ({
-      ...prev,
-      [type]: [...prev[type], '']
-    }))
-  }
-
-  const removePhrases = (index: number, type: 'signaturePhrases' | 'avoidWords') => {
-    setAiConfig(prev => ({
-      ...prev,
-      [type]: prev[type].filter((_, i) => i !== index)
-    }))
-  }
 
   // Handle video selection completion - start background processing
   const handleVideoSelectionComplete = async () => {
@@ -441,13 +406,21 @@ export default function CreatorOnboardingFlow({ userId }: OnboardingFlowProps) {
       // Small delay to ensure creator record is committed to database
       await new Promise(resolve => setTimeout(resolve, 1000))
 
-      // Save AI configuration (quickstart format)
-      if (aiConfig.agentName.trim()) {
+      // Save AI configuration (unified format)
+      if (aiConfig.agentName.trim() && aiConfig.agentIntro.trim()) {
         try {
+          // Clean up the AI config data like our unified form does
+          const cleanAiConfig = {
+            ...aiConfig,
+            catchphrases: aiConfig.catchphrases.filter(p => p.trim().length > 0),
+            avoidWords: aiConfig.avoidWords.filter(w => w.trim().length > 0),
+            redLines: aiConfig.redLines.filter(r => r.trim().length > 0)
+          }
+
           const aiConfigResponse = await fetch('/api/ai-config', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(aiConfig)
+            body: JSON.stringify(cleanAiConfig)
           })
 
           if (aiConfigResponse.ok) {
@@ -865,70 +838,67 @@ export default function CreatorOnboardingFlow({ userId }: OnboardingFlowProps) {
                   </div>
                 )}
 
-                {/* Step 3: AI Configuration (Quickstart) */}
+                {/* Step 3: AI Configuration (Unified) */}
                 {currentStep === 3 && (
                   <div className="space-y-6">
                     {/* AI Agent Name */}
                     <div className="space-y-3">
                       <Label htmlFor="agentName" className="text-white text-base font-medium">
-                        1. What should we call your AI agent? *
+                        1. What should we call your AI? *
                       </Label>
                       <Input
                         id="agentName"
                         value={aiConfig.agentName}
                         onChange={(e) => setAiConfig(prev => ({ ...prev, agentName: e.target.value }))}
-                        placeholder="e.g., FitnessGuru AI, CookingMaster, TechReviewer..."
+                        placeholder="e.g., Alex's AI Assistant, FitnessCoach Pro"
                         className="bg-white/10 border-white/20 text-white placeholder:text-gray-400 h-12 text-lg rounded-xl focus:bg-white/15 focus:border-purple-400"
                       />
                     </div>
 
-                    {/* Audience & Use Cases */}
+                    {/* AI Introduction */}
                     <div className="space-y-3">
-                      <Label className="text-white text-base font-medium">
-                        2. Audience & use cases (pick 2–3)
+                      <Label htmlFor="agentIntro" className="text-white text-base font-medium">
+                        2. How should your AI introduce itself? *
                       </Label>
-                      <div className="grid grid-cols-2 gap-3">
-                        {AUDIENCE_OPTIONS.map((audience) => (
-                          <div key={audience} className="flex items-center space-x-2">
-                            <Checkbox
-                              id={audience}
-                              checked={aiConfig.audiences.includes(audience)}
-                              onCheckedChange={(checked) => handleAudienceChange(audience, checked as boolean)}
-                            />
-                            <Label htmlFor={audience} className="text-sm text-white">{audience}</Label>
-                          </div>
-                        ))}
-                      </div>
+                      <Textarea
+                        id="agentIntro"
+                        value={aiConfig.agentIntro}
+                        onChange={(e) => setAiConfig(prev => ({ ...prev, agentIntro: e.target.value }))}
+                        placeholder="e.g., I'm here to help you with fitness advice based on my years of experience as a personal trainer..."
+                        rows={3}
+                        className="bg-white/10 border-white/20 text-white placeholder:text-gray-400 text-lg rounded-xl focus:bg-white/15 focus:border-purple-400 resize-none"
+                      />
                     </div>
 
-                    {/* Tone Sliders */}
+                    {/* Personality Sliders */}
                     <div className="space-y-3">
                       <Label className="text-white text-base font-medium">
-                        3. Tone sliders (1–5)
+                        3. Personality traits (1–5)
                       </Label>
                       <div className="grid grid-cols-2 gap-4">
                         {[
-                          { key: 'directness', label: 'Direct' },
-                          { key: 'playfulness', label: 'Playful' },
-                          { key: 'formality', label: 'Formal' },
-                          { key: 'optimism', label: 'Optimistic' }
-                        ].map(({ key, label }) => (
+                          { key: 'directness', label: 'Directness', left: 'Gentle', right: 'Direct' },
+                          { key: 'humor', label: 'Humor', left: 'Serious', right: 'Playful' },
+                          { key: 'empathy', label: 'Empathy', left: 'Objective', right: 'Warm' },
+                          { key: 'formality', label: 'Formality', left: 'Casual', right: 'Formal' }
+                        ].map(({ key, label, left, right }) => (
                           <div key={key} className="space-y-2">
                             <div className="flex justify-between">
                               <Label className="text-white text-sm">{label}</Label>
-                              <span className="text-sm text-gray-400">{aiConfig.toneSliders[key as keyof typeof aiConfig.toneSliders]}/5</span>
+                              <span className="text-sm text-gray-400">{aiConfig[key as keyof typeof aiConfig]}/5</span>
                             </div>
                             <Slider
-                              value={[aiConfig.toneSliders[key as keyof typeof aiConfig.toneSliders]]}
-                              onValueChange={(values) => setAiConfig(prev => ({
-                                ...prev,
-                                toneSliders: { ...prev.toneSliders, [key]: values[0] }
-                              }))}
+                              value={[aiConfig[key as keyof typeof aiConfig] as number]}
+                              onValueChange={(values) => setAiConfig(prev => ({ ...prev, [key]: values[0] }))}
                               max={5}
                               min={1}
                               step={1}
                               className="w-full"
                             />
+                            <div className="flex justify-between text-xs text-gray-500">
+                              <span>{left}</span>
+                              <span>{right}</span>
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -937,23 +907,30 @@ export default function CreatorOnboardingFlow({ userId }: OnboardingFlowProps) {
                     {/* Signature Phrases */}
                     <div className="space-y-3">
                       <Label className="text-white text-base font-medium">
-                        4. Signature phrases or words to use (3–5)
+                        4. Signature phrases (optional)
                       </Label>
                       <div className="space-y-2">
-                        {aiConfig.signaturePhrases.map((phrase, index) => (
+                        {aiConfig.catchphrases.map((phrase, index) => (
                           <div key={index} className="flex gap-2">
                             <Input
                               value={phrase}
-                              onChange={(e) => handlePhraseChange(index, e.target.value, 'signaturePhrases')}
-                              placeholder="e.g., 'Here's the thing...', 'Let's be real...'"
+                              onChange={(e) => {
+                                const newPhrases = [...aiConfig.catchphrases]
+                                newPhrases[index] = e.target.value
+                                setAiConfig(prev => ({ ...prev, catchphrases: newPhrases }))
+                              }}
+                              placeholder="e.g., 'Here's the thing...', 'Let's break this down...'"
                               className="bg-white/10 border-white/20 text-white placeholder:text-gray-400 h-10 rounded-xl focus:bg-white/15 focus:border-purple-400"
                             />
-                            {aiConfig.signaturePhrases.length > 1 && (
+                            {aiConfig.catchphrases.length > 1 && (
                               <Button
                                 type="button"
                                 variant="outline"
                                 size="sm"
-                                onClick={() => removePhrases(index, 'signaturePhrases')}
+                                onClick={() => {
+                                  const newPhrases = aiConfig.catchphrases.filter((_, i) => i !== index)
+                                  setAiConfig(prev => ({ ...prev, catchphrases: newPhrases }))
+                                }}
                                 className="bg-white/10 border-white/20 text-white hover:bg-white/20"
                               >
                                 ×
@@ -961,12 +938,12 @@ export default function CreatorOnboardingFlow({ userId }: OnboardingFlowProps) {
                             )}
                           </div>
                         ))}
-                        {aiConfig.signaturePhrases.length < 5 && (
+                        {aiConfig.catchphrases.length < 3 && (
                           <Button
                             type="button"
                             variant="outline"
                             size="sm"
-                            onClick={() => addPhrase('signaturePhrases')}
+                            onClick={() => setAiConfig(prev => ({ ...prev, catchphrases: [...prev.catchphrases, ''] }))}
                             className="bg-white/10 border-white/20 text-white hover:bg-white/20"
                           >
                             + Add phrase
@@ -975,53 +952,79 @@ export default function CreatorOnboardingFlow({ userId }: OnboardingFlowProps) {
                       </div>
                     </div>
 
-                    {/* Evidence Policy */}
+                    {/* Content Style */}
                     <div className="space-y-3">
                       <Label className="text-white text-base font-medium">
-                        5. Evidence policy
+                        5. Response style
                       </Label>
-                      <RadioGroup 
-                        value={aiConfig.evidencePolicy} 
-                        onValueChange={(value) => setAiConfig(prev => ({ ...prev, evidencePolicy: value }))}
-                        className="space-y-2"
-                      >
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="always" id="always" />
-                          <Label htmlFor="always" className="text-white text-sm">Always cite YouTube clips</Label>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label className="text-white text-sm">Sentence length</Label>
+                          <RadioGroup
+                            value={aiConfig.sentenceLength}
+                            onValueChange={(value) => setAiConfig(prev => ({ ...prev, sentenceLength: value }))}
+                            className="space-y-1"
+                          >
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="SHORT" id="short" />
+                              <Label htmlFor="short" className="text-white text-xs">Short & punchy</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="MEDIUM" id="medium" />
+                              <Label htmlFor="medium" className="text-white text-xs">Medium length</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="LONG" id="long" />
+                              <Label htmlFor="long" className="text-white text-xs">Detailed</Label>
+                            </div>
+                          </RadioGroup>
                         </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="factual-only" id="factual-only" />
-                          <Label htmlFor="factual-only" className="text-white text-sm">Only when making factual claims</Label>
+                        <div className="space-y-2">
+                          <Label className="text-white text-sm">Emoji usage</Label>
+                          <RadioGroup
+                            value={aiConfig.useEmojis}
+                            onValueChange={(value) => setAiConfig(prev => ({ ...prev, useEmojis: value }))}
+                            className="space-y-1"
+                          >
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="NEVER" id="never" />
+                              <Label htmlFor="never" className="text-white text-xs">Never</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="SOMETIMES" id="sometimes" />
+                              <Label htmlFor="sometimes" className="text-white text-xs">Sometimes</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="OFTEN" id="often" />
+                              <Label htmlFor="often" className="text-white text-xs">Often</Label>
+                            </div>
+                          </RadioGroup>
                         </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="never" id="never-cite" />
-                          <Label htmlFor="never-cite" className="text-white text-sm">Never cite unless asked</Label>
-                        </div>
-                      </RadioGroup>
+                      </div>
                     </div>
 
                     {/* Info Card */}
                     <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-400/20 rounded-2xl p-6">
                       <h3 className="font-semibold text-purple-300 mb-4 flex items-center gap-2 text-lg">
                         <Zap className="w-5 h-5" />
-                        AI Quickstart Configuration
+                        Quick AI Setup
                       </h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-purple-200">
                         <div className="flex items-start gap-2">
                           <Check className="w-4 h-4 text-green-400 mt-0.5" />
-                          <span>Essential questions for quick setup</span>
+                          <span>Essential personality configuration</span>
                         </div>
                         <div className="flex items-start gap-2">
                           <Check className="w-4 h-4 text-green-400 mt-0.5" />
-                          <span>Based on professional AI config best practices</span>
+                          <span>Production-ready AI setup</span>
                         </div>
                         <div className="flex items-start gap-2">
                           <Check className="w-4 h-4 text-green-400 mt-0.5" />
-                          <span>Can be refined later in dashboard</span>
+                          <span>Can be refined later in AI settings</span>
                         </div>
                         <div className="flex items-start gap-2">
                           <Check className="w-4 h-4 text-green-400 mt-0.5" />
-                          <span>Perfect for getting started quickly</span>
+                          <span>Ready to launch in minutes</span>
                         </div>
                       </div>
                     </div>
@@ -1144,7 +1147,7 @@ export default function CreatorOnboardingFlow({ userId }: OnboardingFlowProps) {
                       (!validationSuccess.youtubeChannelUrl && basicInfo.youtubeChannelUrl.length > 0)
                     )) ||
                     (currentStep === 2 && videos.filter(v => v.selected).length === 0) ||
-                    (currentStep === 3 && !aiConfig.agentName.trim())
+                    (currentStep === 3 && (!aiConfig.agentName.trim() || !aiConfig.agentIntro.trim()))
                   }
                   className={`bg-gradient-to-r ${currentStepData.color} hover:opacity-90 text-white rounded-xl px-8 h-12 text-lg font-semibold shadow-lg`}
                 >

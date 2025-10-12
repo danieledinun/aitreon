@@ -5,9 +5,8 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import QuickstartForm from './quickstart-form'
-import ProForm from './pro-form'
-import { Loader2, Settings, Zap, Crown, ArrowLeft, Mic } from 'lucide-react'
+import UnifiedAIForm from './unified-ai-form'
+import { Loader2, Settings, ArrowLeft, Mic } from 'lucide-react'
 import Link from 'next/link'
 import SpeechPatternAnalyzer from '@/components/speech-pattern-analyzer'
 
@@ -20,7 +19,7 @@ export default function AiConfigPage({ creatorId }: AiConfigPageProps) {
   const [saving, setSaving] = useState(false)
   const [currentConfig, setCurrentConfig] = useState<any>(null)
   const [configExists, setConfigExists] = useState(false)
-  const [activeTab, setActiveTab] = useState('quickstart')
+  const [activeTab, setActiveTab] = useState('config')
 
   useEffect(() => {
     loadCurrentConfig()
@@ -138,14 +137,10 @@ export default function AiConfigPage({ creatorId }: AiConfigPageProps) {
       </Card>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full max-w-2xl grid-cols-3 mb-8 bg-gray-100 dark:bg-neutral-900 border-gray-300 dark:border-neutral-700">
-          <TabsTrigger value="quickstart" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:dark:bg-neutral-800 data-[state=active]:text-gray-900 data-[state=active]:dark:text-white">
-            <Zap className="h-4 w-4" />
-            Quickstart
-          </TabsTrigger>
-          <TabsTrigger value="pro" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:dark:bg-neutral-800 data-[state=active]:text-gray-900 data-[state=active]:dark:text-white">
-            <Crown className="h-4 w-4" />
-            Pro Setup
+        <TabsList className="grid w-full max-w-md grid-cols-2 mb-8 bg-gray-100 dark:bg-neutral-900 border-gray-300 dark:border-neutral-700">
+          <TabsTrigger value="config" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:dark:bg-neutral-800 data-[state=active]:text-gray-900 data-[state=active]:dark:text-white">
+            <Settings className="h-4 w-4" />
+            Configuration
           </TabsTrigger>
           <TabsTrigger value="speech" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:dark:bg-neutral-800 data-[state=active]:text-gray-900 data-[state=active]:dark:text-white">
             <Mic className="h-4 w-4" />
@@ -153,60 +148,11 @@ export default function AiConfigPage({ creatorId }: AiConfigPageProps) {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="quickstart">
-          <div className="mb-6">
-            <Card className="p-6 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/10 border-blue-300 dark:border-blue-800/30">
-              <div className="flex items-start gap-4">
-                <Zap className="h-8 w-8 text-blue-500 dark:text-blue-400 mt-1" />
-                <div>
-                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Quickstart Setup</h3>
-                  <p className="text-gray-700 dark:text-neutral-300 mt-2">
-                    Get your AI replica up and running in 5 minutes with 10 essential questions.
-                    Perfect for getting started quickly with basic personality configuration.
-                  </p>
-                  <ul className="mt-3 space-y-1 text-sm text-blue-700 dark:text-blue-300">
-                    <li>• Basic tone and style settings</li>
-                    <li>• Essential phrases and audience targeting</li>
-                    <li>• Simple content policies</li>
-                  </ul>
-                </div>
-              </div>
-            </Card>
-          </div>
-
-          <QuickstartForm
+        <TabsContent value="config">
+          <UnifiedAIForm
             onSubmit={handleSaveConfig}
             onCancel={handleCancel}
-            initialData={currentConfig || {}}
-          />
-        </TabsContent>
-
-        <TabsContent value="pro">
-          <div className="mb-6">
-            <Card className="p-6 bg-gradient-to-br from-purple-900/20 to-purple-800/10 border-purple-800/30">
-              <div className="flex items-start gap-4">
-                <Crown className="h-8 w-8 text-purple-400 mt-1" />
-                <div>
-                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Pro Setup</h3>
-                  <p className="text-gray-700 dark:text-neutral-300 mt-2">
-                    Complete 25-question configuration for advanced personality customization.
-                    Full control over every aspect of your AI's behavior and responses.
-                  </p>
-                  <ul className="mt-3 space-y-1 text-sm text-purple-700 dark:text-purple-300">
-                    <li>• Advanced tone sliders and voice characteristics</li>
-                    <li>• Detailed content policies and safety settings</li>
-                    <li>• Custom phrase patterns and language preferences</li>
-                    <li>• Citation policies and evidence handling</li>
-                    <li>• Multilingual support and uncertainty handling</li>
-                  </ul>
-                </div>
-              </div>
-            </Card>
-          </div>
-
-          <ProForm
-            onSubmit={handleSaveConfig}
-            onCancel={handleCancel}
+            loading={saving}
             initialData={currentConfig || {}}
           />
         </TabsContent>
@@ -219,7 +165,7 @@ export default function AiConfigPage({ creatorId }: AiConfigPageProps) {
                 <div>
                   <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Speech Pattern Analysis</h3>
                   <p className="text-gray-700 dark:text-neutral-300 mt-2">
-                    Extract your unique speaking style directly from your video transcripts. This AI-powered analysis 
+                    Extract your unique speaking style directly from your video transcripts. This AI-powered analysis
                     identifies your catchphrases, opening/closing patterns, and vocabulary preferences to make your AI replica sound more authentic.
                   </p>
                   <ul className="mt-3 space-y-1 text-sm text-green-700 dark:text-green-300">
