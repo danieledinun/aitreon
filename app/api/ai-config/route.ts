@@ -39,25 +39,53 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ config: null })
     }
 
+    // Get speech analysis to suggest signature phrases as catchphrases
+    const { data: speechAnalysis } = await supabase
+      .from('speech_analysis')
+      .select('signature_phrases')
+      .eq('creator_id', creator.id)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single()
+
+    // Extract signature phrases from speech analysis (full phrases only, not single words)
+    let suggestedCatchphrases: string[] = []
+    if (speechAnalysis?.signature_phrases) {
+      suggestedCatchphrases = Object.keys(speechAnalysis.signature_phrases)
+        .filter(phrase => phrase.split(' ').length > 1) // Only multi-word phrases
+        .sort((a, b) => {
+          const freqA = speechAnalysis.signature_phrases[a] || 0
+          const freqB = speechAnalysis.signature_phrases[b] || 0
+          return freqB - freqA
+        })
+        .slice(0, 10) // Top 10 multi-word phrases
+    }
+
+    // Merge manual catchphrases with suggested ones (manual takes priority)
+    const manualCatchphrases = Array.isArray(aiConfig.catchphrases) ? aiConfig.catchphrases.filter(Boolean) : []
+    const allCatchphrases = manualCatchphrases.length > 0
+      ? manualCatchphrases
+      : suggestedCatchphrases
+
     // Transform database fields to client format
     const config = {
       // Identity & Framing
       agentName: aiConfig.agent_name,
       agentIntro: aiConfig.agent_intro,
       aiLabelStyle: aiConfig.ai_label_style,
-      
+
       // Audience & Goals
       primaryAudiences: Array.isArray(aiConfig.primary_audiences) ? aiConfig.primary_audiences : [],
       topOutcomes: Array.isArray(aiConfig.top_outcomes) ? aiConfig.top_outcomes : [],
       ctaPreferences: Array.isArray(aiConfig.cta_preferences) ? aiConfig.cta_preferences : [],
-      
+
       // Voice & Style
       directness: aiConfig.directness,
       humor: aiConfig.humor,
       empathy: aiConfig.empathy,
       formality: aiConfig.formality,
       spiciness: aiConfig.spiciness,
-      
+
       // Content preferences
       sentenceLength: aiConfig.sentence_length,
       useRhetoricalQs: aiConfig.use_rhetorical_qs,
@@ -65,31 +93,31 @@ export async function GET(request: NextRequest) {
       maxBulletsPerAnswer: aiConfig.max_bullets_per_answer,
       useHeaders: aiConfig.use_headers,
       useEmojis: aiConfig.use_emojis,
-      
+
       // Language & phrases
       goToVerbs: Array.isArray(aiConfig.go_to_verbs) ? aiConfig.go_to_verbs : [],
-      catchphrases: Array.isArray(aiConfig.catchphrases) ? aiConfig.catchphrases : [],
+      catchphrases: allCatchphrases,
       avoidWords: Array.isArray(aiConfig.avoid_words) ? aiConfig.avoid_words : [],
       openPatterns: Array.isArray(aiConfig.open_patterns) ? aiConfig.open_patterns : [],
       closePatterns: Array.isArray(aiConfig.close_patterns) ? aiConfig.close_patterns : [],
-      
+
       // Content policy & safety
       sensitiveDomains: Array.isArray(aiConfig.sensitive_domains) ? aiConfig.sensitive_domains : [],
       redLines: Array.isArray(aiConfig.red_lines) ? aiConfig.red_lines : [],
       competitorPolicy: aiConfig.competitor_policy,
       misinfoHandling: aiConfig.misinfo_handling,
-      
+
       // Evidence & citations
       citationPolicy: aiConfig.citation_policy,
       citationFormat: aiConfig.citation_format,
       recencyBias: aiConfig.recency_bias,
-      
+
       // Answer patterns
       defaultTemplate: aiConfig.default_template,
       lengthLimit: aiConfig.length_limit,
       uncertaintyHandling: aiConfig.uncertainty_handling,
       followUpStyle: aiConfig.follow_up_style,
-      
+
       // Multilingual
       supportedLanguages: Array.isArray(aiConfig.supported_languages) ? aiConfig.supported_languages : ['en'],
       translateDisplay: aiConfig.translate_display
