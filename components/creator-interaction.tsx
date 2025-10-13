@@ -1658,7 +1658,6 @@ export default function CreatorInteraction({
                     key={index}
                     onClick={() => handleSuggestionClick(questionObj.question)}
                     className="w-full text-left p-4 rounded-2xl border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all group"
-                    title={`Based on: ${questionObj.basedOn?.join(', ') || 'N/A'} (${Math.round(questionObj.confidence * 100)}% confidence)`}
                   >
                     <div className="flex items-start space-x-3">
                       <div className="w-6 h-6 rounded-full bg-orange-100 flex items-center justify-center mt-0.5 group-hover:bg-orange-200 transition-colors">
@@ -1666,9 +1665,6 @@ export default function CreatorInteraction({
                       </div>
                       <div className="flex-1">
                         <span className="text-gray-900 font-medium">{questionObj.question}</span>
-                        <div className="mt-1">
-                          <span className="text-xs text-gray-500 capitalize">#{questionObj.category}</span>
-                        </div>
                       </div>
                     </div>
                   </button>
