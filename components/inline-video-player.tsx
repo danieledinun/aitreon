@@ -30,7 +30,7 @@ export default function InlineVideoPlayer({
     <div
       className={cn(
         "transition-all duration-300 ease-in-out my-4",
-        isExpanded ? "w-full" : "w-full max-w-2xl",
+        isExpanded ? "w-full" : "w-full",
         className
       )}
     >
