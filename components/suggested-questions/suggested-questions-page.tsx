@@ -17,7 +17,7 @@ interface SuggestedQuestion {
 interface SuggestedQuestionsPageProps {
   creatorId: string
   existingQuestions?: {
-    questions: string
+    questions: SuggestedQuestion[] | string
   } | null
 }
 
@@ -25,7 +25,13 @@ export default function SuggestedQuestionsPage({ creatorId, existingQuestions }:
   const [questions, setQuestions] = useState<SuggestedQuestion[]>(() => {
     if (existingQuestions?.questions) {
       try {
-        return JSON.parse(existingQuestions.questions)
+        // Handle both JSON object (from database JSONB) and JSON string
+        if (typeof existingQuestions.questions === 'string') {
+          return JSON.parse(existingQuestions.questions)
+        } else if (Array.isArray(existingQuestions.questions)) {
+          return existingQuestions.questions
+        }
+        return []
       } catch (e) {
         console.error('Error parsing existing questions:', e)
         return []
