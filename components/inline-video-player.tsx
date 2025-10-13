@@ -30,9 +30,9 @@ export default function InlineVideoPlayer({
     <>
       {/* Full-Screen Overlay when Expanded */}
       {isExpanded && (
-        <div className="fixed inset-0 z-40 bg-white dark:bg-neutral-900 pb-32">
+        <div className="fixed top-0 left-0 right-0 bottom-[140px] z-40 bg-white dark:bg-neutral-900">
           {/* Full-Screen Video Container */}
-          <div className="h-full w-full flex flex-col overflow-hidden">
+          <div className="h-full w-full flex flex-col">
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-neutral-800/50 border-b border-gray-200 dark:border-neutral-700">
               <div className="flex items-center space-x-2 flex-1 min-w-0">
