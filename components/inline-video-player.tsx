@@ -29,13 +29,12 @@ export default function InlineVideoPlayer({
   return (
     <div
       className={cn(
-        "transition-all duration-300 ease-in-out my-4",
-        isExpanded ? "w-full" : "w-full",
+        "transition-all duration-300 ease-in-out my-4 w-full",
         className
       )}
     >
       {/* Video Container */}
-      <div className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl overflow-hidden shadow-lg">
+      <div className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl overflow-hidden shadow-lg w-full">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-neutral-800/50 border-b border-gray-200 dark:border-neutral-700">
           <div className="flex items-center space-x-2 flex-1 min-w-0">
@@ -64,16 +63,6 @@ export default function InlineVideoPlayer({
               variant="ghost"
               size="sm"
               className="h-8 w-8 p-0 hover:bg-gray-200 dark:hover:bg-neutral-700"
-              onClick={() => window.open(youtubeUrl, '_blank')}
-              title="Open in YouTube"
-            >
-              <ExternalLink className="h-4 w-4 text-gray-600 dark:text-neutral-300" />
-            </Button>
-
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 w-8 p-0 hover:bg-gray-200 dark:hover:bg-neutral-700"
               onClick={onClose}
               title="Close"
             >
@@ -85,8 +74,8 @@ export default function InlineVideoPlayer({
         {/* Video Player */}
         <div
           className={cn(
-            "relative bg-black transition-all duration-300",
-            isExpanded ? "aspect-video" : "aspect-video max-h-[400px]"
+            "relative bg-black transition-all duration-300 w-full",
+            isExpanded ? "aspect-video" : "aspect-video"
           )}
         >
           {/* Loading State */}
@@ -116,15 +105,6 @@ export default function InlineVideoPlayer({
             <span>
               {startTime > 0 && `Starting at ${Math.floor(startTime / 60)}:${(startTime % 60).toFixed(0).padStart(2, '0')}`}
             </span>
-            <a
-              href={youtubeUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-gray-700 dark:hover:text-neutral-200 transition-colors flex items-center space-x-1"
-            >
-              <span>Watch on YouTube</span>
-              <ExternalLink className="h-3 w-3" />
-            </a>
           </div>
         </div>
       </div>
