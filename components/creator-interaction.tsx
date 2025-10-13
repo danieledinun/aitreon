@@ -9,6 +9,7 @@ import { signOut } from 'next-auth/react'
 import VoiceCallInterface from './voice-call-interface'
 import RegistrationModal from './registration-modal'
 import { UpgradeModal } from './ui/upgrade-modal'
+import InlineVideoPlayer from './inline-video-player'
 
 interface ChatMessage {
   id: string
@@ -110,10 +111,11 @@ export default function CreatorInteraction({
   const [audioElements, setAudioElements] = useState<Map<string, HTMLAudioElement>>(new Map())
   const [showVoiceCall, setShowVoiceCall] = useState(false)
   const [currentRoomName, setCurrentRoomName] = useState<string | null>(null)
-  const [pipVideo, setPipVideo] = useState<{
+  const [inlineVideo, setInlineVideo] = useState<{
     videoId: string
     startTime: number
     title: string
+    messageId: string
   } | null>(null)
 
   // Ref to maintain typing animation state across re-renders
@@ -1059,21 +1061,23 @@ export default function CreatorInteraction({
     return formattedContent
   }
 
-  // Handle citation click - directly open PiP video
-  const handleCitationClick = (citation: Citation, index: number) => {
-    setPipVideo({
+  // Handle citation click - open inline embedded video
+  const handleCitationClick = (citation: Citation, index: number, messageId: string) => {
+    setInlineVideo({
       videoId: citation.videoId,
       startTime: citation.startTime || 0,
-      title: citation.videoTitle
+      title: citation.videoTitle,
+      messageId: messageId
     })
   }
 
-  // Handle opening video in picture-in-picture mode
-  const handleOpenPipVideo = (citation: Citation) => {
-    setPipVideo({
+  // Handle opening video inline
+  const handleOpenInlineVideo = (citation: Citation, messageId: string) => {
+    setInlineVideo({
       videoId: citation.videoId,
       startTime: citation.startTime || 0,
-      title: citation.videoTitle
+      title: citation.videoTitle,
+      messageId: messageId
     })
   }
 
@@ -1397,7 +1401,10 @@ export default function CreatorInteraction({
                   <div className="flex gap-2 mt-2">
                     <Button
                       size="sm"
-                      onClick={() => handleOpenPipVideo(citation)}
+                      onClick={() => {
+                        handleOpenInlineVideo(citation, messageId)
+                        onClose()
+                      }}
                     >
                       Watch
                     </Button>
@@ -1486,7 +1493,7 @@ export default function CreatorInteraction({
     document.head.appendChild(style)
 
     // Add click handler for citations
-    const handleCitationClick = (e: MouseEvent) => {
+    const handleCitationClickGlobal = (e: MouseEvent) => {
       const target = e.target as HTMLElement
       if (target.classList.contains('citation-link')) {
         e.preventDefault()
@@ -1495,21 +1502,22 @@ export default function CreatorInteraction({
         const messageWithCitations = messages.find(m => m.citations && m.citations.length > citationIndex)
         if (messageWithCitations?.citations?.[citationIndex]) {
           const citation = messageWithCitations.citations[citationIndex]
-          // Open in picture-in-picture mode instead of new tab
-          setPipVideo({
+          // Open inline embedded video instead of PiP
+          setInlineVideo({
             videoId: citation.videoId,
             startTime: citation.startTime || 0,
-            title: citation.videoTitle
+            title: citation.videoTitle,
+            messageId: messageWithCitations.id
           })
         }
       }
     }
 
-    document.addEventListener('click', handleCitationClick)
+    document.addEventListener('click', handleCitationClickGlobal)
 
     return () => {
       document.head.removeChild(style)
-      document.removeEventListener('click', handleCitationClick)
+      document.removeEventListener('click', handleCitationClickGlobal)
     }
   }, [messages])
 
@@ -1852,7 +1860,7 @@ export default function CreatorInteraction({
                                 const citationIndex = parseInt(target.getAttribute('data-citation-index') || '0')
                                 const citation = message.citations?.[citationIndex]
                                 if (citation) {
-                                  handleCitationClick(citation, citationIndex)
+                                  handleCitationClick(citation, citationIndex, message.id)
                                 }
                               }
                             }}
@@ -1922,6 +1930,18 @@ export default function CreatorInteraction({
                             )}
                           </Button>
                         </div>
+                      </div>
+                    )}
+
+                    {/* Inline Video Player - shows after assistant message if video is active for this message */}
+                    {inlineVideo && inlineVideo.messageId === message.id && (
+                      <div className="mt-4">
+                        <InlineVideoPlayer
+                          videoId={inlineVideo.videoId}
+                          startTime={inlineVideo.startTime}
+                          title={inlineVideo.title}
+                          onClose={() => setInlineVideo(null)}
+                        />
                       </div>
                     )}
                   </div>
@@ -2158,13 +2178,7 @@ export default function CreatorInteraction({
         />
       )}
 
-      {/* Picture-in-picture video player */}
-      {pipVideo && (
-        <PipVideoPlayer
-          video={pipVideo}
-          onClose={() => setPipVideo(null)}
-        />
-      )}
+      {/* Inline video player - renders within messages */}
 
       {/* Upgrade Modal for Message Limits */}
       {showUpgradeModal && upgradeModalData && (
