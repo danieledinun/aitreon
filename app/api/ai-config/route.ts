@@ -48,6 +48,13 @@ export async function GET(request: NextRequest) {
       .limit(1)
       .single()
 
+    // Get suggested questions from creator_suggested_questions table
+    const { data: suggestedQuestionsData } = await supabase
+      .from('creator_suggested_questions')
+      .select('questions')
+      .eq('creator_id', creator.id)
+      .single()
+
     // Extract signature phrases from speech analysis (full phrases only, not single words)
     let suggestedCatchphrases: string[] = []
     if (speechAnalysis?.signature_phrases) {
@@ -66,6 +73,9 @@ export async function GET(request: NextRequest) {
     const allCatchphrases = manualCatchphrases.length > 0
       ? manualCatchphrases
       : suggestedCatchphrases
+
+    // Extract suggested questions
+    const suggestedQuestions = suggestedQuestionsData?.questions || []
 
     // Transform database fields to client format
     const config = {
@@ -120,7 +130,10 @@ export async function GET(request: NextRequest) {
 
       // Multilingual
       supportedLanguages: Array.isArray(aiConfig.supported_languages) ? aiConfig.supported_languages : ['en'],
-      translateDisplay: aiConfig.translate_display
+      translateDisplay: aiConfig.translate_display,
+
+      // Suggested Questions (loaded from separate table)
+      suggested_questions: suggestedQuestions
     }
 
     return NextResponse.json({ config })
