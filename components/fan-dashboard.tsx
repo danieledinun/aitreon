@@ -14,6 +14,7 @@ import { supabase } from '@/lib/supabase'
 import { useSession, signOut } from 'next-auth/react'
 import Link from 'next/link'
 import { FocusCards } from '@/components/ui/focus-cards'
+import RecentActivityFeed from '@/components/recent-activity-feed'
 
 interface Creator {
   id: string
@@ -876,93 +877,7 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
 
               {/* Recent Tab */}
               <TabsContent value="recent" className="space-y-6 mt-0">
-                {recentlyVisited.length === 0 ? (
-                  <div className="text-center py-12">
-                    <div className="w-32 h-32 mx-auto bg-gradient-to-br from-orange-100 to-yellow-100 dark:from-gray-700 dark:to-gray-600 rounded-full flex items-center justify-center mb-6">
-                      <Clock className="h-16 w-16 text-orange-500" />
-                    </div>
-                    <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">
-                      No Recent Activity
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-400 mb-8 max-w-md mx-auto">
-                      Start chatting with creators and they'll appear here for quick access
-                    </p>
-                    <Button onClick={() => setActiveTab('discover')} className="bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white shadow-lg">
-                      <MessageCircle className="h-4 w-4 mr-2" />
-                      Start Exploring
-                    </Button>
-                  </div>
-                ) : (
-                  <div>
-                    <div className="flex items-center justify-between mb-6">
-                      <div>
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                          Recently Visited
-                        </h2>
-                        <p className="text-gray-600 dark:text-gray-400">
-                          Pick up where you left off
-                        </p>
-                      </div>
-                      <Button variant="outline" onClick={() => {
-                        localStorage.removeItem('recentlyVisited')
-                        setRecentlyVisited([])
-                      }}>
-                        Clear History
-                      </Button>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {recentlyVisited.map((creator, index) => (
-                        <Card key={creator.id} className="group hover:shadow-xl hover:shadow-orange-500/10 transition-all duration-300 border-0 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm hover:bg-white dark:hover:bg-gray-800">
-                          <CardHeader className="pb-4">
-                            <div className="flex items-center space-x-3">
-                              <div className="relative">
-                                <Avatar className="h-12 w-12 ring-2 ring-orange-500/30">
-                                  <AvatarImage src={creator.avatar_url || creator.profile_image} />
-                                  <AvatarFallback className="bg-gradient-to-br from-orange-500 to-yellow-500 text-white font-semibold">
-                                    {getInitials(creator.display_name)}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-orange-500 text-white text-xs rounded-full flex items-center justify-center">
-                                  {index + 1}
-                                </div>
-                              </div>
-                              <div className="flex-1">
-                                <CardTitle className="text-lg">{creator.display_name}</CardTitle>
-                                <p className="text-sm text-gray-500 dark:text-gray-400">Last visited recently</p>
-                              </div>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleFollowCreator(creator.id)}
-                                className={`${isCreatorFollowed(creator.id) ? 'text-pink-600' : 'text-gray-400'} hover:text-pink-600`}
-                              >
-                                <Heart className={`h-4 w-4 ${isCreatorFollowed(creator.id) ? 'fill-current' : ''}`} />
-                              </Button>
-                            </div>
-                          </CardHeader>
-                          <CardContent className="pb-4">
-                            <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-4">
-                              {creator.bio || 'Great creator with amazing content to explore.'}
-                            </p>
-                            <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
-                              <span>{formatSubscriberCount(creator.subscriber_count || 1000)} followers</span>
-                              <span className="text-blue-600 font-medium">Continue chat</span>
-                            </div>
-                          </CardContent>
-                          <CardFooter className="pt-0">
-                            <Link href={`/${creator.display_name.toLowerCase()}`} className="w-full" onClick={() => handleVisitCreator(creator.id)}>
-                              <Button className="w-full bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white">
-                                <MessageCircle className="h-4 w-4 mr-2" />
-                                Continue Chat
-                              </Button>
-                            </Link>
-                          </CardFooter>
-                        </Card>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                <RecentActivityFeed userId={userId} />
               </TabsContent>
 
               {/* Profile Tab */}
