@@ -86,7 +86,7 @@ async function getChannelInfoFromUsername(username: string): Promise<{ channelId
       ? `https://${process.env.VERCEL_URL}`
       : process.env.NEXTAUTH_URL || 'http://localhost:3000'
 
-    const response = await fetch(`${baseUrl}/api/youtube-channel-info`, {
+    const response = await fetch(`${baseUrl}/serverless/youtube-channel-info`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
