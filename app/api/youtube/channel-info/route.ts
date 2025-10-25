@@ -1,33 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { exec } from 'child_process'
-import { promisify } from 'util'
-import path from 'path'
-
-const execAsync = promisify(exec)
-
-interface VideoMetadata {
-  success: boolean
-  video_id: string
-  title: string
-  description: string
-  duration: number
-  upload_date: string
-  uploader: string
-  channel: string
-  channel_id: string
-  view_count: number
-  like_count: number
-  thumbnail: string
-  tags: string[]
-  categories: string[]
-  availability: string
-  age_limit: number
-  language: string | null
-  obtained_via: string
-  processing_date: null
-}
+import youtubedl from 'youtube-dl-exec'
 
 async function extractVideoId(url: string): Promise<string> {
   // Extract video ID from various YouTube URL formats
@@ -38,24 +12,29 @@ async function extractVideoId(url: string): Promise<string> {
 
 async function getChannelInfoFromVideo(videoId: string): Promise<{ channelId: string; channelName: string } | null> {
   try {
-    const scriptPath = path.join(process.cwd(), 'scripts', 'youtube_transcript_extractor.py')
-    const pythonPath = path.join(process.cwd(), 'scripts', 'transcript_env', 'bin', 'python')
-    
     console.log(`🔍 Extracting channel info from video: ${videoId}`)
-    
-    const { stdout } = await execAsync(`${pythonPath} ${scriptPath} metadata ${videoId}`)
-    const metadata: VideoMetadata = JSON.parse(stdout)
-    
-    if (!metadata.success) {
-      console.log(`❌ Failed to get metadata: ${metadata}`)
+
+    // Use youtube-dl-exec to get video metadata
+    const metadata = await youtubedl(`https://www.youtube.com/watch?v=${videoId}`, {
+      dumpSingleJson: true,
+      skipDownload: true,
+      noWarnings: true,
+      proxy: 'http://vvwbndwq-1:2w021mlwybfn@p.webshare.io:80'
+    })
+
+    const channelId = metadata.channel_id || metadata.uploader_id
+    const channelName = metadata.channel || metadata.uploader
+
+    if (!channelId) {
+      console.log(`❌ Failed to get channel info from video`)
       return null
     }
-    
-    console.log(`✅ Found channel: ${metadata.channel} (${metadata.channel_id})`)
-    
+
+    console.log(`✅ Found channel: ${channelName} (${channelId})`)
+
     return {
-      channelId: metadata.channel_id,
-      channelName: metadata.channel
+      channelId,
+      channelName
     }
   } catch (error) {
     console.error('Error extracting channel info from video:', error)
@@ -65,25 +44,16 @@ async function getChannelInfoFromVideo(videoId: string): Promise<{ channelId: st
 
 async function getChannelInfoFromUsername(username: string): Promise<{ channelId: string; channelName: string } | null> {
   try {
-    const pythonPath = path.join(process.cwd(), 'scripts', 'transcript_env', 'bin', 'python')
     console.log(`🔍 Extracting channel info from username: @${username}`)
 
-    // Simplified: Just get first video from channel to extract channel metadata
-    // This is the most reliable way to get channel_id from @username
-    const ytdlpCommand = `${pythonPath} -m yt_dlp --dump-json --skip-download --playlist-items 1 --no-warnings --proxy "http://vvwbndwq-1:2w021mlwybfn@p.webshare.io:80" "https://www.youtube.com/@${username}"`
-
-    const { stdout, stderr } = await execAsync(ytdlpCommand)
-
-    if (stderr) {
-      console.log(`⚠️  yt-dlp stderr: ${stderr}`)
-    }
-
-    if (!stdout || !stdout.trim()) {
-      console.log(`❌ No output from yt-dlp for @${username}`)
-      return null
-    }
-
-    const videoInfo = JSON.parse(stdout.trim())
+    // Use youtube-dl-exec to get first video from channel
+    const videoInfo = await youtubedl(`https://www.youtube.com/@${username}`, {
+      dumpSingleJson: true,
+      skipDownload: true,
+      playlistItems: '1',
+      noWarnings: true,
+      proxy: 'http://vvwbndwq-1:2w021mlwybfn@p.webshare.io:80'
+    })
 
     const channelId = videoInfo.channel_id || videoInfo.uploader_id
     const channelName = videoInfo.channel || videoInfo.uploader
@@ -111,15 +81,18 @@ async function getChannelInfoFromUsername(username: string): Promise<{ channelId
 
 async function getChannelVideos(channelId: string): Promise<any> {
   try {
-    const pythonPath = path.join(process.cwd(), 'scripts', 'transcript_env', 'bin', 'python')
     console.log(`📹 Getting last 10 videos for channel: ${channelId}`)
 
-    // Optimized: Use --dump-single-json for faster extraction (all data in one JSON object)
-    // --lazy-playlist combined with --playlist-end is fastest for large channels
-    const ytdlpCommand = `${pythonPath} -m yt_dlp --dump-single-json --flat-playlist --skip-download --lazy-playlist --playlist-end 10 --quiet --no-warnings --proxy "http://vvwbndwq-1:2w021mlwybfn@p.webshare.io:80" "https://www.youtube.com/channel/${channelId}"`
-
-    const { stdout } = await execAsync(ytdlpCommand)
-    const playlistData = JSON.parse(stdout)
+    // Use youtube-dl-exec to get channel videos
+    const playlistData = await youtubedl(`https://www.youtube.com/channel/${channelId}`, {
+      dumpSingleJson: true,
+      flatPlaylist: true,
+      skipDownload: true,
+      playlistEnd: 10,
+      quiet: true,
+      noWarnings: true,
+      proxy: 'http://vvwbndwq-1:2w021mlwybfn@p.webshare.io:80'
+    })
 
     // Extract channel info from playlist metadata
     const channelName = playlistData.channel || playlistData.uploader
