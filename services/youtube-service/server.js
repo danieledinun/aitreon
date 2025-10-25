@@ -28,12 +28,36 @@ app.get('/test-ytdlp', async (req, res) => {
     try {
       const version = execSync('yt-dlp --version', { encoding: 'utf-8' })
       console.log(`yt-dlp version: ${version}`)
-      res.json({
-        status: 'ok',
-        ytdlp: 'installed',
-        version: version.trim(),
-        proxy: PROXY_URL ? 'configured' : 'not configured'
-      })
+
+      // Try a simple fetch without proxy
+      console.log('Testing simple fetch without proxy...')
+      try {
+        const testResult = execSync(
+          'yt-dlp --dump-json --skip-download --playlist-items 1 "https://www.youtube.com/watch?v=dQw4w9WgXcQ"',
+          { encoding: 'utf-8', timeout: 10000 }
+        )
+        const testData = JSON.parse(testResult)
+        console.log(`Test fetch successful: ${testData.title}`)
+
+        res.json({
+          status: 'ok',
+          ytdlp: 'installed',
+          version: version.trim(),
+          proxy: PROXY_URL ? 'configured' : 'not configured',
+          testFetch: 'success',
+          testTitle: testData.title
+        })
+      } catch (fetchError) {
+        console.error('Test fetch failed:', fetchError.message)
+        res.json({
+          status: 'ok',
+          ytdlp: 'installed',
+          version: version.trim(),
+          proxy: PROXY_URL ? 'configured' : 'not configured',
+          testFetch: 'failed',
+          testError: fetchError.message
+        })
+      }
     } catch (e) {
       console.error('yt-dlp not found in PATH:', e.message)
       res.json({
@@ -89,29 +113,8 @@ app.post('/api/channel/info', async (req, res) => {
     const channelId = videoInfo.channel_id || videoInfo.uploader_id
     const channelName = videoInfo.channel || videoInfo.uploader
 
-    // Try to get channel thumbnail
-    let channelThumbnail = ''
-    if (videoInfo.uploader_url) {
-      try {
-        const channelData = await youtubedl(videoInfo.uploader_url, {
-          dumpSingleJson: true,
-          skipDownload: true,
-          playlistEnd: 1,
-          noWarnings: true,
-          proxy: PROXY_URL
-        })
-
-        if (channelData.thumbnails && channelData.thumbnails.length > 0) {
-          channelThumbnail = channelData.thumbnails[0].url
-        }
-      } catch (e) {
-        console.log('Could not fetch channel thumbnail')
-      }
-    }
-
-    if (!channelThumbnail && channelId) {
-      channelThumbnail = `https://yt3.ggpht.com/ytc/${channelId}`
-    }
+    // Use fallback thumbnail (skip extra request for speed)
+    const channelThumbnail = channelId ? `https://yt3.ggpht.com/ytc/${channelId}` : ''
 
     console.log(`✅ Found channel: ${channelName} (${channelId})`)
 
