@@ -13,6 +13,7 @@ async function extractVideoId(url: string): Promise<string> {
 async function getChannelInfoFromUrl(url: string): Promise<{ channelId: string; channelName: string; channelThumbnail: string } | null> {
   try {
     console.log(`🔍 Calling YouTube service for URL: ${url}`)
+    console.log(`📍 YouTube service URL: ${YOUTUBE_SERVICE_URL}`)
 
     const response = await fetch(`${YOUTUBE_SERVICE_URL}/api/channel/info`, {
       method: 'POST',
@@ -25,6 +26,7 @@ async function getChannelInfoFromUrl(url: string): Promise<{ channelId: string; 
     if (!response.ok) {
       const error = await response.json()
       console.error('❌ YouTube service error:', error)
+      console.error(`❌ Response status: ${response.status}`)
       return null
     }
 
@@ -38,6 +40,10 @@ async function getChannelInfoFromUrl(url: string): Promise<{ channelId: string; 
     }
   } catch (error) {
     console.error('Error calling YouTube service:', error)
+    if (error instanceof Error) {
+      console.error('Error message:', error.message)
+      console.error('Error stack:', error.stack)
+    }
     return null
   }
 }
