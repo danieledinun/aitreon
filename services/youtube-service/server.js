@@ -28,15 +28,25 @@ app.post('/api/channel/info', async (req, res) => {
     }
 
     console.log(`📺 Fetching channel info for: ${url}`)
+    console.log(`🔒 Using proxy: ${PROXY_URL ? 'YES' : 'NO'}`)
 
-    // Extract channel info from first video
-    const videoInfo = await youtubedl(url, {
+    // Set a timeout for the yt-dlp request
+    const timeout = 45000 // 45 seconds
+    const videoInfoPromise = youtubedl(url, {
       dumpSingleJson: true,
       skipDownload: true,
       playlistItems: '1',
       noWarnings: true,
-      proxy: PROXY_URL
+      noCheckCertificates: true,
+      proxy: PROXY_URL,
+      socketTimeout: 30
     })
+
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Request timeout after 45s')), timeout)
+    )
+
+    const videoInfo = await Promise.race([videoInfoPromise, timeoutPromise])
 
     const channelId = videoInfo.channel_id || videoInfo.uploader_id
     const channelName = videoInfo.channel || videoInfo.uploader
