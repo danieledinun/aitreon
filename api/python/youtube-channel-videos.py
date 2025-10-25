@@ -1,7 +1,7 @@
 """
 Vercel Python serverless function for YouTube channel videos extraction
-Uses RSS feed for fast video metadata including publish dates
-Uses yt-dlp for duration and channel metadata
+Uses ONLY RSS feed for ultra-fast metadata extraction
+No yt-dlp = no timeouts!
 """
 
 from http.server import BaseHTTPRequestHandler
@@ -10,7 +10,6 @@ import urllib.request
 import urllib.error
 import xml.etree.ElementTree as ET
 from datetime import datetime
-import yt_dlp
 
 class handler(BaseHTTPRequestHandler):
     def do_POST(self):
@@ -58,30 +57,16 @@ class handler(BaseHTTPRequestHandler):
             channel_name = root.find('.//atom:author/atom:name', ns)
             channel_name_text = channel_name.text if channel_name is not None else ''
 
-            # Use yt-dlp to get channel thumbnail and subscriber count
-            ydl_opts = {
-                'quiet': True,
-                'no_warnings': True,
-                'extract_flat': True,
-                'ignoreerrors': True,
-                'proxy': proxy_url,
-            }
+            # Get channel URL from RSS to extract thumbnail
+            channel_uri = root.find('.//atom:author/atom:uri', ns)
+            channel_url = channel_uri.text if channel_uri is not None else ''
 
-            channel_thumbnail = f"https://yt3.googleusercontent.com/ytc/AIdro_k{channel_id}"
+            # Construct channel thumbnail URL (YouTube standard format)
+            # Format: https://yt3.googleusercontent.com/ytc/channel_id
+            channel_thumbnail = f"https://yt3.googleusercontent.com/ytc/{channel_id}"
+
+            # RSS feed doesn't include subscriber count
             subscriber_count = None
-
-            try:
-                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                    channel_info = ydl.extract_info(f"https://www.youtube.com/channel/{channel_id}", download=False)
-                    if channel_info:
-                        if channel_info.get('channel_follower_count'):
-                            subscriber_count = channel_info.get('channel_follower_count')
-                        if channel_info.get('thumbnails') and isinstance(channel_info['thumbnails'], list):
-                            thumb = max(channel_info['thumbnails'], key=lambda t: t.get('width', 0) * t.get('height', 0))
-                            if 'url' in thumb:
-                                channel_thumbnail = thumb['url']
-            except:
-                pass
 
             # Extract videos from RSS
             entries = root.findall('.//atom:entry', ns)[:limit]
