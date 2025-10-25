@@ -29,12 +29,11 @@ class handler(BaseHTTPRequestHandler):
             ydl_opts = {
                 'quiet': True,
                 'no_warnings': True,
-                'extract_flat': False,  # Get full metadata including upload_date
+                'extract_flat': 'in_playlist',  # Fast extraction with basic metadata
                 'ignoreerrors': True,
                 'playlist_items': f'1:{limit}',
                 'format': 'worst',
                 'no_check_formats': True,
-                'skip_download': True,  # Don't download videos, just extract metadata
                 'proxy': proxy_url,
             }
 
@@ -79,18 +78,40 @@ class handler(BaseHTTPRequestHandler):
                             duration_str = f"{minutes}:{seconds:02d}"
 
                     # Format upload date to ISO format
-                    # Try different date fields from yt-dlp
-                    upload_date = entry.get('upload_date', '')
-                    if not upload_date and entry.get('timestamp'):
-                        # Convert timestamp to YYYYMMDD format
-                        from datetime import datetime
-                        dt = datetime.fromtimestamp(entry['timestamp'])
-                        upload_date = dt.strftime('%Y%m%d')
+                    # Try all possible date fields from yt-dlp
+                    from datetime import datetime
+
+                    upload_date = (
+                        entry.get('upload_date') or
+                        entry.get('release_date') or
+                        entry.get('modified_date') or
+                        ''
+                    )
+
+                    # Try timestamp fields as fallback
+                    if not upload_date:
+                        timestamp = (
+                            entry.get('timestamp') or
+                            entry.get('release_timestamp') or
+                            entry.get('modified_timestamp')
+                        )
+                        if timestamp:
+                            dt = datetime.fromtimestamp(timestamp)
+                            upload_date = dt.strftime('%Y%m%d')
 
                     published_at = ''
                     if upload_date and len(upload_date) >= 8:
                         # upload_date format: YYYYMMDD
                         published_at = f"{upload_date[0:4]}-{upload_date[4:6]}-{upload_date[6:8]}"
+
+                    # If still no date, try to get from availability or webpage_url
+                    # This is a last resort - use current date as placeholder
+                    if not published_at:
+                        # Log available fields for debugging (only keys to avoid sensitive data)
+                        import sys
+                        print(f"DEBUG: No date found for video {video_id}. Available fields: {list(entry.keys())}", file=sys.stderr)
+                        # Use empty string instead of current date to avoid misleading data
+                        published_at = ''
 
                     videos.append({
                         'id': video_id,
