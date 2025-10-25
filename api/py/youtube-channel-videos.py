@@ -25,11 +25,11 @@ class handler(BaseHTTPRequestHandler):
             # Use Webshare residential rotating proxy to avoid rate limits
             proxy_url = "http://vvwbndwq-1:2w021mlwybfn@p.webshare.io:80"
 
-            # Configure yt-dlp to extract channel videos
+            # Configure yt-dlp to extract channel videos with full metadata
             ydl_opts = {
                 'quiet': True,
                 'no_warnings': True,
-                'extract_flat': True,
+                'extract_flat': 'in_playlist',  # Get basic info in playlist, but include upload_date and duration
                 'ignoreerrors': True,
                 'playlist_items': f'1:{limit}',
                 'format': 'worst',
@@ -63,25 +63,54 @@ class handler(BaseHTTPRequestHandler):
                     if len(video_id) != 11 or video_id.startswith(('UL', 'PL', 'RD', 'LL')):
                         continue
 
+                    # Format duration from seconds to readable format
+                    duration = entry.get('duration', 0)
+                    duration_str = ''
+                    if duration:
+                        hours = duration // 3600
+                        minutes = (duration % 3600) // 60
+                        seconds = duration % 60
+                        if hours > 0:
+                            duration_str = f"{hours}:{minutes:02d}:{seconds:02d}"
+                        else:
+                            duration_str = f"{minutes}:{seconds:02d}"
+
+                    # Format upload date to ISO format
+                    upload_date = entry.get('upload_date', '')
+                    published_at = ''
+                    if upload_date and len(upload_date) == 8:
+                        # upload_date format: YYYYMMDD
+                        published_at = f"{upload_date[0:4]}-{upload_date[4:6]}-{upload_date[6:8]}"
+
                     videos.append({
                         'id': video_id,
                         'title': entry.get('title', ''),
                         'description': entry.get('description', ''),
-                        'duration': entry.get('duration_string', ''),
-                        'publishedAt': '',  # Not available in flat extraction
+                        'duration': duration_str,
+                        'publishedAt': published_at,
                         'thumbnail': f"https://img.youtube.com/vi/{video_id}/maxresdefault.jpg",
                         'view_count': entry.get('view_count', 0),
                         'url': entry.get('url', f"https://www.youtube.com/watch?v={video_id}")
                     })
 
             # Get channel metadata (thumbnail, subscriber count, total videos)
+            # Channel thumbnail from the uploader avatar or channel thumbnails
             channel_thumbnail = ''
-            if info.get('thumbnails') and len(info.get('thumbnails', [])) > 0:
-                channel_thumbnail = info['thumbnails'][0].get('url', '')
+
+            # Try to get from channel/uploader avatar first
+            if info.get('channel_avatar'):
+                channel_thumbnail = info['channel_avatar']
+            elif info.get('uploader_avatar'):
+                channel_thumbnail = info['uploader_avatar']
+            elif info.get('thumbnails') and isinstance(info['thumbnails'], list) and len(info['thumbnails']) > 0:
+                # Get the highest quality thumbnail
+                thumb = max(info['thumbnails'], key=lambda t: t.get('width', 0) * t.get('height', 0))
+                if 'url' in thumb:
+                    channel_thumbnail = thumb['url']
 
             if not channel_thumbnail:
-                # Fallback to constructing channel thumbnail URL from channel ID
-                channel_thumbnail = f"https://yt3.ggpht.com/ytc/{channel_id}"
+                # Fallback to YouTube's default channel avatar endpoint
+                channel_thumbnail = f"https://yt3.ggpht.com/ytc/AIdro_k{channel_id}"
 
             # Success! Return videos
             self.send_response(200)
