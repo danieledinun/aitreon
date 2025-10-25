@@ -79,21 +79,30 @@ async function getChannelInfoFromVideo(videoId: string): Promise<{ channelId: st
 
 async function getChannelInfoFromUsername(username: string): Promise<{ channelId: string; channelName: string } | null> {
   try {
-    const scriptPath = path.join(process.cwd(), 'scripts', 'youtube_transcript_extractor.py')
-    const pythonPath = path.join(process.cwd(), 'scripts', 'transcript_env', 'bin', 'python')
-    
     console.log(`🔍 Extracting channel info from username: @${username}`)
-    
-    const { stdout } = await execAsync(`${pythonPath} ${scriptPath} channel ${username}`)
-    const channelInfo: ChannelFromUsername = JSON.parse(stdout)
-    
+
+    // Call the Python serverless function
+    const baseUrl = process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : process.env.NEXTAUTH_URL || 'http://localhost:3000'
+
+    const response = await fetch(`${baseUrl}/api/youtube-channel-info`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ username }),
+    })
+
+    const channelInfo: ChannelFromUsername = await response.json()
+
     if (!channelInfo.success) {
       console.log(`❌ Failed to get channel info: ${channelInfo.error || channelInfo.message}`)
       return null
     }
-    
+
     console.log(`✅ Found channel: ${channelInfo.channel_name} (${channelInfo.channel_id})`)
-    
+
     return {
       channelId: channelInfo.channel_id,
       channelName: channelInfo.channel_name
