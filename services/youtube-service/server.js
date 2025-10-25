@@ -187,13 +187,32 @@ app.post('/api/channel/videos', async (req, res) => {
         }
       }
 
-      // Format date
+      // Format date - try multiple date fields
       let publishedAt = ''
-      if (video.upload_date && video.upload_date.length === 8) {
-        const year = video.upload_date.substring(0, 4)
-        const month = video.upload_date.substring(4, 6)
-        const day = video.upload_date.substring(6, 8)
-        publishedAt = `${year}-${month}-${day}`
+      const dateStr = video.upload_date || video.uploadDate || video.release_date || video.timestamp
+
+      if (dateStr) {
+        if (typeof dateStr === 'string' && dateStr.length === 8) {
+          // Format: YYYYMMDD
+          const year = dateStr.substring(0, 4)
+          const month = dateStr.substring(4, 6)
+          const day = dateStr.substring(6, 8)
+          publishedAt = `${year}-${month}-${day}`
+        } else if (typeof dateStr === 'number') {
+          // Unix timestamp
+          const date = new Date(dateStr * 1000)
+          publishedAt = date.toISOString().split('T')[0]
+        } else if (typeof dateStr === 'string') {
+          // Try parsing as ISO string
+          try {
+            const date = new Date(dateStr)
+            if (!isNaN(date.getTime())) {
+              publishedAt = date.toISOString().split('T')[0]
+            }
+          } catch (e) {
+            // Ignore parse errors
+          }
+        }
       }
 
       return {
