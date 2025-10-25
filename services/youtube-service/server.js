@@ -144,24 +144,29 @@ app.post('/api/channel/videos', async (req, res) => {
 
     console.log(`📹 Fetching ${limit} videos for channel: ${channelId}`)
 
-    // Fetch from the channel's videos tab specifically to get actual videos
+    // Fetch from the channel's videos tab to get actual videos with full metadata
     const playlistData = await youtubedl(`https://www.youtube.com/channel/${channelId}/videos`, {
       dumpSingleJson: true,
-      flatPlaylist: true,
       skipDownload: true,
       playlistEnd: limit,
-      quiet: true,
       noWarnings: true,
-      proxy: PROXY_URL
+      proxy: PROXY_URL,
+      // Extract extra metadata
+      extractorArgs: 'youtube:player_client=web'
     })
 
     const channelName = playlistData.channel || playlistData.uploader
 
-    // Get channel thumbnail
+    // Get channel thumbnail - use channel_url to fetch proper avatar
     let channelThumbnail = ''
-    if (playlistData.thumbnails && playlistData.thumbnails.length > 0) {
-      channelThumbnail = playlistData.thumbnails[0].url
+
+    // First try to get from uploader thumbnails
+    if (playlistData.channel_thumbnails && playlistData.channel_thumbnails.length > 0) {
+      channelThumbnail = playlistData.channel_thumbnails[playlistData.channel_thumbnails.length - 1].url
+    } else if (playlistData.uploader_thumbnails && playlistData.uploader_thumbnails.length > 0) {
+      channelThumbnail = playlistData.uploader_thumbnails[playlistData.uploader_thumbnails.length - 1].url
     } else {
+      // Fallback to generic YouTube thumbnail URL
       channelThumbnail = `https://yt3.ggpht.com/ytc/${channelId}`
     }
 
