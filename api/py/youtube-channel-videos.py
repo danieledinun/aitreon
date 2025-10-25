@@ -67,6 +67,8 @@ class handler(BaseHTTPRequestHandler):
                     duration = entry.get('duration', 0)
                     duration_str = ''
                     if duration:
+                        # Convert to int in case it's a float
+                        duration = int(duration)
                         hours = duration // 3600
                         minutes = (duration % 3600) // 60
                         seconds = duration % 60
