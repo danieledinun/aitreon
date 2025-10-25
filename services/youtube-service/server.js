@@ -144,15 +144,19 @@ app.post('/api/channel/videos', async (req, res) => {
 
     console.log(`📹 Fetching ${limit} videos for channel: ${channelId}`)
 
-    // Fetch from the channel's videos tab to get actual videos with full metadata
+    // Fetch from the channel's videos tab to get actual videos with metadata
+    // Don't use flatPlaylist to get upload dates, but use playlistEnd to limit fetching
     const playlistData = await youtubedl(`https://www.youtube.com/channel/${channelId}/videos`, {
       dumpSingleJson: true,
       skipDownload: true,
       playlistEnd: limit,
       noWarnings: true,
       proxy: PROXY_URL,
-      // Extract extra metadata
-      extractorArgs: 'youtube:player_client=web'
+      ignoreErrors: true,  // Continue even if some videos fail
+      noCheckCertificates: true,
+      // Only get minimal info needed (no formats)
+      skipDownload: true,
+      format: 'worst'  // Don't try to select best format, just get metadata
     })
 
     const channelName = playlistData.channel || playlistData.uploader
@@ -192,9 +196,10 @@ app.post('/api/channel/videos', async (req, res) => {
         }
       }
 
-      // Format date - try multiple date fields
+      // Format date - flatPlaylist doesn't provide upload dates, so we'll leave empty for now
+      // The frontend can optionally fetch individual video dates if needed
       let publishedAt = ''
-      const dateStr = video.upload_date || video.uploadDate || video.release_date || video.timestamp
+      const dateStr = video.upload_date || video.uploadDate || video.release_date || video.release_timestamp || video.timestamp
 
       if (dateStr) {
         if (typeof dateStr === 'string' && dateStr.length === 8) {
