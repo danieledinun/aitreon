@@ -29,11 +29,12 @@ class handler(BaseHTTPRequestHandler):
             ydl_opts = {
                 'quiet': True,
                 'no_warnings': True,
-                'extract_flat': 'in_playlist',  # Get basic info in playlist, but include upload_date and duration
+                'extract_flat': False,  # Get full metadata including upload_date
                 'ignoreerrors': True,
                 'playlist_items': f'1:{limit}',
                 'format': 'worst',
                 'no_check_formats': True,
+                'skip_download': True,  # Don't download videos, just extract metadata
                 'proxy': proxy_url,
             }
 
