@@ -78,9 +78,16 @@ class handler(BaseHTTPRequestHandler):
                             duration_str = f"{minutes}:{seconds:02d}"
 
                     # Format upload date to ISO format
+                    # Try different date fields from yt-dlp
                     upload_date = entry.get('upload_date', '')
+                    if not upload_date and entry.get('timestamp'):
+                        # Convert timestamp to YYYYMMDD format
+                        from datetime import datetime
+                        dt = datetime.fromtimestamp(entry['timestamp'])
+                        upload_date = dt.strftime('%Y%m%d')
+
                     published_at = ''
-                    if upload_date and len(upload_date) == 8:
+                    if upload_date and len(upload_date) >= 8:
                         # upload_date format: YYYYMMDD
                         published_at = f"{upload_date[0:4]}-{upload_date[4:6]}-{upload_date[6:8]}"
 
