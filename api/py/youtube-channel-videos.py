@@ -75,7 +75,10 @@ class handler(BaseHTTPRequestHandler):
                     })
 
             # Get channel metadata (thumbnail, subscriber count, total videos)
-            channel_thumbnail = info.get('channel_follower_count') or info.get('thumbnails', [{}])[0].get('url', '')
+            channel_thumbnail = ''
+            if info.get('thumbnails') and len(info.get('thumbnails', [])) > 0:
+                channel_thumbnail = info['thumbnails'][0].get('url', '')
+
             if not channel_thumbnail:
                 # Fallback to constructing channel thumbnail URL from channel ID
                 channel_thumbnail = f"https://yt3.ggpht.com/ytc/{channel_id}"
