@@ -1,103 +1,50 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import youtubedl from 'youtube-dl-exec'
 
 const PROXY_URL = 'http://vvwbndwq-1:2w021mlwybfn@p.webshare.io:80'
 
-interface ProxyFetchOptions extends RequestInit {
-  proxy?: string
+async function extractVideoId(url: string): Promise<string> {
+  const videoIdRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/
+  const match = url.match(videoIdRegex)
+  return match ? match[1] : ''
 }
 
-async function fetchWithProxy(url: string, options: ProxyFetchOptions = {}): Promise<Response> {
-  // For Vercel serverless, we can't use the proxy directly via native fetch
-  // Instead, we need to use a custom HTTP agent or a service
-  // For now, let's try direct fetch and handle errors gracefully
-
-  try {
-    const response = await fetch(url, {
-      ...options,
-      headers: {
-        ...options.headers,
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-      },
-    })
-    return response
-  } catch (error) {
-    console.error('Fetch error:', error)
-    throw error
-  }
-}
-
-async function extractChannelIdFromUsername(username: string): Promise<{ channelId: string; channelName: string } | null> {
-  try {
-    console.log(`🔍 Extracting channel ID from username: @${username}`)
-
-    const url = `https://www.youtube.com/@${username}`
-    const response = await fetchWithProxy(url)
-
-    if (!response.ok) {
-      console.error(`❌ Failed to fetch channel page: ${response.status}`)
-      return null
-    }
-
-    const html = await response.text()
-
-    // Extract channel ID from page metadata
-    // Look for: "channelId":"UCxxxxx" or "externalId":"UCxxxxx"
-    const channelIdMatch = html.match(/"channelId":"([^"]+)"/) || html.match(/"externalId":"([^"]+)"/)
-    const channelNameMatch = html.match(/"channelMetadataRenderer":\{"title":"([^"]+)"/)
-
-    if (!channelIdMatch) {
-      console.error('❌ Could not find channel ID in page HTML')
-      return null
-    }
-
-    const channelId = channelIdMatch[1]
-    const channelName = channelNameMatch ? channelNameMatch[1] : username
-
-    console.log(`✅ Found channel: ${channelName} (${channelId})`)
-
-    return {
-      channelId,
-      channelName
-    }
-  } catch (error) {
-    console.error('Error extracting channel ID from username:', error)
-    return null
-  }
-}
-
-async function extractChannelIdFromVideo(videoId: string): Promise<{ channelId: string; channelName: string } | null> {
+async function getChannelInfoFromVideo(videoId: string): Promise<{ channelId: string; channelName: string; channelThumbnail: string } | null> {
   try {
     console.log(`🔍 Extracting channel info from video: ${videoId}`)
 
-    const url = `https://www.youtube.com/watch?v=${videoId}`
-    const response = await fetchWithProxy(url)
+    const metadata = await youtubedl(`https://www.youtube.com/watch?v=${videoId}`, {
+      dumpSingleJson: true,
+      skipDownload: true,
+      noWarnings: true,
+      proxy: PROXY_URL
+    }) as any
 
-    if (!response.ok) {
-      console.error(`❌ Failed to fetch video page: ${response.status}`)
-      return null
+    const channelId = metadata.channel_id || metadata.uploader_id
+    const channelName = metadata.channel || metadata.uploader
+
+    // Extract channel thumbnail - yt-dlp provides this in thumbnails array or channel_url
+    let channelThumbnail = ''
+    if (metadata.channel_follower_count && metadata.thumbnails && metadata.thumbnails.length > 0) {
+      channelThumbnail = metadata.thumbnails[0].url
+    } else if (channelId) {
+      channelThumbnail = `https://yt3.ggpht.com/ytc/${channelId}`
     }
 
-    const html = await response.text()
-
-    // Extract channel ID and name from video page
-    const channelIdMatch = html.match(/"channelId":"([^"]+)"/) || html.match(/"externalChannelId":"([^"]+)"/)
-    const channelNameMatch = html.match(/"author":"([^"]+)"/) || html.match(/"channelName":"([^"]+)"/)
-
-    if (!channelIdMatch) {
-      console.error('❌ Could not find channel ID in video page')
+    if (!channelId) {
+      console.log(`❌ Failed to get channel info from video`)
       return null
     }
-
-    const channelId = channelIdMatch[1]
-    const channelName = channelNameMatch ? channelNameMatch[1] : 'Unknown Channel'
 
     console.log(`✅ Found channel: ${channelName} (${channelId})`)
+    console.log(`📸 Channel thumbnail: ${channelThumbnail}`)
 
     return {
       channelId,
-      channelName
+      channelName,
+      channelThumbnail
     }
   } catch (error) {
     console.error('Error extracting channel info from video:', error)
@@ -105,161 +52,160 @@ async function extractChannelIdFromVideo(videoId: string): Promise<{ channelId: 
   }
 }
 
-function parseRSSDate(dateStr: string): string {
+async function getChannelInfoFromUsername(username: string): Promise<{ channelId: string; channelName: string; channelThumbnail: string } | null> {
   try {
-    const date = new Date(dateStr)
-    return date.toISOString().split('T')[0] // Returns YYYY-MM-DD
+    console.log(`🔍 Extracting channel info from username: @${username}`)
+
+    const videoInfo = await youtubedl(`https://www.youtube.com/@${username}`, {
+      dumpSingleJson: true,
+      skipDownload: true,
+      playlistItems: '1',
+      noWarnings: true,
+      proxy: PROXY_URL
+    }) as any
+
+    const channelId = videoInfo.channel_id || videoInfo.uploader_id
+    const channelName = videoInfo.channel || videoInfo.uploader
+
+    // Extract channel thumbnail from uploader metadata
+    let channelThumbnail = ''
+    if (videoInfo.uploader_url) {
+      // Try to get channel thumbnail from channel page
+      try {
+        const channelData = await youtubedl(videoInfo.uploader_url, {
+          dumpSingleJson: true,
+          skipDownload: true,
+          playlistEnd: 1,
+          noWarnings: true,
+          proxy: PROXY_URL
+        }) as any
+
+        if (channelData.thumbnails && channelData.thumbnails.length > 0) {
+          channelThumbnail = channelData.thumbnails[0].url
+        }
+      } catch (e) {
+        console.log('Could not fetch channel thumbnail from uploader_url')
+      }
+    }
+
+    // Fallback to default thumbnail
+    if (!channelThumbnail && channelId) {
+      channelThumbnail = `https://yt3.ggpht.com/ytc/${channelId}`
+    }
+
+    if (!channelId) {
+      console.log(`❌ No channel_id found for @${username}`)
+      console.log(`📊 Available fields: ${Object.keys(videoInfo).join(', ')}`)
+      return null
+    }
+
+    console.log(`✅ Found channel: ${channelName} (${channelId})`)
+    console.log(`📸 Channel thumbnail: ${channelThumbnail}`)
+
+    return {
+      channelId,
+      channelName: channelName || username,
+      channelThumbnail
+    }
   } catch (error) {
-    return ''
+    console.error('Error extracting channel info from username:', error)
+    if (error instanceof Error) {
+      console.error('Error details:', error.message)
+    }
+    return null
   }
 }
 
-function parseDuration(duration: string): string {
-  // Parse ISO 8601 duration format (PT1H2M3S)
-  const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/)
-  if (!match) return ''
-
-  const hours = parseInt(match[1] || '0')
-  const minutes = parseInt(match[2] || '0')
-  const seconds = parseInt(match[3] || '0')
-
+function formatDuration(seconds: number): string {
+  const hours = Math.floor(seconds / 3600)
+  const minutes = Math.floor((seconds % 3600) / 60)
+  const secs = seconds % 60
   if (hours > 0) {
-    return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+    return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
   }
-  return `${minutes}:${seconds.toString().padStart(2, '0')}`
+  return `${minutes}:${secs.toString().padStart(2, '0')}`
 }
 
-async function fetchVideoDuration(videoId: string): Promise<string> {
-  try {
-    const url = `https://www.youtube.com/watch?v=${videoId}`
-    const response = await fetchWithProxy(url)
-
-    if (!response.ok) {
-      return ''
-    }
-
-    const html = await response.text()
-
-    // Extract duration from video page (ISO 8601 format in metadata)
-    const durationMatch = html.match(/"lengthSeconds":"(\d+)"/)
-
-    if (!durationMatch) {
-      return ''
-    }
-
-    const totalSeconds = parseInt(durationMatch[1])
-    const hours = Math.floor(totalSeconds / 3600)
-    const minutes = Math.floor((totalSeconds % 3600) / 60)
-    const seconds = totalSeconds % 60
-
-    if (hours > 0) {
-      return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
-    }
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`
-  } catch (error) {
-    console.error(`Error fetching duration for video ${videoId}:`, error)
-    return ''
+function formatDate(dateStr: string): string {
+  // yt-dlp returns dates as YYYYMMDD
+  if (dateStr.length === 8) {
+    const year = dateStr.substring(0, 4)
+    const month = dateStr.substring(4, 6)
+    const day = dateStr.substring(6, 8)
+    return `${year}-${month}-${day}`
   }
+  return dateStr
 }
 
-async function getChannelVideosFromRSS(channelId: string): Promise<any> {
+async function getChannelVideos(channelId: string): Promise<any> {
   try {
-    console.log(`📹 Getting videos from RSS feed for channel: ${channelId}`)
+    console.log(`📹 Getting last 10 videos for channel: ${channelId}`)
 
-    const rssUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`
-    const response = await fetchWithProxy(rssUrl)
+    const playlistData = await youtubedl(`https://www.youtube.com/channel/${channelId}`, {
+      dumpSingleJson: true,
+      flatPlaylist: true,
+      skipDownload: true,
+      playlistEnd: 10,
+      quiet: true,
+      noWarnings: true,
+      proxy: PROXY_URL
+    }) as any
 
-    if (!response.ok) {
-      console.error(`❌ Failed to fetch RSS feed: ${response.status}`)
-      return {
-        videos: [],
-        channel_thumbnail: `https://yt3.googleusercontent.com/ytc/${channelId}`,
-        total_videos: 0,
-        subscriber_count: null
+    // Extract channel info from playlist metadata
+    const channelName = playlistData.channel || playlistData.uploader
+
+    // Get channel thumbnail from playlist metadata
+    let channelThumbnail = ''
+    if (playlistData.thumbnails && playlistData.thumbnails.length > 0) {
+      channelThumbnail = playlistData.thumbnails[0].url
+    } else {
+      channelThumbnail = `https://yt3.ggpht.com/ytc/${channelId}`
+    }
+
+    // Parse entries array from the single JSON response
+    const videos = (playlistData.entries || []).slice(0, 10).map((video: any) => {
+      // Get best thumbnail
+      let thumbnail = `https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`
+      if (video.thumbnails && video.thumbnails.length > 0) {
+        // Get the highest quality thumbnail
+        const bestThumb = video.thumbnails[video.thumbnails.length - 1]
+        thumbnail = bestThumb.url || thumbnail
       }
-    }
-
-    const xml = await response.text()
-
-    // Parse XML manually (basic parsing)
-    const entries = xml.match(/<entry>[\s\S]*?<\/entry>/g) || []
-
-    const videos = entries.slice(0, 10).map((entry) => {
-      // Extract video ID
-      const videoIdMatch = entry.match(/<yt:videoId>([^<]+)<\/yt:videoId>/)
-      const videoId = videoIdMatch ? videoIdMatch[1] : ''
-
-      // Extract title
-      const titleMatch = entry.match(/<title>([^<]+)<\/title>/)
-      const title = titleMatch ? titleMatch[1].replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>') : ''
-
-      // Extract published date
-      const publishedMatch = entry.match(/<published>([^<]+)<\/published>/)
-      const publishedAt = publishedMatch ? parseRSSDate(publishedMatch[1]) : ''
-
-      // Extract view count from media:statistics if available
-      const viewsMatch = entry.match(/views="(\d+)"/)
-      const viewCount = viewsMatch ? parseInt(viewsMatch[1]) : 0
-
-      // Extract thumbnail from media:thumbnail element
-      const thumbnailMatch = entry.match(/<media:thumbnail url="([^"]+)"/)
-      const thumbnail = thumbnailMatch ? thumbnailMatch[1] : `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`
-
-      // Extract description
-      const descMatch = entry.match(/<media:description>([^<]*)<\/media:description>/)
-      const description = descMatch ? descMatch[1].replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>') : ''
 
       return {
-        id: videoId,
-        title,
-        description,
+        id: video.id,
+        title: video.title || '',
+        description: video.description || '',
         thumbnail,
-        duration: '', // Will be fetched separately
-        publishedAt,
-        view_count: viewCount,
-        url: `https://www.youtube.com/watch?v=${videoId}`
+        duration: video.duration ? formatDuration(video.duration) : '',
+        publishedAt: video.upload_date ? formatDate(video.upload_date) : '',
+        view_count: video.view_count || 0,
+        url: video.url || `https://www.youtube.com/watch?v=${video.id}`
       }
-    }).filter(v => v.id) // Only include entries with valid video IDs
-
-    // Fetch durations for all videos in parallel
-    console.log(`⏱️  Fetching durations for ${videos.length} videos...`)
-    const durationPromises = videos.map(video => fetchVideoDuration(video.id))
-    const durations = await Promise.all(durationPromises)
-
-    // Add durations to videos
-    videos.forEach((video, index) => {
-      video.duration = durations[index]
     })
 
-    // Extract channel name from XML
-    const channelNameMatch = xml.match(/<name>([^<]+)<\/name>/)
-    const channelName = channelNameMatch ? channelNameMatch[1] : 'Unknown Channel'
-
     console.log(`✅ Found ${videos.length} videos for channel: ${channelName}`)
+    console.log(`📸 Channel thumbnail: ${channelThumbnail}`)
 
     return {
       videos,
-      channel_thumbnail: `https://yt3.googleusercontent.com/ytc/${channelId}`,
-      total_videos: videos.length,
-      subscriber_count: null,
-      channel_name: channelName
+      channel_thumbnail: channelThumbnail,
+      channel_name: channelName,
+      total_videos: playlistData.playlist_count || videos.length,
+      subscriber_count: playlistData.channel_follower_count || null
     }
   } catch (error) {
-    console.error('Error getting channel videos from RSS:', error)
+    console.error('Error getting channel videos:', error)
+    if (error instanceof Error) {
+      console.error('Error details:', error.message)
+    }
     return {
       videos: [],
-      channel_thumbnail: `https://yt3.googleusercontent.com/ytc/${channelId}`,
-      total_videos: 0,
-      subscriber_count: null
+      channel_thumbnail: '',
+      channel_name: '',
+      total_videos: 0
     }
   }
-}
-
-async function extractVideoId(url: string): Promise<string> {
-  // Extract video ID from various YouTube URL formats
-  const videoIdRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/
-  const match = url.match(videoIdRegex)
-  return match ? match[1] : ''
 }
 
 export async function POST(request: NextRequest) {
@@ -280,6 +226,7 @@ export async function POST(request: NextRequest) {
 
     let channelId = ''
     let channelName = ''
+    let channelThumbnail = ''
 
     // Handle direct channel URLs
     if (url.includes('/channel/')) {
@@ -295,7 +242,7 @@ export async function POST(request: NextRequest) {
         }, { status: 400 })
       }
 
-      const channelInfo = await extractChannelIdFromVideo(videoId)
+      const channelInfo = await getChannelInfoFromVideo(videoId)
       if (!channelInfo) {
         return NextResponse.json({
           error: 'Could not extract channel information from video'
@@ -304,13 +251,14 @@ export async function POST(request: NextRequest) {
 
       channelId = channelInfo.channelId
       channelName = channelInfo.channelName
+      channelThumbnail = channelInfo.channelThumbnail
     }
-    // Handle @username URLs
+    // Handle @username URLs using yt-dlp
     else if (url.includes('/@')) {
       const username = url.split('/@')[1].split('/')[0].split('?')[0]
       console.log(`🔍 Processing @username URL: @${username}`)
 
-      const channelInfo = await extractChannelIdFromUsername(username)
+      const channelInfo = await getChannelInfoFromUsername(username)
       if (!channelInfo) {
         return NextResponse.json({
           error: `Could not find channel information for @${username}. Please check the username and try again.`
@@ -319,11 +267,12 @@ export async function POST(request: NextRequest) {
 
       channelId = channelInfo.channelId
       channelName = channelInfo.channelName
+      channelThumbnail = channelInfo.channelThumbnail
     }
-    // Handle other URL formats
+    // Handle other URL formats that need video-based extraction
     else {
       return NextResponse.json({
-        error: 'Please provide either a channel URL (/channel/ID), a video URL, or a @username URL.'
+        error: 'Please provide either a channel URL (/channel/ID) or a video URL. Other URL formats are not yet supported.'
       }, { status: 400 })
     }
 
@@ -333,10 +282,15 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // Get channel videos and metadata from RSS
-    const channelData = await getChannelVideosFromRSS(channelId)
+    // Get channel videos and metadata
+    const channelData = await getChannelVideos(channelId)
 
-    // Use channel name from RSS if we don't have one yet
+    // Use channel thumbnail from initial lookup if available, otherwise from channel data
+    if (!channelThumbnail && channelData.channel_thumbnail) {
+      channelThumbnail = channelData.channel_thumbnail
+    }
+
+    // Use channel name from initial lookup if available, otherwise from channel data
     if (!channelName && channelData.channel_name) {
       channelName = channelData.channel_name
     }
@@ -346,10 +300,10 @@ export async function POST(request: NextRequest) {
       channel: {
         id: channelId,
         name: channelName || 'Unknown Channel',
-        thumbnail: channelData.channel_thumbnail || `https://yt3.ggpht.com/ytc/${channelId}`,
+        thumbnail: channelThumbnail || `https://yt3.ggpht.com/ytc/${channelId}`,
         subscriberCount: channelData.subscriber_count ? channelData.subscriber_count.toLocaleString() : 'Hidden',
         videoCount: channelData.total_videos || channelData.videos.length,
-        description: 'Channel information extracted from YouTube'
+        description: 'Channel information extracted from video metadata'
       },
       videos: channelData.videos.map((video: any) => ({
         id: video.id || '',
