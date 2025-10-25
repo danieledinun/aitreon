@@ -18,6 +18,37 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', service: 'youtube-service' })
 })
 
+// Test yt-dlp installation
+app.get('/test-ytdlp', async (req, res) => {
+  try {
+    console.log('Testing yt-dlp installation...')
+    const { execSync } = require('child_process')
+
+    // Check if yt-dlp binary exists
+    try {
+      const version = execSync('yt-dlp --version', { encoding: 'utf-8' })
+      console.log(`yt-dlp version: ${version}`)
+      res.json({
+        status: 'ok',
+        ytdlp: 'installed',
+        version: version.trim(),
+        proxy: PROXY_URL ? 'configured' : 'not configured'
+      })
+    } catch (e) {
+      console.error('yt-dlp not found in PATH:', e.message)
+      res.json({
+        status: 'error',
+        ytdlp: 'not found',
+        error: e.message,
+        proxy: PROXY_URL ? 'configured' : 'not configured'
+      })
+    }
+  } catch (error) {
+    console.error('Test error:', error)
+    res.status(500).json({ error: error.message })
+  }
+})
+
 // Get channel info from @username
 app.post('/api/channel/info', async (req, res) => {
   try {
@@ -29,6 +60,7 @@ app.post('/api/channel/info', async (req, res) => {
 
     console.log(`📺 Fetching channel info for: ${url}`)
     console.log(`🔒 Using proxy: ${PROXY_URL ? 'YES' : 'NO'}`)
+    console.log(`⏱️  Starting yt-dlp request...`)
 
     // Set a timeout for the yt-dlp request
     const timeout = 45000 // 45 seconds
@@ -36,10 +68,21 @@ app.post('/api/channel/info', async (req, res) => {
       dumpSingleJson: true,
       skipDownload: true,
       playlistItems: '1',
-      noWarnings: true,
+      noWarnings: false, // Enable warnings to see what's happening
+      verbose: true,
       noCheckCertificates: true,
+      preferFreeFormats: true,
+      youtubeSkipDashManifest: true,
       proxy: PROXY_URL,
-      socketTimeout: 30
+      socketTimeout: 30,
+      retries: 3
+    }).then(result => {
+      console.log(`✅ yt-dlp completed successfully`)
+      return result
+    }).catch(err => {
+      console.error(`❌ yt-dlp error:`, err.message)
+      console.error(`📋 Error details:`, err.stderr || err.stdout || 'No details')
+      throw err
     })
 
     const timeoutPromise = new Promise((_, reject) =>
