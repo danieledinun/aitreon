@@ -113,27 +113,52 @@ async function getChannelInfoFromUsername(username: string): Promise<{ channelId
   }
 }
 
-async function getChannelVideos(channelId: string): Promise<any[]> {
+async function getChannelVideos(channelId: string): Promise<any> {
   try {
-    const scriptPath = path.join(process.cwd(), 'scripts', 'youtube_transcript_extractor.py')
-    const pythonPath = path.join(process.cwd(), 'scripts', 'transcript_env', 'bin', 'python')
-    
     console.log(`📹 Getting last 10 videos for channel: ${channelId}`)
-    
-    const { stdout } = await execAsync(`${pythonPath} ${scriptPath} videos ${channelId} 10`)
-    const videosData = JSON.parse(stdout)
-    
+
+    // Call the Python serverless function
+    const baseUrl = process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : process.env.NEXTAUTH_URL || 'http://localhost:3000'
+
+    const response = await fetch(`${baseUrl}/api/py/youtube-channel-videos`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        channel_id: channelId,
+        limit: 10
+      }),
+    })
+
+    const videosData = await response.json()
+
     if (!videosData.success) {
       console.log(`❌ Failed to get channel videos: ${videosData.error || videosData.message}`)
-      return []
+      return {
+        videos: [],
+        channel_thumbnail: '',
+        total_videos: 0
+      }
     }
-    
+
     console.log(`✅ Found ${videosData.video_count} videos for channel`)
-    
-    return videosData.videos || []
+
+    return {
+      videos: videosData.videos || [],
+      channel_thumbnail: videosData.channel_thumbnail || '',
+      total_videos: videosData.total_videos || 0,
+      subscriber_count: videosData.subscriber_count
+    }
   } catch (error) {
     console.error('Error getting channel videos:', error)
-    return []
+    return {
+      videos: [],
+      channel_thumbnail: '',
+      total_videos: 0
+    }
   }
 }
 
@@ -208,26 +233,27 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // Get channel videos (placeholder for now)
-    const videos = await getChannelVideos(channelId)
+    // Get channel videos and metadata
+    const channelData = await getChannelVideos(channelId)
 
     // Return channel information
     return NextResponse.json({
       channel: {
         id: channelId,
         name: channelName || 'Unknown Channel',
-        thumbnail: `https://yt3.ggpht.com/a/default-user=s88-c-k-c0x00ffffff-no-rj`, // Placeholder
-        subscriberCount: 'Hidden',
-        videoCount: videos.length,
+        thumbnail: channelData.channel_thumbnail || `https://yt3.ggpht.com/ytc/${channelId}`,
+        subscriberCount: channelData.subscriber_count ? channelData.subscriber_count.toLocaleString() : 'Hidden',
+        videoCount: channelData.total_videos || channelData.videos.length,
         description: 'Channel information extracted from video metadata'
       },
-      videos: videos.map(video => ({
+      videos: channelData.videos.map((video: any) => ({
         id: video.id || '',
         title: video.title || '',
         thumbnail: video.thumbnail || '',
         duration: video.duration || '',
         publishedAt: video.publishedAt || '',
-        description: video.description || ''
+        description: video.description || '',
+        viewCount: video.view_count || 0
       }))
     })
 
