@@ -29,20 +29,6 @@ interface VideoMetadata {
   processing_date: null
 }
 
-interface ChannelFromUsername {
-  success: boolean
-  username: string
-  channel_id: string
-  channel_name: string
-  uploader: string
-  obtained_via: string
-  sample_video_id: string
-  sample_video_title: string
-  processing_date: null
-  error?: string
-  message?: string
-}
-
 async function extractVideoId(url: string): Promise<string> {
   // Extract video ID from various YouTube URL formats
   const videoIdRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/
@@ -79,33 +65,25 @@ async function getChannelInfoFromVideo(videoId: string): Promise<{ channelId: st
 
 async function getChannelInfoFromUsername(username: string): Promise<{ channelId: string; channelName: string } | null> {
   try {
+    const pythonPath = path.join(process.cwd(), 'scripts', 'transcript_env', 'bin', 'python')
     console.log(`🔍 Extracting channel info from username: @${username}`)
 
-    // Call the Python serverless function
-    const baseUrl = process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : process.env.NEXTAUTH_URL || 'http://localhost:3000'
+    // Use yt-dlp to get channel info from @username URL
+    const ytdlpCommand = `${pythonPath} -m yt_dlp --dump-json --playlist-items 1 --proxy "http://vvwbndwq-1:2w021mlwybfn@p.webshare.io:80" "https://www.youtube.com/@${username}"`
 
-    const response = await fetch(`${baseUrl}/api/py/youtube-channel-info`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ username }),
-    })
+    const { stdout } = await execAsync(ytdlpCommand)
+    const videoInfo = JSON.parse(stdout)
 
-    const channelInfo: ChannelFromUsername = await response.json()
-
-    if (!channelInfo.success) {
-      console.log(`❌ Failed to get channel info: ${channelInfo.error || channelInfo.message}`)
+    if (!videoInfo.channel_id) {
+      console.log(`❌ No channel_id found for @${username}`)
       return null
     }
 
-    console.log(`✅ Found channel: ${channelInfo.channel_name} (${channelInfo.channel_id})`)
+    console.log(`✅ Found channel: ${videoInfo.channel} (${videoInfo.channel_id})`)
 
     return {
-      channelId: channelInfo.channel_id,
-      channelName: channelInfo.channel_name
+      channelId: videoInfo.channel_id,
+      channelName: videoInfo.channel || videoInfo.uploader || username
     }
   } catch (error) {
     console.error('Error extracting channel info from username:', error)
@@ -115,42 +93,41 @@ async function getChannelInfoFromUsername(username: string): Promise<{ channelId
 
 async function getChannelVideos(channelId: string): Promise<any> {
   try {
+    const pythonPath = path.join(process.cwd(), 'scripts', 'transcript_env', 'bin', 'python')
     console.log(`📹 Getting last 10 videos for channel: ${channelId}`)
 
-    // Call the Python serverless function
-    const baseUrl = process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : process.env.NEXTAUTH_URL || 'http://localhost:3000'
+    // Use yt-dlp to get channel videos with metadata
+    const ytdlpCommand = `${pythonPath} -m yt_dlp --dump-json --flat-playlist --playlist-end 10 --proxy "http://vvwbndwq-1:2w021mlwybfn@p.webshare.io:80" "https://www.youtube.com/channel/${channelId}"`
 
-    const response = await fetch(`${baseUrl}/api/py/youtube-channel-videos`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        channel_id: channelId,
-        limit: 10
-      }),
-    })
+    const { stdout } = await execAsync(ytdlpCommand)
 
-    const videosData = await response.json()
-
-    if (!videosData.success) {
-      console.log(`❌ Failed to get channel videos: ${videosData.error || videosData.message}`)
-      return {
-        videos: [],
-        channel_thumbnail: '',
-        total_videos: 0
+    // Parse multiple JSON objects (one per line)
+    const lines = stdout.trim().split('\n')
+    const videos = lines.map(line => {
+      try {
+        const video = JSON.parse(line)
+        return {
+          id: video.id,
+          title: video.title,
+          description: video.description || '',
+          thumbnail: video.thumbnail || `https://img.youtube.com/vi/${video.id}/maxresdefault.jpg`,
+          duration: video.duration ? formatDuration(video.duration) : '',
+          publishedAt: video.upload_date ? formatDate(video.upload_date) : '',
+          view_count: video.view_count || 0,
+          url: `https://www.youtube.com/watch?v=${video.id}`
+        }
+      } catch {
+        return null
       }
-    }
+    }).filter(v => v !== null)
 
-    console.log(`✅ Found ${videosData.video_count} videos for channel`)
+    console.log(`✅ Found ${videos.length} videos for channel`)
 
     return {
-      videos: videosData.videos || [],
-      channel_thumbnail: videosData.channel_thumbnail || '',
-      total_videos: videosData.total_videos || 0,
-      subscriber_count: videosData.subscriber_count
+      videos,
+      channel_thumbnail: `https://yt3.googleusercontent.com/ytc/${channelId}`,
+      total_videos: videos.length,
+      subscriber_count: null
     }
   } catch (error) {
     console.error('Error getting channel videos:', error)
@@ -160,6 +137,27 @@ async function getChannelVideos(channelId: string): Promise<any> {
       total_videos: 0
     }
   }
+}
+
+function formatDuration(seconds: number): string {
+  const hours = Math.floor(seconds / 3600)
+  const minutes = Math.floor((seconds % 3600) / 60)
+  const secs = seconds % 60
+  if (hours > 0) {
+    return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+  }
+  return `${minutes}:${secs.toString().padStart(2, '0')}`
+}
+
+function formatDate(dateStr: string): string {
+  // yt-dlp returns dates as YYYYMMDD
+  if (dateStr.length === 8) {
+    const year = dateStr.substring(0, 4)
+    const month = dateStr.substring(4, 6)
+    const day = dateStr.substring(6, 8)
+    return `${year}-${month}-${day}`
+  }
+  return dateStr
 }
 
 export async function POST(request: NextRequest) {
