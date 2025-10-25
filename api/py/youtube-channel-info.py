@@ -22,6 +22,9 @@ class handler(BaseHTTPRequestHandler):
                 return
 
             # Configure yt-dlp to search for the channel and get recent videos
+            # Use Webshare residential rotating proxy to avoid rate limits
+            proxy_url = "http://vvwbndwq-1:2w021mlwybfn@p.webshare.io:80"
+
             ydl_opts = {
                 'quiet': True,
                 'no_warnings': True,
@@ -30,6 +33,7 @@ class handler(BaseHTTPRequestHandler):
                 'playlist_items': '1:5',  # Get first 5 videos
                 'format': 'worst',  # Request worst quality to minimize format issues
                 'no_check_formats': True,  # Don't validate format availability
+                'proxy': proxy_url,  # Use Webshare residential rotating proxy
             }
 
             channel_url = f"https://www.youtube.com/@{username}/videos"
@@ -71,6 +75,7 @@ class handler(BaseHTTPRequestHandler):
                         'ignoreerrors': True,
                         'format': 'worst',
                         'no_check_formats': True,
+                        'proxy': proxy_url,  # Use Webshare residential rotating proxy
                     }
 
                     video_url = f"https://www.youtube.com/watch?v={video_id}"
