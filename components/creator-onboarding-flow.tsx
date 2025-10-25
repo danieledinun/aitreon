@@ -490,18 +490,18 @@ export default function CreatorOnboardingFlow({ userId }: OnboardingFlowProps) {
   const currentStepData = steps[currentStep - 1]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 relative">
       {/* Background Effects */}
-      <div className="absolute inset-0 opacity-30">
+      <div className="fixed inset-0 opacity-30 -z-10">
         <div className="w-full h-full bg-repeat bg-center" style={{
           backgroundImage: `radial-gradient(circle at 20px 20px, rgba(255,255,255,0.03) 2px, transparent 2px)`,
           backgroundSize: '40px 40px'
         }}></div>
       </div>
-      <div className="absolute top-20 -left-40 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl"></div>
-      <div className="absolute bottom-20 -right-40 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl"></div>
-      
-      <div className="relative z-10 min-h-screen flex flex-col">
+      <div className="fixed top-20 -left-40 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl -z-10"></div>
+      <div className="fixed bottom-20 -right-40 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl -z-10"></div>
+
+      <div className="relative z-10 min-h-screen flex flex-col pb-8">
         {/* Header */}
         <div className="pt-8 pb-4 px-8">
           <div className="max-w-6xl mx-auto">
@@ -578,9 +578,9 @@ export default function CreatorOnboardingFlow({ userId }: OnboardingFlowProps) {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 px-8 pb-8">
+        <div className="flex-1 px-4 md:px-8 pb-4">
           <div className="max-w-4xl mx-auto">
-            <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 md:p-12 shadow-2xl">
+            <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-12 shadow-2xl">
               {/* Step Header */}
               <div className="text-center mb-12">
                 <div className={`inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-r ${currentStepData.color} mb-6 shadow-lg`}>
@@ -1103,7 +1103,7 @@ export default function CreatorOnboardingFlow({ userId }: OnboardingFlowProps) {
         </div>
 
         {/* Navigation */}
-        <div className="px-8 pb-8">
+        <div className="px-4 md:px-8 py-4 sticky bottom-0 bg-gradient-to-t from-gray-900 to-transparent pt-8">
           <div className="max-w-4xl mx-auto flex items-center justify-between">
             <Button
               variant="outline"
