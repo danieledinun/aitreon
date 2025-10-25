@@ -37,6 +37,9 @@ export default function CreatorLayout({
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
 
+  // Hide sidebar during onboarding
+  const isOnboarding = pathname === '/creator/onboarding'
+
   const links = [
     {
       label: "Dashboard",
@@ -79,10 +82,15 @@ export default function CreatorLayout({
     await signOut({ callbackUrl: '/' })
   }
 
+  // If onboarding, render without layout wrapper
+  if (isOnboarding) {
+    return <>{children}</>
+  }
+
   return (
     <div className={cn(
       "rounded-md flex flex-col md:flex-row bg-gray-100 dark:bg-neutral-800 w-full flex-1 max-w-7xl mx-auto border border-neutral-200 dark:border-neutral-700 overflow-hidden",
-      "h-screen" 
+      "h-screen"
     )}>
       <Sidebar open={open} setOpen={setOpen}>
         <SidebarBody className="justify-between gap-6">
@@ -96,7 +104,7 @@ export default function CreatorLayout({
               ))}
             </nav>
           </div>
-          
+
           {/* User section */}
           <div className="flex flex-col gap-2 mt-4">
             <div className={cn(
@@ -119,7 +127,7 @@ export default function CreatorLayout({
                 </div>
               )}
             </div>
-            
+
             <Button
               onClick={handleLogout}
               variant="ghost"
@@ -134,7 +142,7 @@ export default function CreatorLayout({
           </div>
         </SidebarBody>
       </Sidebar>
-      
+
       <main className="flex-1 overflow-auto">
         <div className="p-4 md:p-10 rounded-tl-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 flex flex-col gap-2 flex-1 w-full h-full">
           {children}
