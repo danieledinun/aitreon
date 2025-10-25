@@ -325,14 +325,29 @@ class YouTubeTranscriptExtractor:
                     info = ydl.extract_info(channel_url, download=False)
                 
                 if info and info.get('entries'):
-                    # Get the first video to extract channel info
-                    first_video = info['entries'][0]
-                    if first_video and first_video.get('id'):
-                        print(f"✅ Found video {first_video['id']}, extracting channel info", file=sys.stderr)
-                        
+                    # Try multiple videos in case the first one fails
+                    valid_entries = [e for e in info['entries'] if e and e.get('id')]
+                    print(f"✅ Found {len(valid_entries)} potential videos", file=sys.stderr)
+
+                    for idx, video in enumerate(valid_entries[:5], 1):  # Try up to 5 videos
+                        video_id = video.get('id')
+
+                        # Skip if video ID looks invalid (should be 11 chars, alphanumeric + - and _)
+                        if not video_id or len(video_id) != 11:
+                            print(f"⚠️ Skipping invalid video ID: {video_id}", file=sys.stderr)
+                            continue
+
+                        # Skip playlist-like IDs (they often start with UL, PL, etc.)
+                        if video_id.startswith(('UL', 'PL', 'RD', 'LL')):
+                            print(f"⚠️ Skipping playlist/channel ID: {video_id}", file=sys.stderr)
+                            continue
+
+                        print(f"🔍 Trying video {idx}/{len(valid_entries[:5])}: {video_id} - {video.get('title', '')[:50]}", file=sys.stderr)
+
                         # Now get detailed metadata for the video to extract channel info
-                        video_metadata = YouTubeTranscriptExtractor.get_video_metadata(first_video['id'])
-                        if video_metadata.get('success'):
+                        video_metadata = YouTubeTranscriptExtractor.get_video_metadata(video_id)
+                        if video_metadata.get('success') and video_metadata.get('channel_id'):
+                            print(f"✅ Successfully extracted channel info from video!", file=sys.stderr)
                             return {
                                 'success': True,
                                 'username': username,
@@ -340,14 +355,14 @@ class YouTubeTranscriptExtractor:
                                 'channel_name': video_metadata['channel'],
                                 'uploader': video_metadata['uploader'],
                                 'obtained_via': 'yt_dlp_username_search',
-                                'sample_video_id': first_video['id'],
-                                'sample_video_title': first_video.get('title', ''),
+                                'sample_video_id': video_id,
+                                'sample_video_title': video.get('title', ''),
                                 'processing_date': None
                             }
                         else:
-                            print(f"⚠️ Could not extract channel metadata from video", file=sys.stderr)
-                    
-                    print(f"⚠️ No videos found for @{username}", file=sys.stderr)
+                            print(f"⚠️ Could not extract channel metadata from video {video_id}, trying next...", file=sys.stderr)
+
+                    print(f"⚠️ Could not extract channel info from any of the {len(valid_entries[:5])} videos tried", file=sys.stderr)
                 else:
                     print(f"⚠️ Proxy returned no data, trying direct connection", file=sys.stderr)
                     
@@ -364,14 +379,29 @@ class YouTubeTranscriptExtractor:
                         info = ydl.extract_info(channel_url, download=False)
                     
                     if info and info.get('entries'):
-                        # Get the first video to extract channel info
-                        first_video = info['entries'][0]
-                        if first_video and first_video.get('id'):
-                            print(f"✅ Found video {first_video['id']}, extracting channel info", file=sys.stderr)
-                            
+                        # Try multiple videos in case the first one fails
+                        valid_entries = [e for e in info['entries'] if e and e.get('id')]
+                        print(f"✅ Found {len(valid_entries)} potential videos", file=sys.stderr)
+
+                        for idx, video in enumerate(valid_entries[:5], 1):  # Try up to 5 videos
+                            video_id = video.get('id')
+
+                            # Skip if video ID looks invalid (should be 11 chars, alphanumeric + - and _)
+                            if not video_id or len(video_id) != 11:
+                                print(f"⚠️ Skipping invalid video ID: {video_id}", file=sys.stderr)
+                                continue
+
+                            # Skip playlist-like IDs (they often start with UL, PL, etc.)
+                            if video_id.startswith(('UL', 'PL', 'RD', 'LL')):
+                                print(f"⚠️ Skipping playlist/channel ID: {video_id}", file=sys.stderr)
+                                continue
+
+                            print(f"🔍 Trying video {idx}/{len(valid_entries[:5])}: {video_id} - {video.get('title', '')[:50]}", file=sys.stderr)
+
                             # Now get detailed metadata for the video to extract channel info
-                            video_metadata = YouTubeTranscriptExtractor.get_video_metadata(first_video['id'])
-                            if video_metadata.get('success'):
+                            video_metadata = YouTubeTranscriptExtractor.get_video_metadata(video_id)
+                            if video_metadata.get('success') and video_metadata.get('channel_id'):
+                                print(f"✅ Successfully extracted channel info from video!", file=sys.stderr)
                                 return {
                                     'success': True,
                                     'username': username,
@@ -379,14 +409,14 @@ class YouTubeTranscriptExtractor:
                                     'channel_name': video_metadata['channel'],
                                     'uploader': video_metadata['uploader'],
                                     'obtained_via': 'yt_dlp_username_search_direct',
-                                    'sample_video_id': first_video['id'],
-                                    'sample_video_title': first_video.get('title', ''),
+                                    'sample_video_id': video_id,
+                                    'sample_video_title': video.get('title', ''),
                                     'processing_date': None
                                 }
                             else:
-                                print(f"⚠️ Could not extract channel metadata from video", file=sys.stderr)
-                        
-                        print(f"⚠️ No videos found for @{username}", file=sys.stderr)
+                                print(f"⚠️ Could not extract channel metadata from video {video_id}, trying next...", file=sys.stderr)
+
+                        print(f"⚠️ Could not extract channel info from any of the {len(valid_entries[:5])} videos tried", file=sys.stderr)
                         
                 except Exception as direct_error:
                     print(f"❌ Direct connection also failed: {str(direct_error)}", file=sys.stderr)
@@ -525,11 +555,10 @@ class YouTubeTranscriptExtractor:
                 'quiet': True,
                 'no_warnings': True,
                 'extract_flat': False,
-                'writeinfojson': False,
-                'writedescription': False,
-                'writesubtitles': False,
                 'skip_download': True,
-                'ignoreerrors': True
+                'ignoreerrors': True,
+                'format': 'worst',  # Request worst quality to minimize format issues
+                'no_check_formats': True,  # Don't validate format availability
             }
             
             # Try with Webshare residential rotating proxy first, fallback to direct connection if needed
@@ -538,39 +567,42 @@ class YouTubeTranscriptExtractor:
             video_url = f"https://www.youtube.com/watch?v={video_id}"
             
             # First attempt: with proxy
+            proxy_succeeded = False
             try:
                 ydl_opts['proxy'] = proxy_url
                 print(f"🌐 Attempting Webshare residential rotating proxy for metadata extraction", file=sys.stderr)
-                
+
                 with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                     info = ydl.extract_info(video_url, download=False)
-                
+
                 if info:
                     print(f"✅ Successfully extracted metadata using Webshare proxy", file=sys.stderr)
+                    proxy_succeeded = True
                 else:
                     print(f"⚠️ Proxy returned no data, trying direct connection", file=sys.stderr)
-                    
+
             except Exception as proxy_error:
                 error_msg = str(proxy_error)
                 if "407" in error_msg or "authentication" in error_msg.lower():
                     print(f"⚠️ Proxy authentication failed (407), trying direct connection", file=sys.stderr)
                 else:
                     print(f"⚠️ Proxy failed: {error_msg[:100]}, trying direct connection", file=sys.stderr)
-                
-                # Second attempt: without proxy
+
+            # Second attempt: without proxy (if proxy failed or returned no data)
+            if not proxy_succeeded:
                 try:
                     ydl_opts.pop('proxy', None)  # Remove proxy configuration
                     print(f"🔧 Retrying with direct connection", file=sys.stderr)
-                    
+
                     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                         info = ydl.extract_info(video_url, download=False)
-                    
+
                     if info:
                         print(f"✅ Successfully extracted metadata using direct connection", file=sys.stderr)
-                        
+
                 except Exception as direct_error:
                     print(f"❌ Direct connection also failed: {str(direct_error)}", file=sys.stderr)
-                    raise direct_error
+                    # Don't raise - let the code below handle None info
                 
             # Process metadata if we got info from either proxy or direct connection
             if not info:
