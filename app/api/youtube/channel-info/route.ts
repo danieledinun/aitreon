@@ -129,6 +129,39 @@ function parseDuration(duration: string): string {
   return `${minutes}:${seconds.toString().padStart(2, '0')}`
 }
 
+async function fetchVideoDuration(videoId: string): Promise<string> {
+  try {
+    const url = `https://www.youtube.com/watch?v=${videoId}`
+    const response = await fetchWithProxy(url)
+
+    if (!response.ok) {
+      return ''
+    }
+
+    const html = await response.text()
+
+    // Extract duration from video page (ISO 8601 format in metadata)
+    const durationMatch = html.match(/"lengthSeconds":"(\d+)"/)
+
+    if (!durationMatch) {
+      return ''
+    }
+
+    const totalSeconds = parseInt(durationMatch[1])
+    const hours = Math.floor(totalSeconds / 3600)
+    const minutes = Math.floor((totalSeconds % 3600) / 60)
+    const seconds = totalSeconds % 60
+
+    if (hours > 0) {
+      return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+    }
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`
+  } catch (error) {
+    console.error(`Error fetching duration for video ${videoId}:`, error)
+    return ''
+  }
+}
+
 async function getChannelVideosFromRSS(channelId: string): Promise<any> {
   try {
     console.log(`📹 Getting videos from RSS feed for channel: ${channelId}`)
@@ -168,9 +201,9 @@ async function getChannelVideosFromRSS(channelId: string): Promise<any> {
       const viewsMatch = entry.match(/views="(\d+)"/)
       const viewCount = viewsMatch ? parseInt(viewsMatch[1]) : 0
 
-      // Extract thumbnail
-      const thumbnailMatch = entry.match(/url="([^"]+)"/)
-      const thumbnail = thumbnailMatch ? thumbnailMatch[1] : `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`
+      // Extract thumbnail from media:thumbnail element
+      const thumbnailMatch = entry.match(/<media:thumbnail url="([^"]+)"/)
+      const thumbnail = thumbnailMatch ? thumbnailMatch[1] : `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`
 
       // Extract description
       const descMatch = entry.match(/<media:description>([^<]*)<\/media:description>/)
@@ -181,12 +214,22 @@ async function getChannelVideosFromRSS(channelId: string): Promise<any> {
         title,
         description,
         thumbnail,
-        duration: '', // RSS feed doesn't include duration, we'll need to fetch this separately if needed
+        duration: '', // Will be fetched separately
         publishedAt,
         view_count: viewCount,
         url: `https://www.youtube.com/watch?v=${videoId}`
       }
     }).filter(v => v.id) // Only include entries with valid video IDs
+
+    // Fetch durations for all videos in parallel
+    console.log(`⏱️  Fetching durations for ${videos.length} videos...`)
+    const durationPromises = videos.map(video => fetchVideoDuration(video.id))
+    const durations = await Promise.all(durationPromises)
+
+    // Add durations to videos
+    videos.forEach((video, index) => {
+      video.duration = durations[index]
+    })
 
     // Extract channel name from XML
     const channelNameMatch = xml.match(/<name>([^<]+)<\/name>/)
