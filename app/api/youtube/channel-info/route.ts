@@ -20,7 +20,7 @@ async function getChannelInfoFromVideo(videoId: string): Promise<{ channelId: st
       skipDownload: true,
       noWarnings: true,
       proxy: 'http://vvwbndwq-1:2w021mlwybfn@p.webshare.io:80'
-    })
+    }) as any
 
     const channelId = metadata.channel_id || metadata.uploader_id
     const channelName = metadata.channel || metadata.uploader
@@ -53,7 +53,7 @@ async function getChannelInfoFromUsername(username: string): Promise<{ channelId
       playlistItems: '1',
       noWarnings: true,
       proxy: 'http://vvwbndwq-1:2w021mlwybfn@p.webshare.io:80'
-    })
+    }) as any
 
     const channelId = videoInfo.channel_id || videoInfo.uploader_id
     const channelName = videoInfo.channel || videoInfo.uploader
@@ -92,7 +92,7 @@ async function getChannelVideos(channelId: string): Promise<any> {
       quiet: true,
       noWarnings: true,
       proxy: 'http://vvwbndwq-1:2w021mlwybfn@p.webshare.io:80'
-    })
+    }) as any
 
     // Extract channel info from playlist metadata
     const channelName = playlistData.channel || playlistData.uploader
