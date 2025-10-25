@@ -86,8 +86,8 @@ class handler(BaseHTTPRequestHandler):
             # Extract videos from RSS
             entries = root.findall('.//atom:entry', ns)[:limit]
 
-            # Collect video data from RSS
-            rss_videos = {}
+            # Collect video data from RSS (including duration from media:content)
+            videos = []
             for entry in entries:
                 video_id_elem = entry.find('.//yt:videoId', ns)
                 if video_id_elem is None:
@@ -118,60 +118,39 @@ class handler(BaseHTTPRequestHandler):
                     desc_elem = media_group.find('.//media:description', ns)
                     description = desc_elem.text if desc_elem is not None else ''
 
+                # Get duration from media:content (in seconds)
+                duration_str = ''
+                if media_group is not None:
+                    content_elem = media_group.find('.//media:content', ns)
+                    if content_elem is not None and content_elem.get('duration'):
+                        try:
+                            duration = int(content_elem.get('duration'))
+                            hours = duration // 3600
+                            minutes = (duration % 3600) // 60
+                            seconds = duration % 60
+                            if hours > 0:
+                                duration_str = f"{hours}:{minutes:02d}:{seconds:02d}"
+                            else:
+                                duration_str = f"{minutes}:{seconds:02d}"
+                        except:
+                            pass
+
                 # Get view count
                 views_elem = entry.find('.//media:group/media:community/media:statistics', ns)
                 view_count = 0
                 if views_elem is not None:
                     view_count = int(views_elem.get('views', 0))
 
-                rss_videos[video_id] = {
+                videos.append({
                     'id': video_id,
                     'title': title,
                     'description': description,
                     'publishedAt': published_at,
+                    'duration': duration_str,
                     'view_count': view_count,
                     'thumbnail': f"https://img.youtube.com/vi/{video_id}/maxresdefault.jpg",
                     'url': f"https://www.youtube.com/watch?v={video_id}"
-                }
-
-            # Fetch durations using yt-dlp
-            video_ids = list(rss_videos.keys())
-            durations = {}
-
-            try:
-                ydl_opts_duration = {
-                    'quiet': True,
-                    'no_warnings': True,
-                    'extract_flat': 'in_playlist',
-                    'ignoreerrors': True,
-                    'proxy': proxy_url,
-                }
-
-                for video_id in video_ids[:limit]:
-                    try:
-                        with yt_dlp.YoutubeDL(ydl_opts_duration) as ydl:
-                            info = ydl.extract_info(f"https://www.youtube.com/watch?v={video_id}", download=False)
-                            if info and info.get('duration'):
-                                duration = int(info['duration'])
-                                hours = duration // 3600
-                                minutes = (duration % 3600) // 60
-                                seconds = duration % 60
-                                if hours > 0:
-                                    durations[video_id] = f"{hours}:{minutes:02d}:{seconds:02d}"
-                                else:
-                                    durations[video_id] = f"{minutes}:{seconds:02d}"
-                    except:
-                        continue
-            except:
-                pass
-
-            # Combine RSS data with durations
-            videos = []
-            for video_id in video_ids:
-                if video_id in rss_videos:
-                    video_data = rss_videos[video_id]
-                    video_data['duration'] = durations.get(video_id, '')
-                    videos.append(video_data)
+                })
 
             # Success! Return videos
             self.send_response(200)
