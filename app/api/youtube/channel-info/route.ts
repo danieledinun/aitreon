@@ -68,22 +68,27 @@ async function getChannelInfoFromUsername(username: string): Promise<{ channelId
     const pythonPath = path.join(process.cwd(), 'scripts', 'transcript_env', 'bin', 'python')
     console.log(`🔍 Extracting channel info from username: @${username}`)
 
-    // Use yt-dlp to get channel info from @username URL
-    const ytdlpCommand = `${pythonPath} -m yt_dlp --dump-json --playlist-items 1 --proxy "http://vvwbndwq-1:2w021mlwybfn@p.webshare.io:80" "https://www.youtube.com/@${username}"`
+    // Optimized: Use --dump-single-json with --flat-playlist for fastest extraction
+    // --skip-download ensures no video downloading, --playlist-items 1 gets just first video
+    const ytdlpCommand = `${pythonPath} -m yt_dlp --dump-single-json --flat-playlist --skip-download --playlist-items 1 --quiet --no-warnings --proxy "http://vvwbndwq-1:2w021mlwybfn@p.webshare.io:80" "https://www.youtube.com/@${username}"`
 
     const { stdout } = await execAsync(ytdlpCommand)
-    const videoInfo = JSON.parse(stdout)
+    const playlistInfo = JSON.parse(stdout)
 
-    if (!videoInfo.channel_id) {
+    // With --dump-single-json, we get playlist info with entries array
+    const channelId = playlistInfo.channel_id || playlistInfo.uploader_id
+    const channelName = playlistInfo.channel || playlistInfo.uploader
+
+    if (!channelId) {
       console.log(`❌ No channel_id found for @${username}`)
       return null
     }
 
-    console.log(`✅ Found channel: ${videoInfo.channel} (${videoInfo.channel_id})`)
+    console.log(`✅ Found channel: ${channelName} (${channelId})`)
 
     return {
-      channelId: videoInfo.channel_id,
-      channelName: videoInfo.channel || videoInfo.uploader || username
+      channelId,
+      channelName: channelName || username
     }
   } catch (error) {
     console.error('Error extracting channel info from username:', error)
@@ -96,38 +101,38 @@ async function getChannelVideos(channelId: string): Promise<any> {
     const pythonPath = path.join(process.cwd(), 'scripts', 'transcript_env', 'bin', 'python')
     console.log(`📹 Getting last 10 videos for channel: ${channelId}`)
 
-    // Use yt-dlp to get channel videos with metadata
-    const ytdlpCommand = `${pythonPath} -m yt_dlp --dump-json --flat-playlist --playlist-end 10 --proxy "http://vvwbndwq-1:2w021mlwybfn@p.webshare.io:80" "https://www.youtube.com/channel/${channelId}"`
+    // Optimized: Use --dump-single-json for faster extraction (all data in one JSON object)
+    // --lazy-playlist combined with --playlist-end is fastest for large channels
+    const ytdlpCommand = `${pythonPath} -m yt_dlp --dump-single-json --flat-playlist --skip-download --lazy-playlist --playlist-end 10 --quiet --no-warnings --proxy "http://vvwbndwq-1:2w021mlwybfn@p.webshare.io:80" "https://www.youtube.com/channel/${channelId}"`
 
     const { stdout } = await execAsync(ytdlpCommand)
+    const playlistData = JSON.parse(stdout)
 
-    // Parse multiple JSON objects (one per line)
-    const lines = stdout.trim().split('\n')
-    const videos = lines.map(line => {
-      try {
-        const video = JSON.parse(line)
-        return {
-          id: video.id,
-          title: video.title,
-          description: video.description || '',
-          thumbnail: video.thumbnail || `https://img.youtube.com/vi/${video.id}/maxresdefault.jpg`,
-          duration: video.duration ? formatDuration(video.duration) : '',
-          publishedAt: video.upload_date ? formatDate(video.upload_date) : '',
-          view_count: video.view_count || 0,
-          url: `https://www.youtube.com/watch?v=${video.id}`
-        }
-      } catch {
-        return null
-      }
-    }).filter(v => v !== null)
+    // Extract channel info from playlist metadata
+    const channelName = playlistData.channel || playlistData.uploader
+    const channelThumbnail = playlistData.channel_follower_count
+      ? (playlistData.thumbnails?.[0]?.url || `https://yt3.googleusercontent.com/ytc/${channelId}`)
+      : `https://yt3.googleusercontent.com/ytc/${channelId}`
 
-    console.log(`✅ Found ${videos.length} videos for channel`)
+    // Parse entries array from the single JSON response
+    const videos = (playlistData.entries || []).slice(0, 10).map((video: any) => ({
+      id: video.id,
+      title: video.title || '',
+      description: video.description || '',
+      thumbnail: video.thumbnails?.[0]?.url || `https://img.youtube.com/vi/${video.id}/maxresdefault.jpg`,
+      duration: video.duration ? formatDuration(video.duration) : '',
+      publishedAt: video.upload_date ? formatDate(video.upload_date) : '',
+      view_count: video.view_count || 0,
+      url: video.url || `https://www.youtube.com/watch?v=${video.id}`
+    }))
+
+    console.log(`✅ Found ${videos.length} videos for channel: ${channelName}`)
 
     return {
       videos,
-      channel_thumbnail: `https://yt3.googleusercontent.com/ytc/${channelId}`,
-      total_videos: videos.length,
-      subscriber_count: null
+      channel_thumbnail: channelThumbnail,
+      total_videos: playlistData.playlist_count || videos.length,
+      subscriber_count: playlistData.channel_follower_count || null
     }
   } catch (error) {
     console.error('Error getting channel videos:', error)
