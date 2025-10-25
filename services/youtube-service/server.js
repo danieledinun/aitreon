@@ -68,14 +68,9 @@ app.post('/api/channel/info', async (req, res) => {
       dumpSingleJson: true,
       skipDownload: true,
       playlistItems: '1',
-      noWarnings: false, // Enable warnings to see what's happening
-      verbose: true,
       noCheckCertificates: true,
-      preferFreeFormats: true,
-      youtubeSkipDashManifest: true,
       proxy: PROXY_URL,
-      socketTimeout: 30,
-      retries: 3
+      socketTimeout: 30
     }).then(result => {
       console.log(`✅ yt-dlp completed successfully`)
       return result
