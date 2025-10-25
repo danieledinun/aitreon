@@ -8,11 +8,11 @@
   "rewrites": [
     {
       "source": "/api/py/youtube-channel-info",
-      "destination": "/api/python/youtube-channel-info"
+      "destination": "/api/youtube-functions/youtube-channel-info"
     },
     {
       "source": "/api/py/youtube-channel-videos",
-      "destination": "/api/python/youtube-channel-videos"
+      "destination": "/api/youtube-functions/youtube-channel-videos"
     }
   ]
 }
