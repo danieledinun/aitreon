@@ -68,19 +68,29 @@ async function getChannelInfoFromUsername(username: string): Promise<{ channelId
     const pythonPath = path.join(process.cwd(), 'scripts', 'transcript_env', 'bin', 'python')
     console.log(`🔍 Extracting channel info from username: @${username}`)
 
-    // Optimized: Use --dump-single-json with --flat-playlist for fastest extraction
-    // --skip-download ensures no video downloading, --playlist-items 1 gets just first video
-    const ytdlpCommand = `${pythonPath} -m yt_dlp --dump-single-json --flat-playlist --skip-download --playlist-items 1 --quiet --no-warnings --proxy "http://vvwbndwq-1:2w021mlwybfn@p.webshare.io:80" "https://www.youtube.com/@${username}"`
+    // Simplified: Just get first video from channel to extract channel metadata
+    // This is the most reliable way to get channel_id from @username
+    const ytdlpCommand = `${pythonPath} -m yt_dlp --dump-json --skip-download --playlist-items 1 --no-warnings --proxy "http://vvwbndwq-1:2w021mlwybfn@p.webshare.io:80" "https://www.youtube.com/@${username}"`
 
-    const { stdout } = await execAsync(ytdlpCommand)
-    const playlistInfo = JSON.parse(stdout)
+    const { stdout, stderr } = await execAsync(ytdlpCommand)
 
-    // With --dump-single-json, we get playlist info with entries array
-    const channelId = playlistInfo.channel_id || playlistInfo.uploader_id
-    const channelName = playlistInfo.channel || playlistInfo.uploader
+    if (stderr) {
+      console.log(`⚠️  yt-dlp stderr: ${stderr}`)
+    }
+
+    if (!stdout || !stdout.trim()) {
+      console.log(`❌ No output from yt-dlp for @${username}`)
+      return null
+    }
+
+    const videoInfo = JSON.parse(stdout.trim())
+
+    const channelId = videoInfo.channel_id || videoInfo.uploader_id
+    const channelName = videoInfo.channel || videoInfo.uploader
 
     if (!channelId) {
       console.log(`❌ No channel_id found for @${username}`)
+      console.log(`📊 Available fields: ${Object.keys(videoInfo).join(', ')}`)
       return null
     }
 
@@ -92,6 +102,9 @@ async function getChannelInfoFromUsername(username: string): Promise<{ channelId
     }
   } catch (error) {
     console.error('Error extracting channel info from username:', error)
+    if (error instanceof Error) {
+      console.error('Error details:', error.message)
+    }
     return null
   }
 }
