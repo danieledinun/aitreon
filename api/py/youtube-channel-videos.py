@@ -1,10 +1,15 @@
 """
 Vercel Python serverless function for YouTube channel videos extraction
-Uses yt-dlp to get last N videos from a channel
+Uses RSS feed for fast video metadata including publish dates
+Uses yt-dlp for duration and channel metadata
 """
 
 from http.server import BaseHTTPRequestHandler
 import json
+import urllib.request
+import urllib.error
+import xml.etree.ElementTree as ET
+from datetime import datetime
 import yt_dlp
 
 class handler(BaseHTTPRequestHandler):
@@ -22,126 +27,153 @@ class handler(BaseHTTPRequestHandler):
                 self.send_error(400, "Missing channel_id parameter")
                 return
 
-            # Use Webshare residential rotating proxy to avoid rate limits
+            # Use YouTube RSS feed - fast and includes publish dates
+            rss_url = f"https://www.youtube.com/feeds/videos.xml?channel_id={channel_id}"
+
+            # Fetch RSS feed
+            req = urllib.request.Request(rss_url)
+            with urllib.request.urlopen(req, timeout=10) as response:
+                rss_content = response.read()
+
+            # Parse RSS XML
+            root = ET.fromstring(rss_content)
+
+            # Namespace for Atom feed
+            ns = {
+                'atom': 'http://www.w3.org/2005/Atom',
+                'yt': 'http://www.youtube.com/xml/schemas/2015',
+                'media': 'http://search.yahoo.com/mrss/'
+            }
+
+            # Extract channel info
+            channel_name = root.find('.//atom:author/atom:name', ns)
+            channel_uri = root.find('.//atom:author/atom:uri', ns)
+            channel_name_text = channel_name.text if channel_name is not None else ''
+
+            # Use yt-dlp to get channel metadata (thumbnail, subscriber count)
+            # Use Webshare residential rotating proxy
             proxy_url = "http://vvwbndwq-1:2w021mlwybfn@p.webshare.io:80"
 
-            # Configure yt-dlp to extract channel videos with full metadata
             ydl_opts = {
                 'quiet': True,
                 'no_warnings': True,
-                'extract_flat': 'in_playlist',  # Fast extraction with basic metadata
+                'extract_flat': True,
                 'ignoreerrors': True,
-                'playlist_items': f'1:{limit}',
-                'format': 'worst',
-                'no_check_formats': True,
                 'proxy': proxy_url,
             }
 
-            channel_url = f"https://www.youtube.com/channel/{channel_id}/videos"
+            channel_thumbnail = f"https://yt3.googleusercontent.com/ytc/AIdro_k{channel_id}"
+            subscriber_count = None
 
-            # Try to get channel videos
-            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                info = ydl.extract_info(channel_url, download=False)
+            try:
+                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                    channel_info = ydl.extract_info(f"https://www.youtube.com/channel/{channel_id}", download=False)
+                    if channel_info:
+                        # Get channel thumbnail
+                        if channel_info.get('channel_follower_count'):
+                            subscriber_count = channel_info.get('channel_follower_count')
+                        if channel_info.get('thumbnails') and isinstance(channel_info['thumbnails'], list):
+                            # Get highest quality thumbnail
+                            thumb = max(channel_info['thumbnails'], key=lambda t: t.get('width', 0) * t.get('height', 0))
+                            if 'url' in thumb:
+                                channel_thumbnail = thumb['url']
+            except:
+                pass  # Use fallback values if yt-dlp fails
 
-            if not info or not info.get('entries'):
-                self.send_response(404)
-                self.send_header('Content-type', 'application/json')
-                self.end_headers()
-                self.wfile.write(json.dumps({
-                    'success': False,
-                    'error': 'no_videos_found',
-                    'message': f'Could not find videos for channel {channel_id}'
-                }).encode())
-                return
+            # Extract videos from RSS
+            entries = root.findall('.//atom:entry', ns)[:limit]
 
-            # Extract video list
-            videos = []
-            for entry in info['entries']:
-                if entry and entry.get('id'):
-                    # Skip playlist/channel IDs
-                    video_id = entry.get('id')
-                    if len(video_id) != 11 or video_id.startswith(('UL', 'PL', 'RD', 'LL')):
-                        continue
+            # First, collect all video data from RSS
+            rss_videos = {}
+            for entry in entries:
+                video_id_elem = entry.find('.//yt:videoId', ns)
+                if video_id_elem is None:
+                    continue
 
-                    # Format duration from seconds to readable format
-                    duration = entry.get('duration', 0)
-                    duration_str = ''
-                    if duration:
-                        # Convert to int in case it's a float
-                        duration = int(duration)
-                        hours = duration // 3600
-                        minutes = (duration % 3600) // 60
-                        seconds = duration % 60
-                        if hours > 0:
-                            duration_str = f"{hours}:{minutes:02d}:{seconds:02d}"
-                        else:
-                            duration_str = f"{minutes}:{seconds:02d}"
+                video_id = video_id_elem.text
 
-                    # Format upload date to ISO format
-                    # Try all possible date fields from yt-dlp
-                    from datetime import datetime
+                # Get video metadata from RSS
+                title_elem = entry.find('.//atom:title', ns)
+                published_elem = entry.find('.//atom:published', ns)
+                media_group = entry.find('.//media:group', ns)
 
-                    upload_date = (
-                        entry.get('upload_date') or
-                        entry.get('release_date') or
-                        entry.get('modified_date') or
-                        ''
-                    )
+                title = title_elem.text if title_elem is not None else ''
+                published = published_elem.text if published_elem is not None else ''
 
-                    # Try timestamp fields as fallback
-                    if not upload_date:
-                        timestamp = (
-                            entry.get('timestamp') or
-                            entry.get('release_timestamp') or
-                            entry.get('modified_timestamp')
-                        )
-                        if timestamp:
-                            dt = datetime.fromtimestamp(timestamp)
-                            upload_date = dt.strftime('%Y%m%d')
-
-                    published_at = ''
-                    if upload_date and len(upload_date) >= 8:
-                        # upload_date format: YYYYMMDD
-                        published_at = f"{upload_date[0:4]}-{upload_date[4:6]}-{upload_date[6:8]}"
-
-                    # If still no date, try to get from availability or webpage_url
-                    # This is a last resort - use current date as placeholder
-                    if not published_at:
-                        # Log available fields for debugging (only keys to avoid sensitive data)
-                        import sys
-                        print(f"DEBUG: No date found for video {video_id}. Available fields: {list(entry.keys())}", file=sys.stderr)
-                        # Use empty string instead of current date to avoid misleading data
+                # Parse publish date to YYYY-MM-DD format
+                published_at = ''
+                if published:
+                    try:
+                        dt = datetime.fromisoformat(published.replace('Z', '+00:00'))
+                        published_at = dt.strftime('%Y-%m-%d')
+                    except:
                         published_at = ''
 
-                    videos.append({
-                        'id': video_id,
-                        'title': entry.get('title', ''),
-                        'description': entry.get('description', ''),
-                        'duration': duration_str,
-                        'publishedAt': published_at,
-                        'thumbnail': f"https://img.youtube.com/vi/{video_id}/maxresdefault.jpg",
-                        'view_count': entry.get('view_count', 0),
-                        'url': entry.get('url', f"https://www.youtube.com/watch?v={video_id}")
-                    })
+                # Get description from media:group
+                description = ''
+                if media_group is not None:
+                    desc_elem = media_group.find('.//media:description', ns)
+                    description = desc_elem.text if desc_elem is not None else ''
 
-            # Get channel metadata (thumbnail, subscriber count, total videos)
-            # Channel thumbnail from the uploader avatar or channel thumbnails
-            channel_thumbnail = ''
+                # Get view count
+                views_elem = entry.find('.//media:group/media:community/media:statistics', ns)
+                view_count = 0
+                if views_elem is not None:
+                    view_count = int(views_elem.get('views', 0))
 
-            # Try to get from channel/uploader avatar first
-            if info.get('channel_avatar'):
-                channel_thumbnail = info['channel_avatar']
-            elif info.get('uploader_avatar'):
-                channel_thumbnail = info['uploader_avatar']
-            elif info.get('thumbnails') and isinstance(info['thumbnails'], list) and len(info['thumbnails']) > 0:
-                # Get the highest quality thumbnail
-                thumb = max(info['thumbnails'], key=lambda t: t.get('width', 0) * t.get('height', 0))
-                if 'url' in thumb:
-                    channel_thumbnail = thumb['url']
+                rss_videos[video_id] = {
+                    'id': video_id,
+                    'title': title,
+                    'description': description,
+                    'publishedAt': published_at,
+                    'view_count': view_count,
+                    'thumbnail': f"https://img.youtube.com/vi/{video_id}/maxresdefault.jpg",
+                    'url': f"https://www.youtube.com/watch?v={video_id}"
+                }
 
-            if not channel_thumbnail:
-                # Fallback to YouTube's default channel avatar endpoint
-                channel_thumbnail = f"https://yt3.ggpht.com/ytc/AIdro_k{channel_id}"
+            # Now fetch durations using yt-dlp (fast for individual videos)
+            video_ids = list(rss_videos.keys())
+            durations = {}
+
+            # Batch fetch durations (this is faster than one by one)
+            try:
+                ydl_opts_duration = {
+                    'quiet': True,
+                    'no_warnings': True,
+                    'extract_flat': 'in_playlist',
+                    'ignoreerrors': True,
+                    'proxy': proxy_url,
+                }
+
+                # Create a playlist URL with just these video IDs
+                video_urls = [f"https://www.youtube.com/watch?v={vid}" for vid in video_ids]
+
+                for video_url in video_urls[:limit]:
+                    try:
+                        with yt_dlp.YoutubeDL(ydl_opts_duration) as ydl:
+                            info = ydl.extract_info(video_url, download=False)
+                            if info and info.get('duration'):
+                                video_id = video_url.split('v=')[1]
+                                duration = int(info['duration'])
+                                hours = duration // 3600
+                                minutes = (duration % 3600) // 60
+                                seconds = duration % 60
+                                if hours > 0:
+                                    durations[video_id] = f"{hours}:{minutes:02d}:{seconds:02d}"
+                                else:
+                                    durations[video_id] = f"{minutes}:{seconds:02d}"
+                    except:
+                        continue
+            except:
+                pass  # If duration fetch fails, continue without durations
+
+            # Combine RSS data with durations
+            videos = []
+            for video_id in video_ids:
+                if video_id in rss_videos:
+                    video_data = rss_videos[video_id]
+                    video_data['duration'] = durations.get(video_id, '')
+                    videos.append(video_data)
 
             # Success! Return videos
             self.send_response(200)
@@ -151,9 +183,9 @@ class handler(BaseHTTPRequestHandler):
                 'success': True,
                 'channel_id': channel_id,
                 'channel_thumbnail': channel_thumbnail,
-                'channel_name': info.get('channel', info.get('uploader', '')),
-                'subscriber_count': info.get('channel_follower_count'),
-                'total_videos': info.get('playlist_count', len(videos)),
+                'channel_name': channel_name_text,
+                'subscriber_count': None,  # RSS doesn't include subscriber count
+                'total_videos': len(videos),
                 'video_count': len(videos),
                 'videos': videos
             }).encode())
