@@ -144,7 +144,8 @@ app.post('/api/channel/videos', async (req, res) => {
 
     console.log(`📹 Fetching ${limit} videos for channel: ${channelId}`)
 
-    const playlistData = await youtubedl(`https://www.youtube.com/channel/${channelId}`, {
+    // Fetch from the channel's videos tab specifically to get actual videos
+    const playlistData = await youtubedl(`https://www.youtube.com/channel/${channelId}/videos`, {
       dumpSingleJson: true,
       flatPlaylist: true,
       skipDownload: true,
