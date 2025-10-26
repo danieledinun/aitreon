@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 
-// Set maximum duration for this API route (Vercel limit: 60s for Hobby, 300s for Pro)
-export const maxDuration = 60
+// Set maximum duration for this API route (Vercel Pro: 300s)
+export const maxDuration = 300
 
 const YOUTUBE_SERVICE_URL = process.env.YOUTUBE_SERVICE_URL || 'http://localhost:3001'
 
@@ -18,9 +18,9 @@ async function getChannelInfoFromUrl(url: string): Promise<{ channelId: string; 
     console.log(`🔍 Calling YouTube service for URL: ${url}`)
     console.log(`📍 YouTube service URL: ${YOUTUBE_SERVICE_URL}`)
 
-    // Set a 50-second timeout for the fetch request (leaving 10s buffer for Vercel's 60s limit)
+    // Set a 120-second timeout for the fetch request (Pro plan has 300s limit)
     const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 50000)
+    const timeoutId = setTimeout(() => controller.abort(), 120000)
 
     const response = await fetch(`${YOUTUBE_SERVICE_URL}/api/channel/info`, {
       method: 'POST',
@@ -62,9 +62,9 @@ async function getChannelVideos(channelId: string): Promise<any> {
   try {
     console.log(`📹 Calling YouTube service for videos: ${channelId}`)
 
-    // Set a 50-second timeout for the fetch request
+    // Set a 120-second timeout for the fetch request (Pro plan has 300s limit)
     const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 50000)
+    const timeoutId = setTimeout(() => controller.abort(), 120000)
 
     const response = await fetch(`${YOUTUBE_SERVICE_URL}/api/channel/videos`, {
       method: 'POST',
@@ -138,7 +138,7 @@ export async function POST(request: NextRequest) {
       console.log(`🔍 Fetching @username channel with videos in one request...`)
 
       const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 58000)  // 58s timeout, leaving 2s buffer for Vercel's 60s limit
+      const timeoutId = setTimeout(() => controller.abort(), 120000)  // 120s timeout (2 minutes) - plenty of time on Pro plan
 
       const response = await fetch(`${YOUTUBE_SERVICE_URL}/api/channel/info`, {
         method: 'POST',
@@ -148,7 +148,7 @@ export async function POST(request: NextRequest) {
         body: JSON.stringify({
           url,
           includeVideos: true,
-          limit: 1  // Reduced to 1 video to fit within Vercel's 60s timeout (takes ~46s)
+          limit: 10  // Fetch 10 videos - we have plenty of time on Pro plan
         }),
         signal: controller.signal
       })
