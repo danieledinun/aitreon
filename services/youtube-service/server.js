@@ -160,17 +160,33 @@ app.post('/api/channel/videos', async (req, res) => {
     })
 
     const channelName = playlistData.channel || playlistData.uploader
+    const channelId = playlistData.channel_id || playlistData.uploader_id
 
-    // Get channel thumbnail - use channel_url to fetch proper avatar
+    // Get channel thumbnail from the first video's channel info
     let channelThumbnail = ''
 
-    // First try to get from uploader thumbnails
-    if (playlistData.channel_thumbnails && playlistData.channel_thumbnails.length > 0) {
-      channelThumbnail = playlistData.channel_thumbnails[playlistData.channel_thumbnails.length - 1].url
-    } else if (playlistData.uploader_thumbnails && playlistData.uploader_thumbnails.length > 0) {
-      channelThumbnail = playlistData.uploader_thumbnails[playlistData.uploader_thumbnails.length - 1].url
-    } else {
-      // Fallback to generic YouTube thumbnail URL
+    if (playlistData.entries && playlistData.entries.length > 0) {
+      const firstVideo = playlistData.entries[0]
+
+      // Try channel_thumbnails from video metadata
+      if (firstVideo.channel_thumbnails && firstVideo.channel_thumbnails.length > 0) {
+        channelThumbnail = firstVideo.channel_thumbnails[firstVideo.channel_thumbnails.length - 1].url
+      } else if (firstVideo.uploader_thumbnails && firstVideo.uploader_thumbnails.length > 0) {
+        channelThumbnail = firstVideo.uploader_thumbnails[firstVideo.uploader_thumbnails.length - 1].url
+      }
+    }
+
+    // Fallback: Try playlist-level fields
+    if (!channelThumbnail) {
+      if (playlistData.channel_thumbnails && playlistData.channel_thumbnails.length > 0) {
+        channelThumbnail = playlistData.channel_thumbnails[playlistData.channel_thumbnails.length - 1].url
+      } else if (playlistData.uploader_thumbnails && playlistData.uploader_thumbnails.length > 0) {
+        channelThumbnail = playlistData.uploader_thumbnails[playlistData.uploader_thumbnails.length - 1].url
+      }
+    }
+
+    // Final fallback: Use YouTube's channel avatar endpoint
+    if (!channelThumbnail && channelId) {
       channelThumbnail = `https://yt3.ggpht.com/ytc/${channelId}`
     }
 
