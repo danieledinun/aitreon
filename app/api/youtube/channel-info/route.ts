@@ -73,7 +73,7 @@ async function getChannelVideos(channelId: string): Promise<any> {
       },
       body: JSON.stringify({
         channelId,
-        limit: 10
+        limit: 3  // Reduced to 3 to fit within Railway's 60s timeout
       }),
       signal: controller.signal
     })
