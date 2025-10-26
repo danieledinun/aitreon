@@ -74,9 +74,10 @@ app.get('/test-ytdlp', async (req, res) => {
 })
 
 // Get channel info from @username
+// This endpoint now returns BOTH channel info AND videos to reduce total API calls
 app.post('/api/channel/info', async (req, res) => {
   try {
-    const { url } = req.body
+    const { url, includeVideos = true, limit = 10 } = req.body
 
     if (!url) {
       return res.status(400).json({ error: 'URL is required' })
@@ -118,6 +119,110 @@ app.post('/api/channel/info', async (req, res) => {
 
     console.log(`✅ Found channel: ${channelName} (${channelId})`)
 
+    // If includeVideos is true, also fetch videos in the same request
+    if (includeVideos && channelId) {
+      console.log(`📹 Also fetching ${limit} videos for channel...`)
+      try {
+        const playlistData = await youtubedl(`https://www.youtube.com/channel/${channelId}/videos`, {
+          dumpSingleJson: true,
+          skipDownload: true,
+          playlistEnd: limit,
+          noWarnings: true,
+          proxy: PROXY_URL,
+          ignoreErrors: true,
+          noCheckCertificates: true,
+          format: 'worst'
+        })
+
+        const videos = (playlistData.entries || []).slice(0, limit).map((video) => {
+          let thumbnail = `https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`
+          if (video.thumbnails && video.thumbnails.length > 0) {
+            const bestThumb = video.thumbnails[video.thumbnails.length - 1]
+            thumbnail = bestThumb.url || thumbnail
+          }
+
+          let duration = ''
+          if (video.duration) {
+            const hours = Math.floor(video.duration / 3600)
+            const minutes = Math.floor((video.duration % 3600) / 60)
+            const seconds = video.duration % 60
+            if (hours > 0) {
+              duration = `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+            } else {
+              duration = `${minutes}:${seconds.toString().padStart(2, '0')}`
+            }
+          }
+
+          let publishedAt = ''
+          const dateStr = video.upload_date || video.uploadDate || video.release_date || video.release_timestamp || video.timestamp
+          if (dateStr) {
+            if (typeof dateStr === 'string' && dateStr.length === 8) {
+              const year = dateStr.substring(0, 4)
+              const month = dateStr.substring(4, 6)
+              const day = dateStr.substring(6, 8)
+              publishedAt = `${year}-${month}-${day}`
+            } else if (typeof dateStr === 'number') {
+              const date = new Date(dateStr * 1000)
+              publishedAt = date.toISOString().split('T')[0]
+            } else if (typeof dateStr === 'string') {
+              try {
+                const date = new Date(dateStr)
+                if (!isNaN(date.getTime())) {
+                  publishedAt = date.toISOString().split('T')[0]
+                }
+              } catch (e) {
+                // Ignore
+              }
+            }
+          }
+
+          return {
+            id: video.id,
+            title: video.title || '',
+            description: video.description || '',
+            thumbnail,
+            duration,
+            publishedAt,
+            viewCount: video.view_count || 0,
+            url: video.url || `https://www.youtube.com/watch?v=${video.id}`
+          }
+        })
+
+        // Get better channel thumbnail from playlist data if available
+        let betterThumbnail = channelThumbnail
+        if (playlistData.thumbnails && playlistData.thumbnails.length > 0) {
+          betterThumbnail = playlistData.thumbnails[playlistData.thumbnails.length - 1].url
+        } else if (playlistData.thumbnail) {
+          betterThumbnail = playlistData.thumbnail
+        } else if (channelId) {
+          betterThumbnail = `https://yt3.googleusercontent.com/ytc/${channelId}=s800-c-k-c0x00ffffff-no-rj`
+        }
+
+        console.log(`✅ Found ${videos.length} videos`)
+
+        return res.json({
+          channelId,
+          channelName,
+          channelThumbnail: betterThumbnail,
+          subscriberCount: playlistData.channel_follower_count || null,
+          totalVideos: playlistData.playlist_count || videos.length,
+          videos
+        })
+      } catch (videoError) {
+        console.error('Error fetching videos:', videoError)
+        // Return channel info without videos
+        return res.json({
+          channelId,
+          channelName,
+          channelThumbnail,
+          subscriberCount: null,
+          totalVideos: 0,
+          videos: []
+        })
+      }
+    }
+
+    // If includeVideos is false, just return channel info
     res.json({
       channelId,
       channelName,

@@ -131,15 +131,54 @@ export async function POST(request: NextRequest) {
     console.log(`🔄 Processing URL: ${url}`)
 
     let channelId = ''
-    let channelName = ''
-    let channelThumbnail = ''
+    let channelData: any
 
-    // Handle direct channel URLs
-    if (url.includes('/channel/')) {
-      channelId = url.split('/channel/')[1].split('/')[0].split('?')[0]
-      console.log(`✅ Extracted channel ID: ${channelId}`)
+    // For @username URLs, use the combined endpoint that returns channel info AND videos in one call
+    if (url.includes('/@') || url.includes('/user/') || url.includes('/c/')) {
+      console.log(`🔍 Fetching @username channel with videos in one request...`)
+
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 50000)
+
+      const response = await fetch(`${YOUTUBE_SERVICE_URL}/api/channel/info`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          url,
+          includeVideos: true,
+          limit: 10
+        }),
+        signal: controller.signal
+      })
+
+      clearTimeout(timeoutId)
+
+      if (!response.ok) {
+        return NextResponse.json({
+          error: `Could not find channel information. Please check the URL and try again.`
+        }, { status: 400 })
+      }
+
+      const data = await response.json()
+      channelId = data.channelId
+      channelData = {
+        videos: data.videos || [],
+        channelThumbnail: data.channelThumbnail,
+        channelName: data.channelName,
+        totalVideos: data.totalVideos || 0,
+        subscriberCount: data.subscriberCount
+      }
+      console.log(`✅ Got channel data with ${data.videos?.length || 0} videos`)
     }
-    // Handle all other URL formats (video URLs, @username URLs) via YouTube service
+    // For direct channel URLs, extract channel ID directly and fetch videos
+    else if (url.includes('/channel/')) {
+      channelId = url.split('/channel/')[1].split('/')[0].split('?')[0]
+      console.log(`✅ Extracted channel ID from URL: ${channelId}`)
+      channelData = await getChannelVideos(channelId)
+    }
+    // For video URLs, get channel info first then fetch videos
     else {
       const channelInfo = await getChannelInfoFromUrl(url)
       if (!channelInfo) {
@@ -147,10 +186,8 @@ export async function POST(request: NextRequest) {
           error: `Could not find channel information. Please check the URL and try again.`
         }, { status: 400 })
       }
-
       channelId = channelInfo.channelId
-      channelName = channelInfo.channelName
-      channelThumbnail = channelInfo.channelThumbnail
+      channelData = await getChannelVideos(channelId)
     }
 
     if (!channelId) {
@@ -159,25 +196,12 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // Get channel videos and metadata from YouTube service
-    const channelData = await getChannelVideos(channelId)
-
-    // Use channel thumbnail from initial lookup if available, otherwise from channel data
-    if (!channelThumbnail && channelData.channelThumbnail) {
-      channelThumbnail = channelData.channelThumbnail
-    }
-
-    // Use channel name from initial lookup if available, otherwise from channel data
-    if (!channelName && channelData.channelName) {
-      channelName = channelData.channelName
-    }
-
     // Return channel information
     return NextResponse.json({
       channel: {
         id: channelId,
-        name: channelName || 'Unknown Channel',
-        thumbnail: channelThumbnail || `https://yt3.ggpht.com/ytc/${channelId}`,
+        name: channelData.channelName || 'Unknown Channel',
+        thumbnail: channelData.channelThumbnail || `https://yt3.ggpht.com/ytc/${channelId}`,
         subscriberCount: channelData.subscriberCount ? channelData.subscriberCount.toLocaleString() : 'Hidden',
         videoCount: channelData.totalVideos || channelData.videos.length,
         description: 'Channel information extracted from YouTube'
