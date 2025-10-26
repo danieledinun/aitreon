@@ -29,7 +29,7 @@ async function createTable() {
 -- Create table for tracking YouTube channel analysis jobs
 CREATE TABLE IF NOT EXISTS youtube_analysis_jobs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   channel_url TEXT NOT NULL,
   channel_id TEXT,
   status TEXT NOT NULL CHECK (status IN ('pending', 'processing', 'completed', 'failed')),
@@ -67,9 +67,10 @@ CREATE TRIGGER youtube_jobs_updated_at_trigger
 ALTER TABLE youtube_analysis_jobs ENABLE ROW LEVEL SECURITY;
 
 -- Policy: Users can only see their own jobs
+-- Note: auth.uid() returns UUID, but user_id is TEXT, so we cast
 CREATE POLICY youtube_jobs_select_own ON youtube_analysis_jobs
   FOR SELECT
-  USING (auth.uid() = user_id);
+  USING (auth.uid()::text = user_id);
 
 -- Policy: Service role can do everything (needed for API routes)
 DROP POLICY IF EXISTS youtube_jobs_service_all ON youtube_analysis_jobs;

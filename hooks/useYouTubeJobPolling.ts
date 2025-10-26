@@ -51,6 +51,16 @@ export function useYouTubeJobPolling({
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null)
   const retriesRef = useRef(0)
 
+  // Use refs for callbacks to avoid recreating fetchJobStatus on every render
+  const onCompleteRef = useRef(onComplete)
+  const onErrorRef = useRef(onError)
+
+  // Update refs when callbacks change
+  useEffect(() => {
+    onCompleteRef.current = onComplete
+    onErrorRef.current = onError
+  }, [onComplete, onError])
+
   const stopPolling = useCallback(() => {
     if (pollIntervalRef.current) {
       clearInterval(pollIntervalRef.current)
@@ -81,7 +91,7 @@ export function useYouTubeJobPolling({
       if (data.status === 'completed' && data.result) {
         console.log('✅ Job completed successfully')
         stopPolling()
-        onComplete?.(data.result)
+        onCompleteRef.current?.(data.result)
       }
 
       // Handle failure
@@ -90,7 +100,7 @@ export function useYouTubeJobPolling({
         stopPolling()
         const errorMsg = data.errorMessage || 'Job failed'
         setError(errorMsg)
-        onError?.(errorMsg)
+        onErrorRef.current?.(errorMsg)
       }
 
     } catch (err) {
@@ -103,10 +113,10 @@ export function useYouTubeJobPolling({
         stopPolling()
         const errorMsg = 'Failed to fetch job status after multiple attempts'
         setError(errorMsg)
-        onError?.(errorMsg)
+        onErrorRef.current?.(errorMsg)
       }
     }
-  }, [jobId, onComplete, onError, stopPolling, maxRetries])
+  }, [jobId, stopPolling, maxRetries])
 
   // Start polling when jobId is provided
   useEffect(() => {
@@ -130,7 +140,8 @@ export function useYouTubeJobPolling({
     return () => {
       stopPolling()
     }
-  }, [jobId, fetchJobStatus, pollInterval, stopPolling])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [jobId, pollInterval]) // Only re-run when jobId or pollInterval changes
 
   return {
     jobStatus,
