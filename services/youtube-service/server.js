@@ -160,7 +160,6 @@ app.post('/api/channel/videos', async (req, res) => {
     })
 
     const channelName = playlistData.channel || playlistData.uploader
-    const channelId = playlistData.channel_id || playlistData.uploader_id
 
     // Get channel thumbnail - try multiple sources
     let channelThumbnail = ''
