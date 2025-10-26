@@ -1,10 +1,15 @@
 const express = require('express')
 const cors = require('cors')
 const youtubedl = require('youtube-dl-exec')
+const JobProcessor = require('./job-processor')
 require('dotenv').config()
 
 const app = express()
 const PORT = process.env.PORT || 3001
+
+// Initialize job processor
+const jobProcessor = new JobProcessor()
+jobProcessor.start(3000) // Poll every 3 seconds
 
 // Middleware
 app.use(cors())

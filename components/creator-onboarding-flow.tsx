@@ -11,11 +11,12 @@ import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Slider } from '@/components/ui/slider'
-import { 
-  Youtube, 
-  ArrowRight, 
-  ArrowLeft, 
-  CheckCircle2, 
+import { useYouTubeJobPolling } from '@/hooks/useYouTubeJobPolling'
+import {
+  Youtube,
+  ArrowRight,
+  ArrowLeft,
+  CheckCircle2,
   Play,
   Users,
   Bot,
@@ -71,9 +72,49 @@ export default function CreatorOnboardingFlow({ userId }: OnboardingFlowProps) {
   const [currentStep, setCurrentStep] = useState(1)
   const [loading, setLoading] = useState(false)
   const [processingVideos, setProcessingVideos] = useState(false)
+  const [analysisJobId, setAnalysisJobId] = useState<string | null>(null)
 
-  console.log('🟡 Component states:', { currentStep, loading, processingVideos })
+  console.log('🟡 Component states:', { currentStep, loading, processingVideos, analysisJobId })
   const [channelData, setChannelData] = useState<any>(null)
+
+  // Use YouTube job polling hook
+  const { jobStatus, isPolling, error: jobError } = useYouTubeJobPolling({
+    jobId: analysisJobId,
+    onComplete: (result) => {
+      console.log('✅ Channel analysis complete:', result)
+      setChannelData({
+        id: result.channelId,
+        name: result.channelName,
+        thumbnail: result.channelThumbnail,
+        subscriberCount: result.subscriberCount || 'Hidden',
+        videoCount: result.totalVideos
+      })
+      setVideos(result.videos?.slice(0, 20).map((v, i) => ({
+        id: v.id,
+        title: v.title,
+        thumbnail: v.thumbnail,
+        duration: v.duration || 'N/A',
+        publishedAt: v.publishedAt,
+        selected: i < 5 // Pre-select first 5 videos
+      })) || [])
+
+      // Auto-fill display name if not provided
+      if (!basicInfo.displayName && result.channelName) {
+        setBasicInfo(prev => ({ ...prev, displayName: result.channelName }))
+      }
+
+      setLoading(false)
+      setCurrentStep(2)
+    },
+    onError: (error) => {
+      console.error('❌ Channel analysis failed:', error)
+      alert(`Error: ${error}`)
+      setLoading(false)
+      setAnalysisJobId(null)
+    },
+    pollInterval: 2000, // Poll every 2 seconds
+    maxRetries: 5
+  })
 
   // Debug useEffect to track state changes
   useEffect(() => {
@@ -243,7 +284,7 @@ export default function CreatorOnboardingFlow({ userId }: OnboardingFlowProps) {
 
   const progress = (currentStep / steps.length) * 100
 
-  // Step 1: Handle YouTube channel processing
+  // Step 1: Handle YouTube channel processing (async job-based)
   const handleChannelSubmit = async () => {
     console.log('🔄 handleChannelSubmit called', { basicInfo })
     if (!basicInfo.youtubeChannelUrl) {
@@ -252,41 +293,35 @@ export default function CreatorOnboardingFlow({ userId }: OnboardingFlowProps) {
     }
 
     setLoading(true)
-    console.log('📺 Processing YouTube channel:', basicInfo.youtubeChannelUrl)
+    console.log('📺 Starting YouTube channel analysis job:', basicInfo.youtubeChannelUrl)
+
     try {
-      const response = await fetch('/api/youtube/channel-info', {
+      // Start analysis job (returns immediately)
+      const response = await fetch('/api/youtube/start-analysis', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url: basicInfo.youtubeChannelUrl })
       })
-      
+
       const data = await response.json()
-      if (response.ok) {
-        console.log('✅ Channel analysis successful:', data)
-        setChannelData(data.channel)
-        setVideos(data.videos?.slice(0, 20).map((v: any, i: number) => ({
-          id: v.id,
-          title: v.title,
-          thumbnail: v.thumbnail,
-          duration: v.duration || 'N/A',
-          publishedAt: v.publishedAt,
-          selected: i < 5 // Pre-select first 5 videos
-        })) || [])
-        
-        // Auto-fill display name if not provided
-        if (!basicInfo.displayName && data.channel?.name) {
-          setBasicInfo(prev => ({ ...prev, displayName: data.channel.name }))
-        }
-        
-        setCurrentStep(2)
+
+      if (response.ok && data.jobId) {
+        console.log('✅ Analysis job created:', data.jobId)
+        console.log('⏳ Job will be processed in background - polling for updates...')
+
+        // Set job ID to trigger polling
+        setAnalysisJobId(data.jobId)
+        // Loading state will be cleared by onComplete callback
       } else {
-        console.error('❌ Channel analysis failed:', response.status, data)
-        alert(`Error: ${data.error || 'Failed to analyze channel'}`)
+        console.error('❌ Failed to start analysis job:', response.status, data)
+        alert(`Error: ${data.error || 'Failed to start channel analysis'}`)
+        setLoading(false)
       }
     } catch (error) {
-      console.error('Error processing channel:', error)
+      console.error('Error starting analysis job:', error)
+      alert('Failed to start channel analysis. Please try again.')
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   // Step 2: Handle video selection
@@ -1154,7 +1189,9 @@ export default function CreatorOnboardingFlow({ userId }: OnboardingFlowProps) {
                   {loading ? (
                     <>
                       <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                      {currentStep === 1 ? 'Analyzing...' : 'Loading...'}
+                      {currentStep === 1 && jobStatus ?
+                        `Analyzing... ${jobStatus.progress}%` :
+                        currentStep === 1 ? 'Analyzing...' : 'Loading...'}
                     </>
                   ) : (
                     <>
