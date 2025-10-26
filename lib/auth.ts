@@ -457,7 +457,7 @@ export const authOptions: NextAuthOptions = {
     },
     async jwt({ token, account, user }) {
       console.log('🔐 JWT callback:', { hasAccount: !!account, hasUser: !!user, provider: account?.provider, userId: user?.id })
-      
+
       // Initial sign in
       if (account && user) {
         console.log('🔐 JWT: Initial sign in')
@@ -465,6 +465,13 @@ export const authOptions: NextAuthOptions = {
         token.refreshToken = account.refresh_token
         token.expiresAt = account.expires_at
         token.userId = user.id // Store user ID in JWT token for credentials users
+        token.provider = account.provider // Store provider to know if we should refresh
+        return token
+      }
+
+      // For credentials provider, there's no OAuth token to refresh
+      if (!token.refreshToken || token.provider === 'credentials') {
+        console.log('🔐 JWT: Credentials user or no refresh token - skipping refresh')
         return token
       }
 
@@ -474,7 +481,7 @@ export const authOptions: NextAuthOptions = {
         return token
       }
 
-      // Access token has expired, try to update it
+      // Access token has expired, try to update it (OAuth providers only)
       console.log('🔐 JWT: Token expired, attempting refresh')
       return await refreshAccessToken(token)
     }
