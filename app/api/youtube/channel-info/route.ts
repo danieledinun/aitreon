@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 
+// Set maximum duration for this API route (Vercel limit: 60s for Hobby, 300s for Pro)
+export const maxDuration = 60
+
 const YOUTUBE_SERVICE_URL = process.env.YOUTUBE_SERVICE_URL || 'http://localhost:3001'
 
 async function extractVideoId(url: string): Promise<string> {
@@ -15,13 +18,20 @@ async function getChannelInfoFromUrl(url: string): Promise<{ channelId: string; 
     console.log(`🔍 Calling YouTube service for URL: ${url}`)
     console.log(`📍 YouTube service URL: ${YOUTUBE_SERVICE_URL}`)
 
+    // Set a 50-second timeout for the fetch request (leaving 10s buffer for Vercel's 60s limit)
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 50000)
+
     const response = await fetch(`${YOUTUBE_SERVICE_URL}/api/channel/info`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ url })
+      body: JSON.stringify({ url }),
+      signal: controller.signal
     })
+
+    clearTimeout(timeoutId)
 
     if (!response.ok) {
       const error = await response.json()
@@ -52,6 +62,10 @@ async function getChannelVideos(channelId: string): Promise<any> {
   try {
     console.log(`📹 Calling YouTube service for videos: ${channelId}`)
 
+    // Set a 50-second timeout for the fetch request
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 50000)
+
     const response = await fetch(`${YOUTUBE_SERVICE_URL}/api/channel/videos`, {
       method: 'POST',
       headers: {
@@ -60,8 +74,11 @@ async function getChannelVideos(channelId: string): Promise<any> {
       body: JSON.stringify({
         channelId,
         limit: 10
-      })
+      }),
+      signal: controller.signal
     })
+
+    clearTimeout(timeoutId)
 
     if (!response.ok) {
       const error = await response.json()
