@@ -82,6 +82,13 @@ export default function CreatorOnboardingFlow({ userId }: OnboardingFlowProps) {
     jobId: analysisJobId,
     onComplete: (result) => {
       console.log('✅ Channel analysis complete:', result)
+
+      if (!result) {
+        console.error('❌ Result is undefined')
+        setLoading(false)
+        return
+      }
+
       setChannelData({
         id: result.channelId,
         name: result.channelName,
