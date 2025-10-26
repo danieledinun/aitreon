@@ -148,7 +148,7 @@ export async function POST(request: NextRequest) {
         body: JSON.stringify({
           url,
           includeVideos: true,
-          limit: 3  // Reduced to 3 videos to fit within Vercel's 60s timeout
+          limit: 1  // Reduced to 1 video to fit within Vercel's 60s timeout (takes ~46s)
         }),
         signal: controller.signal
       })
