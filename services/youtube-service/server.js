@@ -77,7 +77,7 @@ app.get('/test-ytdlp', async (req, res) => {
 // This endpoint now returns BOTH channel info AND videos to reduce total API calls
 app.post('/api/channel/info', async (req, res) => {
   try {
-    const { url, includeVideos = true, limit = 10 } = req.body
+    const { url, includeVideos = false, limit = 10 } = req.body
 
     if (!url) {
       return res.status(400).json({ error: 'URL is required' })

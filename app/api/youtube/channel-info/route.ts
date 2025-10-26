@@ -133,44 +133,22 @@ export async function POST(request: NextRequest) {
     let channelId = ''
     let channelData: any
 
-    // For @username URLs, use the combined endpoint that returns channel info AND videos in one call
+    // For @username URLs, first get channel ID, then fetch videos separately
     if (url.includes('/@') || url.includes('/user/') || url.includes('/c/')) {
-      console.log(`🔍 Fetching @username channel with videos in one request...`)
+      console.log(`🔍 Resolving @username to channel ID (no videos yet)...`)
 
-      const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 120000)  // 120s timeout (2 minutes) - plenty of time on Pro plan
-
-      const response = await fetch(`${YOUTUBE_SERVICE_URL}/api/channel/info`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          url,
-          includeVideos: true,
-          limit: 10  // Fetch 10 videos - we have plenty of time on Pro plan
-        }),
-        signal: controller.signal
-      })
-
-      clearTimeout(timeoutId)
-
-      if (!response.ok) {
+      const channelInfo = await getChannelInfoFromUrl(url)
+      if (!channelInfo) {
         return NextResponse.json({
           error: `Could not find channel information. Please check the URL and try again.`
         }, { status: 400 })
       }
 
-      const data = await response.json()
-      channelId = data.channelId
-      channelData = {
-        videos: data.videos || [],
-        channelThumbnail: data.channelThumbnail,
-        channelName: data.channelName,
-        totalVideos: data.totalVideos || 0,
-        subscriberCount: data.subscriberCount
-      }
-      console.log(`✅ Got channel data with ${data.videos?.length || 0} videos`)
+      channelId = channelInfo.channelId
+      console.log(`✅ Resolved to channel ID: ${channelId}, now fetching videos...`)
+
+      // Now fetch videos using the channel ID (second request)
+      channelData = await getChannelVideos(channelId)
     }
     // For direct channel URLs, extract channel ID directly and fetch videos
     else if (url.includes('/channel/')) {
