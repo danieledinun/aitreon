@@ -162,32 +162,25 @@ app.post('/api/channel/videos', async (req, res) => {
     const channelName = playlistData.channel || playlistData.uploader
     const channelId = playlistData.channel_id || playlistData.uploader_id
 
-    // Get channel thumbnail from the first video's channel info
+    // Get channel thumbnail - try multiple sources
     let channelThumbnail = ''
 
-    if (playlistData.entries && playlistData.entries.length > 0) {
-      const firstVideo = playlistData.entries[0]
-
-      // Try channel_thumbnails from video metadata
-      if (firstVideo.channel_thumbnails && firstVideo.channel_thumbnails.length > 0) {
-        channelThumbnail = firstVideo.channel_thumbnails[firstVideo.channel_thumbnails.length - 1].url
-      } else if (firstVideo.uploader_thumbnails && firstVideo.uploader_thumbnails.length > 0) {
-        channelThumbnail = firstVideo.uploader_thumbnails[firstVideo.uploader_thumbnails.length - 1].url
-      }
+    // First try to get from the playlist/channel metadata
+    if (playlistData.thumbnails && playlistData.thumbnails.length > 0) {
+      const bestThumb = playlistData.thumbnails[playlistData.thumbnails.length - 1]
+      channelThumbnail = bestThumb.url
+    } else if (playlistData.thumbnail) {
+      channelThumbnail = playlistData.thumbnail
     }
 
-    // Fallback: Try playlist-level fields
-    if (!channelThumbnail) {
-      if (playlistData.channel_thumbnails && playlistData.channel_thumbnails.length > 0) {
-        channelThumbnail = playlistData.channel_thumbnails[playlistData.channel_thumbnails.length - 1].url
-      } else if (playlistData.uploader_thumbnails && playlistData.uploader_thumbnails.length > 0) {
-        channelThumbnail = playlistData.uploader_thumbnails[playlistData.uploader_thumbnails.length - 1].url
-      }
-    }
-
-    // Final fallback: Use YouTube's channel avatar endpoint
+    // If no thumbnail found, use the standard YouTube channel avatar URL pattern
+    // This is more reliable than trying to fetch it separately
     if (!channelThumbnail && channelId) {
-      channelThumbnail = `https://yt3.ggpht.com/ytc/${channelId}`
+      // YouTube channel avatars are served from these endpoints:
+      // - https://yt3.googleusercontent.com/ytc/[channel_id]
+      // - https://yt3.ggpht.com/ytc/[channel_id]
+      // The second format is more commonly available
+      channelThumbnail = `https://yt3.googleusercontent.com/ytc/${channelId}=s800-c-k-c0x00ffffff-no-rj`
     }
 
     // Parse video entries
