@@ -2,6 +2,10 @@ const { createClient } = require('@supabase/supabase-js')
 const youtubedl = require('youtube-dl-exec')
 
 // Supabase client for job tracking
+console.log('🔧 Initializing Supabase client...')
+console.log(`   SUPABASE_URL: ${process.env.SUPABASE_URL ? '✅ Set' : '❌ Missing'}`)
+console.log(`   SUPABASE_SERVICE_ROLE_KEY: ${process.env.SUPABASE_SERVICE_ROLE_KEY ? '✅ Set (length: ' + process.env.SUPABASE_SERVICE_ROLE_KEY.length + ')' : '❌ Missing'}`)
+
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
