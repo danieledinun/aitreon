@@ -127,12 +127,20 @@ export default function CreatorOnboardingFlow({ userId }: OnboardingFlowProps) {
   useEffect(() => {
     const checkExistingJob = async () => {
       try {
-        console.log('🔍 Checking for existing completed YouTube analysis job...')
+        console.log('🔍 Checking onboarding status...')
         const response = await fetch('/api/youtube/check-existing-job')
 
         if (response.ok) {
           const data = await response.json()
 
+          // If creator profile exists with videos, redirect to dashboard
+          if (data.shouldRedirect) {
+            console.log('✅ Creator already has videos, redirecting to:', data.redirectTo)
+            router.push(data.redirectTo)
+            return
+          }
+
+          // If YouTube job completed but no creator profile yet, load the data
           if (data.hasCompletedJob && data.result) {
             console.log('✅ Found existing completed job, loading data:', data.result)
 
@@ -175,7 +183,7 @@ export default function CreatorOnboardingFlow({ userId }: OnboardingFlowProps) {
     }
 
     checkExistingJob()
-  }, []) // Run only on mount
+  }, [router]) // Run only on mount
 
   // Debug useEffect to track state changes
   useEffect(() => {

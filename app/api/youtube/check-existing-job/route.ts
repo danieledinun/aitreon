@@ -21,9 +21,35 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    console.log('🔍 Checking for existing completed YouTube job for user:', session.user.id)
+    console.log('🔍 Checking onboarding status for user:', session.user.id)
 
-    // Get the most recent completed job for this user
+    // First, check if user has already completed onboarding with a creator profile
+    const { data: creator } = await supabase
+      .from('creators')
+      .select('id, username')
+      .eq('user_id', session.user.id)
+      .single()
+
+    if (creator) {
+      console.log('✅ Creator profile exists:', creator.username)
+
+      // Check if they have any videos
+      const { data: videos, count } = await supabase
+        .from('videos')
+        .select('id', { count: 'exact' })
+        .eq('creator_id', creator.id)
+        .limit(1)
+
+      if (count && count > 0) {
+        console.log('✅ Creator has videos, should redirect to dashboard')
+        return NextResponse.json({
+          shouldRedirect: true,
+          redirectTo: '/creator'
+        })
+      }
+    }
+
+    // If no creator profile or no videos, check for completed YouTube job
     const { data: jobs, error } = await supabase
       .from('youtube_analysis_jobs')
       .select('*')
