@@ -74,10 +74,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Create creator in Supabase
+    // IMPORTANT: Use snake_case for database columns (user_id not userId)
     const { data: creator, error: createError } = await supabase
       .from('creators')
       .insert({
-        userId: session.user.id,
+        user_id: session.user.id,  // ← FIXED: snake_case for database
         username: validatedData.username,
         display_name: validatedData.displayName,
         bio: validatedData.bio || null,
