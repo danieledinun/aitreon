@@ -107,7 +107,8 @@ class CreatorRecovery {
       let url
       if (channelIdOrUrl.startsWith('http')) {
         // It's already a URL (like https://www.youtube.com/@lancehedrick)
-        url = channelIdOrUrl
+        // Make sure it ends with /videos to get the videos playlist
+        url = channelIdOrUrl.endsWith('/videos') ? channelIdOrUrl : `${channelIdOrUrl}/videos`
         console.log(`   📺 Fetching ${limit} videos for URL: ${url}`)
       } else {
         // It's a channel ID
