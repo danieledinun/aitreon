@@ -422,55 +422,12 @@ export default function CreatorOnboardingFlow({ userId }: OnboardingFlowProps) {
   }
 
 
-  // Handle video selection completion - start background processing
+  // Handle video selection completion - just move to next step
+  // Video processing job will be created in final submit after creator profile exists
   const handleVideoSelectionComplete = async () => {
-    console.log('🚀 Starting background video processing for selected videos')
+    console.log('✅ Video selection complete, moving to AI configuration')
 
-    // Get selected video IDs
-    const selectedVideoIds = videos.filter(v => v.selected).map(v => v.id)
-    console.log('📋 Selected videos for processing:', selectedVideoIds)
-
-    if (selectedVideoIds.length > 0) {
-      try {
-        // Set initial processing status in localStorage for immediate banner display
-        // Note: creatorId will be determined by the API endpoints using session data
-        const processingStatus = {
-          isProcessing: true,
-          totalVideos: selectedVideoIds.length,
-          processedVideos: 0,
-          processingVideos: selectedVideoIds,
-          recentlyCompleted: [],
-          hasErrors: false,
-          startedAt: new Date().toISOString(),
-          lastChecked: Date.now()
-        }
-        localStorage.setItem('videoProcessingStatus', JSON.stringify(processingStatus))
-        console.log('📝 Processing status saved to localStorage for banner display')
-
-        // Start background video processing (fire-and-forget)
-        fetch('/api/creator/sync-videos', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            videoIds: selectedVideoIds,
-            backgroundProcessing: true // Flag to indicate this is background processing
-          })
-        }).then(response => {
-          console.log('🎯 Background video processing started:', response.status)
-        }).catch(error => {
-          console.warn('⚠️ Background processing request failed:', error)
-        })
-
-        console.log('✅ Background processing initiated')
-      } catch (error) {
-        console.warn('⚠️ Failed to start background processing:', error)
-      }
-    }
-
-    // Reset processing state since background processing is now running
-    setProcessingVideos(false)
-
-    // Move to next step immediately (don't wait for processing)
+    // Just move to next step - we'll create the processing job after creator profile is created
     setCurrentStep(prev => prev + 1)
   }
 
@@ -518,11 +475,48 @@ export default function CreatorOnboardingFlow({ userId }: OnboardingFlowProps) {
         }
       }
 
-      // Skip video processing here - it was already started in background during step 2
-      console.log('ℹ️ Video processing was already started in background during step 2')
+      // NOW create video processing job (after creator exists)
+      const selectedVideoIds = videos.filter(v => v.selected).map(v => v.id)
+      if (selectedVideoIds.length > 0 && creatorData?.creator?.id) {
+        console.log(`🎬 Creating video processing job for ${selectedVideoIds.length} videos`)
 
-      // Small delay to ensure creator record is committed to database
-      await new Promise(resolve => setTimeout(resolve, 1000))
+        try {
+          const jobResponse = await fetch('/api/creator/process-videos', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Internal-Request': 'true',
+              'X-Creator-Id': creatorData.creator.id
+            },
+            body: JSON.stringify({ videoIds: selectedVideoIds })
+          })
+
+          if (jobResponse.ok) {
+            const jobData = await jobResponse.json()
+            console.log(`✅ Video processing job created: ${jobData.jobId}`)
+
+            // Set processing status in localStorage for banner display
+            const processingStatus = {
+              isProcessing: true,
+              totalVideos: selectedVideoIds.length,
+              processedVideos: 0,
+              processingVideos: selectedVideoIds,
+              recentlyCompleted: [],
+              hasErrors: false,
+              startedAt: new Date().toISOString(),
+              lastChecked: Date.now()
+            }
+            localStorage.setItem('videoProcessingStatus', JSON.stringify(processingStatus))
+          } else {
+            console.error('❌ Failed to create video processing job:', await jobResponse.text())
+          }
+        } catch (error) {
+          console.error('⚠️ Video processing job creation failed:', error)
+        }
+      }
+
+      // Small delay to ensure job record is committed to database
+      await new Promise(resolve => setTimeout(resolve, 500))
 
       // Save AI configuration (unified format)
       if (aiConfig.agentName.trim() && aiConfig.agentIntro.trim()) {

@@ -118,32 +118,12 @@ export async function POST(request: NextRequest) {
 async function triggerAutoSync(creatorId: string, channelUrl: string) {
   try {
     console.log(`🔄 Triggering auto-sync for creator ${creatorId} with channel: ${channelUrl}`)
-    
-    // Use the existing sync-content API internally
-    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
-    
-    const syncResponse = await fetch(`${baseUrl}/api/creator/sync-content`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Internal-Request': 'true',  // Mark as internal request
-        'X-Creator-Id': creatorId,     // Pass creator ID for internal auth
-      },
-      body: JSON.stringify({
-        type: 'channel',
-        channelUrl: channelUrl,
-        maxVideos: 10,  // Limit initial sync to 10 videos
-        languages: ['en']
-      })
-    })
 
-    if (syncResponse.ok) {
-      console.log(`✅ Auto-sync successfully triggered for creator ${creatorId}`)
-    } else {
-      const errorText = await syncResponse.text()
-      console.error(`❌ Auto-sync failed for creator ${creatorId}:`, errorText)
-    }
+    // NOTE: We don't actually process videos here during onboarding
+    // The user selects videos during onboarding and we create a job when they submit
+    // This function is kept for compatibility but doesn't do anything
+    console.log(`ℹ️ Video processing will happen when user completes onboarding`)
   } catch (error) {
-    console.error('Error triggering auto-sync:', error)
+    console.error('Error in triggerAutoSync:', error)
   }
 }
