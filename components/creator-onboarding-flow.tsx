@@ -123,6 +123,60 @@ export default function CreatorOnboardingFlow({ userId }: OnboardingFlowProps) {
     maxRetries: 5
   })
 
+  // Check for existing completed YouTube job on mount
+  useEffect(() => {
+    const checkExistingJob = async () => {
+      try {
+        console.log('🔍 Checking for existing completed YouTube analysis job...')
+        const response = await fetch('/api/youtube/check-existing-job')
+
+        if (response.ok) {
+          const data = await response.json()
+
+          if (data.hasCompletedJob && data.result) {
+            console.log('✅ Found existing completed job, loading data:', data.result)
+
+            // Load the channel data
+            setChannelData({
+              id: data.result.channelId,
+              name: data.result.channelName,
+              thumbnail: data.result.channelThumbnail,
+              subscriberCount: data.result.subscriberCount || 'Hidden',
+              videoCount: data.result.totalVideos
+            })
+
+            // Load the videos
+            setVideos(data.result.videos?.slice(0, 20).map((v: any, i: number) => ({
+              id: v.id,
+              title: v.title,
+              thumbnail: v.thumbnail,
+              duration: v.duration || 'N/A',
+              publishedAt: v.publishedAt,
+              selected: i < 5 // Pre-select first 5 videos
+            })) || [])
+
+            // Auto-fill basic info
+            setBasicInfo(prev => ({
+              ...prev,
+              displayName: prev.displayName || data.result.channelName,
+              youtubeChannelUrl: prev.youtubeChannelUrl || data.channelUrl
+            }))
+
+            // Move to step 2
+            console.log('📍 Moving to step 2 with existing data')
+            setCurrentStep(2)
+          } else {
+            console.log('ℹ️ No existing completed job found, starting from step 1')
+          }
+        }
+      } catch (error) {
+        console.error('Error checking for existing job:', error)
+      }
+    }
+
+    checkExistingJob()
+  }, []) // Run only on mount
+
   // Debug useEffect to track state changes
   useEffect(() => {
     console.log('🟣 State changed - Step:', currentStep, 'Loading:', loading, 'ProcessingVideos:', processingVideos)
