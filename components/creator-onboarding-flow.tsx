@@ -163,15 +163,29 @@ export default function CreatorOnboardingFlow({ userId }: OnboardingFlowProps) {
               selected: i < 5 // Pre-select first 5 videos
             })) || [])
 
-            // Auto-fill basic info
+            // Auto-fill ALL basic info including auto-generated username
+            const autoUsername = data.result.channelName
+              ?.toLowerCase()
+              .replace(/[^a-z0-9]/g, '_')
+              .replace(/_+/g, '_')
+              .replace(/^_|_$/g, '')
+              .substring(0, 20) || 'creator'
+
             setBasicInfo(prev => ({
               ...prev,
+              username: prev.username || autoUsername,
               displayName: prev.displayName || data.result.channelName,
-              youtubeChannelUrl: prev.youtubeChannelUrl || data.channelUrl
+              youtubeChannelUrl: prev.youtubeChannelUrl || data.channelUrl || ''
             }))
 
-            // Move to step 2
-            console.log('📍 Moving to step 2 with existing data')
+            console.log('📝 Auto-filled ALL basic info from job:', {
+              username: autoUsername,
+              displayName: data.result.channelName,
+              youtubeChannelUrl: data.channelUrl
+            })
+
+            // Move to step 2 since we have all the data
+            console.log('📍 Moving to step 2 with pre-filled data')
             setCurrentStep(2)
           } else {
             console.log('ℹ️ No existing completed job found, starting from step 1')
@@ -583,11 +597,16 @@ export default function CreatorOnboardingFlow({ userId }: OnboardingFlowProps) {
       await updateSession()
 
       // Direct redirect to creator dashboard
+      console.log('✅ Redirecting to /creator?onboarding=complete')
       router.push('/creator?onboarding=complete')
 
     } catch (error) {
-      console.error('Final submission error:', error)
+      console.error('❌ Final submission error:', error)
+      alert(`Error completing onboarding: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      setLoading(false)
+      return // Don't redirect if there was an error
     }
+
     setLoading(false)
   }
 
