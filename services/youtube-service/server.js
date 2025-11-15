@@ -23,6 +23,16 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', service: 'youtube-service' })
 })
 
+// Debug endpoint to check environment variables (Railway debugging)
+app.get('/debug/env', (req, res) => {
+  res.json({
+    SUPABASE_URL: process.env.SUPABASE_URL ? '✅ Set' : '❌ Missing',
+    SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY ? '✅ Set (length: ' + process.env.SUPABASE_SERVICE_ROLE_KEY.length + ')' : '❌ Missing',
+    PROXY_URL: process.env.PROXY_URL ? '✅ Set' : '❌ Using default',
+    NODE_ENV: process.env.NODE_ENV || 'not set'
+  })
+})
+
 // Test yt-dlp installation
 app.get('/test-ytdlp', async (req, res) => {
   try {
