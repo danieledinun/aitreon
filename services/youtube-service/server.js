@@ -3,6 +3,7 @@ const cors = require('cors')
 const youtubedl = require('youtube-dl-exec')
 const JobProcessor = require('./job-processor')
 const VideoProcessor = require('./video-processor')
+const CreatorRecovery = require('./creator-recovery')
 require('dotenv').config()
 
 const app = express()
@@ -14,6 +15,10 @@ jobProcessor.start(3000) // Poll for YouTube analysis jobs every 3s
 
 const videoProcessor = new VideoProcessor()
 videoProcessor.start(3000) // Poll for video processing jobs every 3s
+
+// Initialize creator recovery service
+const creatorRecovery = new CreatorRecovery()
+creatorRecovery.start(300000) // Check for broken creators every 5 minutes
 
 // Middleware
 app.use(cors())
@@ -425,6 +430,30 @@ app.post('/api/video/info', async (req, res) => {
       error: 'Failed to fetch video information',
       details: error.message
     })
+  }
+})
+
+// Manual trigger for creator recovery (for testing/admin use)
+app.post('/api/recovery/trigger', async (req, res) => {
+  try {
+    console.log('🔧 Manual recovery trigger requested')
+
+    // Trigger recovery immediately
+    creatorRecovery.checkAndRecover()
+      .then(() => {
+        console.log('✅ Manual recovery completed')
+      })
+      .catch(error => {
+        console.error('❌ Manual recovery failed:', error)
+      })
+
+    res.json({
+      status: 'started',
+      message: 'Creator recovery check started in background'
+    })
+  } catch (error) {
+    console.error('Error triggering recovery:', error)
+    res.status(500).json({ error: error.message })
   }
 })
 
