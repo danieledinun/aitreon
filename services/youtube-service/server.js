@@ -2,7 +2,7 @@ const express = require('express')
 const cors = require('cors')
 const youtubedl = require('youtube-dl-exec')
 const JobProcessor = require('./job-processor')
-const VideoProcessor = require('./video-processor')
+const VideoProcessorV2 = require('./video-processor-v2')
 const CreatorRecovery = require('./creator-recovery')
 require('dotenv').config()
 
@@ -13,8 +13,8 @@ const PORT = process.env.PORT || 3001
 const jobProcessor = new JobProcessor()
 jobProcessor.start(3000) // Poll for YouTube analysis jobs every 3s
 
-const videoProcessor = new VideoProcessor()
-videoProcessor.start(3000) // Poll for video processing jobs every 3s
+const videoProcessor = new VideoProcessorV2()
+videoProcessor.start(3000) // Poll for video processing jobs every 3s (V2 = Railway-only, no Vercel!)
 
 // Initialize creator recovery service
 const creatorRecovery = new CreatorRecovery()
