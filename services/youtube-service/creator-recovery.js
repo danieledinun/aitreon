@@ -27,11 +27,10 @@ class CreatorRecovery {
    */
   async findBrokenCreators() {
     try {
-      // Get all creators
+      // Get all creators with YouTube channels (either channel_id OR channel_url)
       const { data: creators, error: creatorsError } = await supabase
         .from('creators')
-        .select('id, username, display_name, youtube_channel_id, created_at')
-        .not('youtube_channel_id', 'is', null) // Must have YouTube channel
+        .select('id, username, display_name, youtube_channel_id, youtube_channel_url, created_at')
         .order('created_at', { ascending: false })
 
       if (creatorsError) {
@@ -43,9 +42,12 @@ class CreatorRecovery {
         return []
       }
 
+      // Filter creators that have EITHER youtube_channel_id OR youtube_channel_url
+      const creatorsWithYoutube = creators.filter(c => c.youtube_channel_id || c.youtube_channel_url)
+
       const brokenCreators = []
 
-      for (const creator of creators) {
+      for (const creator of creatorsWithYoutube) {
         // Check if creator has videos
         const { count: videoCount, error: videoError } = await supabase
           .from('videos')
@@ -94,15 +96,26 @@ class CreatorRecovery {
 
   /**
    * Get recent videos for a YouTube channel
+   * Accepts either a channel ID or a full YouTube URL (@username or /channel/ID)
    */
-  async getChannelVideos(channelId, limit = 10) {
+  async getChannelVideos(channelIdOrUrl, limit = 10) {
     try {
       const youtubedl = require('youtube-dl-exec')
       const PROXY_URL = process.env.PROXY_URL || 'http://vvwbndwq-1:2w021mlwybfn@p.webshare.io:80'
 
-      console.log(`   📺 Fetching ${limit} videos for channel: ${channelId}`)
+      // Determine if this is a URL or a channel ID
+      let url
+      if (channelIdOrUrl.startsWith('http')) {
+        // It's already a URL (like https://www.youtube.com/@lancehedrick)
+        url = channelIdOrUrl
+        console.log(`   📺 Fetching ${limit} videos for URL: ${url}`)
+      } else {
+        // It's a channel ID
+        url = `https://www.youtube.com/channel/${channelIdOrUrl}/videos`
+        console.log(`   📺 Fetching ${limit} videos for channel ID: ${channelIdOrUrl}`)
+      }
 
-      const playlistData = await youtubedl(`https://www.youtube.com/channel/${channelId}/videos`, {
+      const playlistData = await youtubedl(url, {
         dumpSingleJson: true,
         skipDownload: true,
         playlistEnd: limit,
@@ -118,7 +131,7 @@ class CreatorRecovery {
       return videos
 
     } catch (error) {
-      console.error(`   ❌ Error fetching videos for channel ${channelId}:`, error.message)
+      console.error(`   ❌ Error fetching videos:`, error.message)
       return []
     }
   }
@@ -167,8 +180,16 @@ class CreatorRecovery {
   async recoverCreator(creator) {
     console.log(`\n🔧 Attempting to recover creator: ${creator.username} (${creator.id})`)
 
+    // Use channel_id if available, otherwise use channel_url
+    const channelIdOrUrl = creator.youtube_channel_id || creator.youtube_channel_url
+
+    if (!channelIdOrUrl) {
+      console.log(`   ⚠️  No YouTube channel info for ${creator.username}, skipping recovery`)
+      return false
+    }
+
     // Fetch recent videos from their YouTube channel
-    const videoIds = await this.getChannelVideos(creator.youtube_channel_id, 10)
+    const videoIds = await this.getChannelVideos(channelIdOrUrl, 10)
 
     if (videoIds.length === 0) {
       console.log(`   ⚠️  No videos found for ${creator.username}, skipping recovery`)
