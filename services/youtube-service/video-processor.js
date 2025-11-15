@@ -65,7 +65,7 @@ class VideoProcessor {
             videoIds: [videoId],  // Process ONE video at a time
             creatorId: creatorId
           }),
-          signal: AbortSignal.timeout(120000) // 2 minute timeout per video
+          signal: AbortSignal.timeout(300000) // 5 minute timeout per video (transcript + chunking + analysis)
         })
 
         if (response.ok) {
