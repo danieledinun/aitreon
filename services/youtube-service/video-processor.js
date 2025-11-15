@@ -42,36 +42,61 @@ class VideoProcessor {
 
   /**
    * Process a single video using the Vercel /api/youtube/sync endpoint
+   * WITH AUTOMATIC RETRY (up to 3 attempts with exponential backoff)
    */
-  async processSingleVideo(creatorId, videoId, videoIndex, totalVideos) {
+  async processSingleVideo(creatorId, videoId, videoIndex, totalVideos, maxRetries = 3) {
     console.log(`   📹 [${videoIndex + 1}/${totalVideos}] Processing video: ${videoId}`)
 
-    try {
-      const response = await fetch(`${VERCEL_URL}/api/youtube/sync`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          videoIds: [videoId],  // Process ONE video at a time
-          creatorId: creatorId
-        }),
-        signal: AbortSignal.timeout(120000) // 2 minute timeout per video
-      })
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        if (attempt > 1) {
+          // Exponential backoff: 5s, 10s, 20s
+          const delay = 5000 * Math.pow(2, attempt - 2)
+          console.log(`   🔄 Retry attempt ${attempt}/${maxRetries} after ${delay/1000}s delay...`)
+          await new Promise(resolve => setTimeout(resolve, delay))
+        }
 
-      if (response.ok) {
-        const result = await response.json()
-        console.log(`   ✅ [${videoIndex + 1}/${totalVideos}] Video ${videoId} processed successfully`)
-        return { success: true, result }
-      } else {
-        const error = await response.text()
-        console.error(`   ❌ [${videoIndex + 1}/${totalVideos}] Failed: ${error}`)
-        return { success: false, error }
+        const response = await fetch(`${VERCEL_URL}/api/youtube/sync`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            videoIds: [videoId],  // Process ONE video at a time
+            creatorId: creatorId
+          }),
+          signal: AbortSignal.timeout(120000) // 2 minute timeout per video
+        })
+
+        if (response.ok) {
+          const result = await response.json()
+          if (attempt > 1) {
+            console.log(`   ✅ [${videoIndex + 1}/${totalVideos}] Video ${videoId} succeeded on attempt ${attempt}`)
+          } else {
+            console.log(`   ✅ [${videoIndex + 1}/${totalVideos}] Video ${videoId} processed successfully`)
+          }
+          return { success: true, result, attempts: attempt }
+        } else {
+          const error = await response.text()
+          if (attempt < maxRetries) {
+            console.warn(`   ⚠️ [${videoIndex + 1}/${totalVideos}] Attempt ${attempt} failed: ${error} - will retry`)
+          } else {
+            console.error(`   ❌ [${videoIndex + 1}/${totalVideos}] All ${maxRetries} attempts failed: ${error}`)
+            return { success: false, error, attempts: attempt }
+          }
+        }
+      } catch (error) {
+        if (attempt < maxRetries) {
+          console.warn(`   ⚠️ [${videoIndex + 1}/${totalVideos}] Attempt ${attempt} error: ${error.message} - will retry`)
+        } else {
+          console.error(`   ❌ [${videoIndex + 1}/${totalVideos}] All ${maxRetries} attempts failed: ${error.message}`)
+          return { success: false, error: error.message, attempts: attempt }
+        }
       }
-    } catch (error) {
-      console.error(`   ❌ [${videoIndex + 1}/${totalVideos}] Error: ${error.message}`)
-      return { success: false, error: error.message }
     }
+
+    // Should never reach here, but just in case
+    return { success: false, error: 'Max retries exceeded', attempts: maxRetries }
   }
 
   /**
@@ -128,7 +153,8 @@ class VideoProcessor {
         results.push({
           videoId,
           success: result.success,
-          error: result.error || null
+          error: result.error || null,
+          attempts: result.attempts || 1
         })
 
         // Small delay between videos to avoid overwhelming Vercel
