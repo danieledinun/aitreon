@@ -78,14 +78,41 @@ class VideoProcessorV2 {
         const subs = videoData.subtitles?.en || videoData.automatic_captions?.en
 
         if (subs && subs.length > 0) {
-          // Find JSON3 format subtitle
-          const json3Sub = subs.find(s => s.ext === 'json3')
+          console.log(`   📝 Found ${subs.length} subtitle formats, attempting to download...`)
 
-          if (json3Sub && json3Sub.url) {
-            try {
-              // Fetch the subtitle content
-              const response = await fetch(json3Sub.url)
-              const subData = await response.json()
+          try {
+            // Use youtube-dl-exec to download subtitle content directly
+            // This handles authentication/cookies/proxy internally
+            const { execSync } = require('child_process')
+            const fs = require('fs')
+            const path = require('path')
+            const os = require('os')
+
+            // Create temp file path
+            const tempDir = os.tmpdir()
+            const tempFile = path.join(tempDir, `${videoId}.en.json3`)
+
+            // Clean up any existing file first
+            if (fs.existsSync(tempFile)) {
+              fs.unlinkSync(tempFile)
+            }
+
+            console.log(`   🔽 Downloading subtitles to ${tempFile}...`)
+
+            // Download subtitle using yt-dlp command directly
+            execSync(
+              `yt-dlp --write-auto-sub --write-sub --sub-lang en --sub-format json3 --skip-download --proxy "${PROXY_URL}" --no-check-certificates -o "${tempDir}/${videoId}" "https://www.youtube.com/watch?v=${videoId}"`,
+              { encoding: 'utf-8', stdio: 'pipe' }
+            )
+
+            // Read the downloaded subtitle file
+            if (fs.existsSync(tempFile)) {
+              console.log(`   📖 Reading subtitle file...`)
+              const subContent = fs.readFileSync(tempFile, 'utf-8')
+              const subData = JSON.parse(subContent)
+
+              // Clean up temp file
+              fs.unlinkSync(tempFile)
 
               // Parse JSON3 format
               if (subData.events) {
@@ -102,10 +129,17 @@ class VideoProcessorV2 {
                   .filter(seg => seg.text)
 
                 transcript = segments.map(s => s.text).join(' ')
-                console.log(`   ✅ Extracted transcript: ${segments.length} segments`)
+                console.log(`   ✅ Extracted transcript: ${segments.length} segments, ${transcript.split(/\s+/).length} words`)
+              } else {
+                console.warn(`   ⚠️  Subtitle file has no events`)
               }
-            } catch (subError) {
-              console.warn(`   ⚠️  Failed to fetch subtitles:`, subError.message)
+            } else {
+              console.warn(`   ⚠️  Subtitle file not created at ${tempFile}`)
+            }
+          } catch (subError) {
+            console.error(`   ❌ Failed to download subtitles:`, subError.message)
+            if (subError.stderr) {
+              console.error(`   📋 stderr:`, subError.stderr)
             }
           }
         }
