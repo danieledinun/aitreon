@@ -63,12 +63,12 @@ class VideoProcessorV2 {
       // ONE yt-dlp call: get metadata JSON + download subtitles
       // --write-info-json saves metadata to {videoId}.info.json
       // --write-auto-sub downloads subtitles to {videoId}.en.json3
-      // --skip-download + --no-download prevents any video format selection/download
-      // --ignore-errors continues even if formats fail
+      // --skip-download skips VIDEO download but allows subtitle downloads
+      // --ignore-errors continues even if video formats fail
       // --socket-timeout 30 sets network timeout to 30s
       try {
         execSync(
-          `yt-dlp --write-info-json --write-auto-sub --write-sub --sub-lang en --sub-format json3 --skip-download --no-download --ignore-errors --socket-timeout 30 --proxy "${PROXY_URL}" --no-check-certificates --no-warnings -o "${tempDir}/${videoId}" "https://www.youtube.com/watch?v=${videoId}" 2>&1 || true`,
+          `yt-dlp --write-info-json --write-auto-sub --write-sub --sub-lang en --sub-format json3 --skip-download --ignore-errors --socket-timeout 30 --proxy "${PROXY_URL}" --no-check-certificates --no-warnings -o "${tempDir}/${videoId}" "https://www.youtube.com/watch?v=${videoId}" 2>&1 || true`,
           { encoding: 'utf-8', stdio: 'pipe', timeout: 300000 }
         )
       } catch (execError) {
