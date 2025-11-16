@@ -60,36 +60,33 @@ class VideoProcessorV2 {
       if (fs.existsSync(tempFile)) fs.unlinkSync(tempFile)
       if (fs.existsSync(infoJsonFile)) fs.unlinkSync(infoJsonFile)
 
-      // ONE yt-dlp call: get metadata JSON + download subtitles
-      // --write-info-json saves metadata to {videoId}.info.json
-      // --write-auto-sub downloads auto-generated subtitles
-      // --write-sub downloads manual subtitles
-      // --sub-lang en --sub-format json3 specifies English JSON3 format
-      // --skip-download skips VIDEO download but allows subtitle/metadata downloads
-      // --ignore-errors continues even if some operations fail
-      // --ignore-no-formats-error prevents failure when format selection fails
-      // --socket-timeout 30 sets network timeout to 30s
-      // --print-to-file specifies exact output filenames
-      let ytdlpOutput = ''
+      // Get metadata using --dump-json (outputs to stdout, not file)
+      let metadataJson = ''
       try {
-        // Use --write-subs (plural) and specify exact paths
-        ytdlpOutput = execSync(
-          `yt-dlp --write-info-json --write-auto-subs --sub-lang en --sub-format json3 --skip-download --ignore-errors --socket-timeout 30 --proxy "${PROXY_URL}" --no-check-certificates -o "${tempDir}/${videoId}" "https://www.youtube.com/watch?v=${videoId}" 2>&1`,
+        metadataJson = execSync(
+          `yt-dlp --dump-single-json --socket-timeout 30 --proxy "${PROXY_URL}" --no-check-certificates "https://www.youtube.com/watch?v=${videoId}" 2>&1`,
           { encoding: 'utf-8', timeout: 300000 }
         )
-        console.log(`   📋 yt-dlp output:`, ytdlpOutput.slice(0, 300))
-      } catch (execError) {
-        console.warn(`   ⚠️  yt-dlp error:`, execError.message)
-        if (execError.stdout) {
-          console.log(`   📋 stdout:`, execError.stdout.slice(0, 400))
-        }
-        if (execError.stderr) {
-          console.log(`   📋 stderr:`, execError.stderr.slice(0, 400))
-        }
-        // Continue anyway - files might have been created
+      } catch (metaError) {
+        console.warn(`   ⚠️  Failed to get metadata:`, metaError.message)
       }
 
-      // Read metadata from info.json
+      // Separately download ONLY subtitles
+      let ytdlpOutput = ''
+      try {
+        // Download subtitles only - this should create the .json3 file
+        ytdlpOutput = execSync(
+          `cd "${tempDir}" && yt-dlp --write-auto-subs --sub-lang en --sub-format json3 --skip-download --socket-timeout 30 --proxy "${PROXY_URL}" --no-check-certificates -o "${videoId}" "https://www.youtube.com/watch?v=${videoId}" 2>&1`,
+          { encoding: 'utf-8', timeout: 300000 }
+        )
+        console.log(`   📋 Subtitle download output (last 300 chars):`, ytdlpOutput.slice(-300))
+      } catch (execError) {
+        console.warn(`   ⚠️  yt-dlp subtitle error:`, execError.message)
+        const output = execError.stdout || execError.stderr || ''
+        console.log(`   📋 Subtitle error output (last 400 chars):`, output.slice(-400))
+      }
+
+      // Parse metadata from JSON output
       let metadata = {
         title: 'Unknown Title',
         description: '',
@@ -99,17 +96,21 @@ class VideoProcessorV2 {
         viewCount: 0
       }
 
-      if (fs.existsSync(infoJsonFile)) {
-        const infoData = JSON.parse(fs.readFileSync(infoJsonFile, 'utf-8'))
-        metadata = {
-          title: infoData.title || 'Unknown Title',
-          description: infoData.description || '',
-          thumbnail: infoData.thumbnail || `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
-          duration: infoData.duration || 0,
-          uploadDate: infoData.upload_date || null,
-          viewCount: infoData.view_count || 0
+      if (metadataJson) {
+        try {
+          const infoData = JSON.parse(metadataJson)
+          metadata = {
+            title: infoData.title || 'Unknown Title',
+            description: infoData.description || '',
+            thumbnail: infoData.thumbnail || `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+            duration: infoData.duration || 0,
+            uploadDate: infoData.upload_date || null,
+            viewCount: infoData.view_count || 0
+          }
+          console.log(`   ✅ Parsed metadata: ${metadata.title}`)
+        } catch (parseError) {
+          console.warn(`   ⚠️  Failed to parse metadata JSON:`, parseError.message)
         }
-        fs.unlinkSync(infoJsonFile) // Clean up
       }
 
       // Read and parse subtitles
