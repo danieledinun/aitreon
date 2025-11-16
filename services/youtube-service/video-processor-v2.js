@@ -64,11 +64,15 @@ class VideoProcessorV2 {
       let metadataJson = ''
       try {
         metadataJson = execSync(
-          `yt-dlp --dump-single-json --socket-timeout 30 --proxy "${PROXY_URL}" --no-check-certificates "https://www.youtube.com/watch?v=${videoId}" 2>&1`,
+          `yt-dlp --dump-single-json --socket-timeout 30 --proxy "${PROXY_URL}" --no-check-certificates "https://www.youtube.com/watch?v=${videoId}"`,
           { encoding: 'utf-8', timeout: 300000 }
         )
       } catch (metaError) {
         console.warn(`   ⚠️  Failed to get metadata:`, metaError.message)
+        // Try to get stdout even on error
+        if (metaError.stdout) {
+          metadataJson = metaError.stdout
+        }
       }
 
       // Separately download ONLY subtitles
