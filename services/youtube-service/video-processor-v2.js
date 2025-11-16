@@ -69,20 +69,22 @@ class VideoProcessorV2 {
       // --ignore-errors continues even if some operations fail
       // --ignore-no-formats-error prevents failure when format selection fails
       // --socket-timeout 30 sets network timeout to 30s
+      // --print-to-file specifies exact output filenames
       let ytdlpOutput = ''
       try {
+        // Use --write-subs (plural) and specify exact paths
         ytdlpOutput = execSync(
-          `yt-dlp --write-info-json --write-auto-sub --write-sub --sub-lang en --sub-format json3 --skip-download --ignore-errors --ignore-no-formats-error --socket-timeout 30 --proxy "${PROXY_URL}" --no-check-certificates -o "${tempDir}/${videoId}" "https://www.youtube.com/watch?v=${videoId}" 2>&1`,
+          `yt-dlp --write-info-json --write-auto-subs --sub-lang en --sub-format json3 --skip-download --ignore-errors --socket-timeout 30 --proxy "${PROXY_URL}" --no-check-certificates -o "${tempDir}/${videoId}" "https://www.youtube.com/watch?v=${videoId}" 2>&1`,
           { encoding: 'utf-8', timeout: 300000 }
         )
-        console.log(`   📋 yt-dlp output:`, ytdlpOutput.slice(0, 200))
+        console.log(`   📋 yt-dlp output:`, ytdlpOutput.slice(0, 300))
       } catch (execError) {
         console.warn(`   ⚠️  yt-dlp error:`, execError.message)
         if (execError.stdout) {
-          console.log(`   📋 stdout:`, execError.stdout.slice(0, 300))
+          console.log(`   📋 stdout:`, execError.stdout.slice(0, 400))
         }
         if (execError.stderr) {
-          console.log(`   📋 stderr:`, execError.stderr.slice(0, 300))
+          console.log(`   📋 stderr:`, execError.stderr.slice(0, 400))
         }
         // Continue anyway - files might have been created
       }
@@ -118,33 +120,47 @@ class VideoProcessorV2 {
       const allFiles = fs.readdirSync(tempDir).filter(f => f.includes(videoId))
       console.log(`   🔍 Files created for ${videoId}:`, allFiles)
 
-      if (fs.existsSync(tempFile)) {
-        console.log(`   📖 Reading subtitle file...`)
-        const subContent = fs.readFileSync(tempFile, 'utf-8')
-        const subData = JSON.parse(subContent)
+      // Try multiple subtitle file patterns
+      const subtitlePatterns = [
+        path.join(tempDir, `${videoId}.en.json3`),
+        path.join(tempDir, `${videoId}.en-US.json3`),
+        path.join(tempDir, `${videoId}.en-GB.json3`)
+      ]
 
-        // Clean up temp file
-        fs.unlinkSync(tempFile)
+      let foundSubtitle = false
+      for (const subtitlePath of subtitlePatterns) {
+        if (fs.existsSync(subtitlePath)) {
+          console.log(`   📖 Found subtitle file: ${path.basename(subtitlePath)}`)
+          const subContent = fs.readFileSync(subtitlePath, 'utf-8')
+          const subData = JSON.parse(subContent)
 
-        // Parse JSON3 format
-        if (subData.events) {
-          segments = subData.events
-            .filter(event => event.segs)
-            .map(event => {
-              const text = event.segs.map(seg => seg.utf8).join('')
-              return {
-                start: event.tStartMs / 1000,
-                duration: event.dDurationMs / 1000,
-                text: text.trim()
-              }
-            })
-            .filter(seg => seg.text)
+          // Clean up temp file
+          fs.unlinkSync(subtitlePath)
 
-          transcript = segments.map(s => s.text).join(' ')
-          console.log(`   ✅ Extracted transcript: ${segments.length} segments, ${transcript.split(/\s+/).length} words`)
+          // Parse JSON3 format
+          if (subData.events) {
+            segments = subData.events
+              .filter(event => event.segs)
+              .map(event => {
+                const text = event.segs.map(seg => seg.utf8).join('')
+                return {
+                  start: event.tStartMs / 1000,
+                  duration: event.dDurationMs / 1000,
+                  text: text.trim()
+                }
+              })
+              .filter(seg => seg.text)
+
+            transcript = segments.map(s => s.text).join(' ')
+            console.log(`   ✅ Extracted transcript: ${segments.length} segments, ${transcript.split(/\s+/).length} words`)
+            foundSubtitle = true
+            break
+          }
         }
-      } else {
-        console.warn(`   ⚠️  Subtitle file not found at: ${tempFile}`)
+      }
+
+      if (!foundSubtitle) {
+        console.warn(`   ⚠️  No subtitle file found. Tried patterns:`, subtitlePatterns.map(p => path.basename(p)))
       }
 
       return {
