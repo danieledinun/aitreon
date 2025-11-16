@@ -65,10 +65,16 @@ class VideoProcessorV2 {
       // --write-auto-sub downloads subtitles to {videoId}.en.json3
       // --skip-download + --no-download prevents any video format selection/download
       // --ignore-errors continues even if formats fail
-      execSync(
-        `yt-dlp --write-info-json --write-auto-sub --write-sub --sub-lang en --sub-format json3 --skip-download --no-download --ignore-errors --proxy "${PROXY_URL}" --no-check-certificates --no-warnings -o "${tempDir}/${videoId}" "https://www.youtube.com/watch?v=${videoId}" 2>&1 || true`,
-        { encoding: 'utf-8', stdio: 'pipe', timeout: 120000 }
-      )
+      // --socket-timeout 30 sets network timeout to 30s
+      try {
+        execSync(
+          `yt-dlp --write-info-json --write-auto-sub --write-sub --sub-lang en --sub-format json3 --skip-download --no-download --ignore-errors --socket-timeout 30 --proxy "${PROXY_URL}" --no-check-certificates --no-warnings -o "${tempDir}/${videoId}" "https://www.youtube.com/watch?v=${videoId}" 2>&1 || true`,
+          { encoding: 'utf-8', stdio: 'pipe', timeout: 300000 }
+        )
+      } catch (execError) {
+        console.warn(`   ⚠️  yt-dlp execution error (continuing):`, execError.message)
+        // Continue anyway - files might have been created
+      }
 
       // Read metadata from info.json
       let metadata = {
