@@ -106,6 +106,10 @@ class VideoProcessorV2 {
       let transcript = ''
       let segments = []
 
+      // Debug: List all files created in temp dir for this video
+      const allFiles = fs.readdirSync(tempDir).filter(f => f.includes(videoId))
+      console.log(`   🔍 Files created for ${videoId}:`, allFiles)
+
       if (fs.existsSync(tempFile)) {
         console.log(`   📖 Reading subtitle file...`)
         const subContent = fs.readFileSync(tempFile, 'utf-8')
@@ -132,7 +136,7 @@ class VideoProcessorV2 {
           console.log(`   ✅ Extracted transcript: ${segments.length} segments, ${transcript.split(/\s+/).length} words`)
         }
       } else {
-        console.warn(`   ⚠️  No subtitles available for ${videoId}`)
+        console.warn(`   ⚠️  Subtitle file not found at: ${tempFile}`)
       }
 
       return {
