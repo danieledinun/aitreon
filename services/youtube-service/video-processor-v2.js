@@ -44,109 +44,84 @@ class VideoProcessorV2 {
    */
   async getVideoData(videoId) {
     try {
-      console.log(`   📥 Fetching metadata for video ${videoId}...`)
+      console.log(`   📥 Fetching metadata + subtitles for video ${videoId}...`)
 
-      // Get video metadata and subtitles in one call
-      const videoData = await youtubedl(`https://www.youtube.com/watch?v=${videoId}`, {
-        dumpSingleJson: true,
-        skipDownload: true,
-        writeAutoSub: true,
-        writeSub: true,
-        subLang: 'en',
-        subFormat: 'json3',
-        noWarnings: true,
-        proxy: PROXY_URL,
-        noCheckCertificates: true
-      })
+      const { execSync } = require('child_process')
+      const fs = require('fs')
+      const path = require('path')
+      const os = require('os')
 
-      // Extract metadata
-      const metadata = {
-        title: videoData.title || 'Unknown Title',
-        description: videoData.description || '',
-        thumbnail: videoData.thumbnail || `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
-        duration: videoData.duration || 0,
-        uploadDate: videoData.upload_date || null,
-        viewCount: videoData.view_count || 0
+      // Create temp paths
+      const tempDir = os.tmpdir()
+      const tempFile = path.join(tempDir, `${videoId}.en.json3`)
+      const infoJsonFile = path.join(tempDir, `${videoId}.info.json`)
+
+      // Clean up any existing files first
+      if (fs.existsSync(tempFile)) fs.unlinkSync(tempFile)
+      if (fs.existsSync(infoJsonFile)) fs.unlinkSync(infoJsonFile)
+
+      // ONE yt-dlp call: get metadata JSON + download subtitles
+      // --write-info-json saves metadata to {videoId}.info.json
+      // --write-auto-sub downloads subtitles to {videoId}.en.json3
+      execSync(
+        `yt-dlp --write-info-json --write-auto-sub --write-sub --sub-lang en --sub-format json3 --skip-download --proxy "${PROXY_URL}" --no-check-certificates -o "${tempDir}/${videoId}" "https://www.youtube.com/watch?v=${videoId}"`,
+        { encoding: 'utf-8', stdio: 'pipe', timeout: 120000 }
+      )
+
+      // Read metadata from info.json
+      let metadata = {
+        title: 'Unknown Title',
+        description: '',
+        thumbnail: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+        duration: 0,
+        uploadDate: null,
+        viewCount: 0
       }
 
-      // Extract transcript from subtitles
+      if (fs.existsSync(infoJsonFile)) {
+        const infoData = JSON.parse(fs.readFileSync(infoJsonFile, 'utf-8'))
+        metadata = {
+          title: infoData.title || 'Unknown Title',
+          description: infoData.description || '',
+          thumbnail: infoData.thumbnail || `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+          duration: infoData.duration || 0,
+          uploadDate: infoData.upload_date || null,
+          viewCount: infoData.view_count || 0
+        }
+        fs.unlinkSync(infoJsonFile) // Clean up
+      }
+
+      // Read and parse subtitles
       let transcript = ''
       let segments = []
 
-      if (videoData.subtitles || videoData.automatic_captions) {
-        // Try manual subtitles first, then auto-generated
-        const subs = videoData.subtitles?.en || videoData.automatic_captions?.en
+      if (fs.existsSync(tempFile)) {
+        console.log(`   📖 Reading subtitle file...`)
+        const subContent = fs.readFileSync(tempFile, 'utf-8')
+        const subData = JSON.parse(subContent)
 
-        if (subs && subs.length > 0) {
-          console.log(`   📝 Found ${subs.length} subtitle formats, attempting to download...`)
+        // Clean up temp file
+        fs.unlinkSync(tempFile)
 
-          try {
-            // Use youtube-dl-exec to download subtitle content directly
-            // This handles authentication/cookies/proxy internally
-            const { execSync } = require('child_process')
-            const fs = require('fs')
-            const path = require('path')
-            const os = require('os')
-
-            // Create temp file path
-            const tempDir = os.tmpdir()
-            const tempFile = path.join(tempDir, `${videoId}.en.json3`)
-
-            // Clean up any existing file first
-            if (fs.existsSync(tempFile)) {
-              fs.unlinkSync(tempFile)
-            }
-
-            console.log(`   🔽 Downloading subtitles to ${tempFile}...`)
-
-            // Download subtitle using yt-dlp command directly
-            execSync(
-              `yt-dlp --write-auto-sub --write-sub --sub-lang en --sub-format json3 --skip-download --proxy "${PROXY_URL}" --no-check-certificates -o "${tempDir}/${videoId}" "https://www.youtube.com/watch?v=${videoId}"`,
-              { encoding: 'utf-8', stdio: 'pipe' }
-            )
-
-            // Read the downloaded subtitle file
-            if (fs.existsSync(tempFile)) {
-              console.log(`   📖 Reading subtitle file...`)
-              const subContent = fs.readFileSync(tempFile, 'utf-8')
-              const subData = JSON.parse(subContent)
-
-              // Clean up temp file
-              fs.unlinkSync(tempFile)
-
-              // Parse JSON3 format
-              if (subData.events) {
-                segments = subData.events
-                  .filter(event => event.segs)
-                  .map(event => {
-                    const text = event.segs.map(seg => seg.utf8).join('')
-                    return {
-                      start: event.tStartMs / 1000,
-                      duration: event.dDurationMs / 1000,
-                      text: text.trim()
-                    }
-                  })
-                  .filter(seg => seg.text)
-
-                transcript = segments.map(s => s.text).join(' ')
-                console.log(`   ✅ Extracted transcript: ${segments.length} segments, ${transcript.split(/\s+/).length} words`)
-              } else {
-                console.warn(`   ⚠️  Subtitle file has no events`)
+        // Parse JSON3 format
+        if (subData.events) {
+          segments = subData.events
+            .filter(event => event.segs)
+            .map(event => {
+              const text = event.segs.map(seg => seg.utf8).join('')
+              return {
+                start: event.tStartMs / 1000,
+                duration: event.dDurationMs / 1000,
+                text: text.trim()
               }
-            } else {
-              console.warn(`   ⚠️  Subtitle file not created at ${tempFile}`)
-            }
-          } catch (subError) {
-            console.error(`   ❌ Failed to download subtitles:`, subError.message)
-            if (subError.stderr) {
-              console.error(`   📋 stderr:`, subError.stderr)
-            }
-          }
-        }
-      }
+            })
+            .filter(seg => seg.text)
 
-      if (!transcript) {
-        console.warn(`   ⚠️  No transcript available for ${videoId}`)
+          transcript = segments.map(s => s.text).join(' ')
+          console.log(`   ✅ Extracted transcript: ${segments.length} segments, ${transcript.split(/\s+/).length} words`)
+        }
+      } else {
+        console.warn(`   ⚠️  No subtitles available for ${videoId}`)
       }
 
       return {
