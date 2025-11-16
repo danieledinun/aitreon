@@ -69,13 +69,21 @@ class VideoProcessorV2 {
       // --ignore-errors continues even if some operations fail
       // --ignore-no-formats-error prevents failure when format selection fails
       // --socket-timeout 30 sets network timeout to 30s
+      let ytdlpOutput = ''
       try {
-        execSync(
-          `yt-dlp --write-info-json --write-auto-sub --write-sub --sub-lang en --sub-format json3 --skip-download --ignore-errors --ignore-no-formats-error --socket-timeout 30 --proxy "${PROXY_URL}" --no-check-certificates --no-warnings -o "${tempDir}/${videoId}" "https://www.youtube.com/watch?v=${videoId}" 2>&1 || true`,
-          { encoding: 'utf-8', stdio: 'pipe', timeout: 300000 }
+        ytdlpOutput = execSync(
+          `yt-dlp --write-info-json --write-auto-sub --write-sub --sub-lang en --sub-format json3 --skip-download --ignore-errors --ignore-no-formats-error --socket-timeout 30 --proxy "${PROXY_URL}" --no-check-certificates -o "${tempDir}/${videoId}" "https://www.youtube.com/watch?v=${videoId}" 2>&1`,
+          { encoding: 'utf-8', timeout: 300000 }
         )
+        console.log(`   📋 yt-dlp output:`, ytdlpOutput.slice(0, 200))
       } catch (execError) {
-        console.warn(`   ⚠️  yt-dlp execution error (continuing):`, execError.message)
+        console.warn(`   ⚠️  yt-dlp error:`, execError.message)
+        if (execError.stdout) {
+          console.log(`   📋 stdout:`, execError.stdout.slice(0, 300))
+        }
+        if (execError.stderr) {
+          console.log(`   📋 stderr:`, execError.stderr.slice(0, 300))
+        }
         // Continue anyway - files might have been created
       }
 
