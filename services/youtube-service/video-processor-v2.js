@@ -76,19 +76,17 @@ class VideoProcessorV2 {
       }
 
       // Download ONLY subtitles (not video)
-      // Critical: --skip-download prevents subtitle file writes!
-      // Solution: Select a non-existent format to skip video, but allow subtitle downloads
+      // Solution based on yt-dlp GitHub issue #13211:
+      // Use --skip-download with --extractor-args to fix "Did not get any data blocks" error
       let ytdlpOutput = ''
       try {
-        // Use -f 0 (non-existent format) to skip video download but allow subtitle writes
         ytdlpOutput = execSync(
-          `cd "${tempDir}" && yt-dlp --write-auto-subs --sub-lang en --sub-format json3 -f 0 --socket-timeout 30 --proxy "${PROXY_URL}" --no-check-certificates -o "${videoId}" "https://www.youtube.com/watch?v=${videoId}" 2>&1`,
+          `cd "${tempDir}" && yt-dlp --write-auto-subs --sub-lang en --sub-format json3 --skip-download --extractor-args "youtube:player_client=default,-web" --socket-timeout 30 --proxy "${PROXY_URL}" --no-check-certificates -o "${videoId}" "https://www.youtube.com/watch?v=${videoId}" 2>&1`,
           { encoding: 'utf-8', timeout: 300000 }
         )
-        console.log(`   📋 Subtitle download output (last 300 chars):`, ytdlpOutput.slice(-300))
+        console.log(`   📋 Subtitle download success!`)
       } catch (execError) {
-        // Format 0 will always fail, but subtitles should still be written
-        console.log(`   ℹ️  Expected format error (subtitles should still download)`)
+        console.warn(`   ⚠️  Subtitle download error:`, execError.message)
         const output = execError.stdout || execError.stderr || ''
         console.log(`   📋 Output (last 400 chars):`, output.slice(-400))
       }
