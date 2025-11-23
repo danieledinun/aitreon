@@ -115,16 +115,35 @@ export default async function CreatorDashboard() {
     const creatorData = creatorArray && creatorArray.length > 0 ? creatorArray[0] : null
 
     if (creatorData) {
-      // For now, just use the basic creator data without complex relations
+      // Get actual counts from the database
+      const { count: videoCount } = await supabase
+        .from('videos')
+        .select('*', { count: 'exact', head: true })
+        .eq('creator_id', creatorData.id)
+
+      const { count: subscriptionCount } = await supabase
+        .from('subscriptions')
+        .select('*', { count: 'exact', head: true })
+        .eq('creator_id', creatorData.id)
+
+      const { count: chatSessionCount } = await supabase
+        .from('chat_sessions')
+        .select('*', { count: 'exact', head: true })
+        .eq('creator_id', creatorData.id)
+
       creator = {
         ...creatorData,
         _count: {
-          subscriptions: 0,
-          videos: 0,
-          chat_sessions: 0
+          subscriptions: subscriptionCount || 0,
+          videos: videoCount || 0,
+          chat_sessions: chatSessionCount || 0
         }
       }
-      console.log('🔍 Creator object created:', creator)
+      console.log('🔍 Creator object created with counts:', {
+        videos: videoCount,
+        subscriptions: subscriptionCount,
+        chatSessions: chatSessionCount
+      })
     } else {
       console.log('❌ No creator data found - this is why fan dashboard shows!')
       console.log('🔍 Creator array was:', creatorArray)
