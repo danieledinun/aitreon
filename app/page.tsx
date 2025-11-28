@@ -60,14 +60,6 @@ export default function HomePage() {
                     <ArrowRight className="w-5 h-5 ml-2" />
                   </Button>
                 </Link>
-
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="px-8 py-6 text-lg border-2 border-tandym-cobalt text-tandym-cobalt hover:bg-tandym-cobalt/10 rounded-full transition-all duration-300"
-                >
-                  Watch a Demo
-                </Button>
               </div>
 
               <p className="text-sm text-gray-500">
@@ -485,8 +477,8 @@ export default function HomePage() {
               <div className="flex items-center gap-4 mb-6">
                 <div className="w-12 h-12 rounded-full bg-gradient-to-br from-tandym-cobalt to-tandym-lilac"></div>
                 <div>
-                  <div className="font-semibold text-tandym-text-dark">Creator Name</div>
-                  <div className="text-sm text-tandym-text-muted">YouTube Creator</div>
+                  <div className="font-semibold text-tandym-text-dark">YouTuber</div>
+                  <div className="text-sm text-tandym-text-muted">Cooking Videos</div>
                 </div>
               </div>
               <p className="text-tandym-text-muted italic leading-relaxed">
@@ -499,8 +491,8 @@ export default function HomePage() {
               <div className="flex items-center gap-4 mb-6">
                 <div className="w-12 h-12 rounded-full bg-gradient-to-br from-tandym-lilac to-tandym-coral"></div>
                 <div>
-                  <div className="font-semibold text-tandym-text-dark">Creator Name</div>
-                  <div className="text-sm text-tandym-text-muted">Content Creator</div>
+                  <div className="font-semibold text-tandym-text-dark">YouTuber</div>
+                  <div className="text-sm text-tandym-text-muted">Sports Content</div>
                 </div>
               </div>
               <p className="text-tandym-text-muted italic leading-relaxed">
@@ -513,8 +505,8 @@ export default function HomePage() {
               <div className="flex items-center gap-4 mb-6">
                 <div className="w-12 h-12 rounded-full bg-gradient-to-br from-tandym-coral to-tandym-cobalt"></div>
                 <div>
-                  <div className="font-semibold text-tandym-text-dark">Creator Name</div>
-                  <div className="text-sm text-tandym-text-muted">Streamer</div>
+                  <div className="font-semibold text-tandym-text-dark">YouTuber</div>
+                  <div className="text-sm text-tandym-text-muted">Gaming Content</div>
                 </div>
               </div>
               <p className="text-tandym-text-muted italic leading-relaxed">
