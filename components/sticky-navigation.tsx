@@ -20,59 +20,59 @@ export default function StickyNavigation() {
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out ${
-      isScrolled 
-        ? 'py-3 backdrop-blur-md bg-black/80 border-b border-neutral-800/50' 
-        : 'py-6 backdrop-blur-sm bg-black/30'
+      isScrolled
+        ? 'py-3 backdrop-blur-md bg-tandym-midnight/80 border-b border-tandym-cobalt/20'
+        : 'py-6 backdrop-blur-sm bg-tandym-midnight/30'
     }`}>
       <div className={`transition-all duration-300 ease-in-out ${
-        isScrolled 
-          ? 'max-w-4xl mx-auto px-6 flex justify-between items-center' 
-          : 'px-6 flex justify-between items-center'
+        isScrolled
+          ? 'max-w-7xl mx-auto px-6 flex justify-between items-center'
+          : 'container mx-auto px-6 flex justify-between items-center'
       }`}>
-        <div className="flex items-center space-x-2">
-          <div className={`bg-white rounded-xl flex items-center justify-center transition-all duration-300 ${
+        <Link href="/" className="flex items-center space-x-2 group">
+          <div className={`bg-gradient-to-br from-tandym-cobalt to-tandym-lilac rounded-xl flex items-center justify-center transition-all duration-300 ${
             isScrolled ? 'w-6 h-6' : 'w-8 h-8'
           }`}>
-            <Sparkles className={`text-black transition-all duration-300 ${
+            <Sparkles className={`text-white transition-all duration-300 ${
               isScrolled ? 'w-3 h-3' : 'w-5 h-5'
             }`} />
           </div>
-          <h1 className={`font-bold text-white transition-all duration-300 ${
+          <h1 className={`font-bold font-poppins bg-gradient-to-r from-tandym-cobalt via-tandym-lilac to-tandym-coral bg-clip-text text-transparent transition-all duration-300 ${
             isScrolled ? 'text-xl' : 'text-2xl'
-          }`}>Aitrion</h1>
-        </div>
-        
+          }`}>Tandym.ai</h1>
+        </Link>
+
         {/* Center navigation links - always visible */}
-        <div className="hidden md:flex items-center space-x-6 text-sm">
-          <Link href="#product" className="text-neutral-300 hover:text-white transition-colors">
-            Product
-          </Link>
-          <Link href="#features" className="text-neutral-300 hover:text-white transition-colors">
+        <div className="hidden md:flex items-center space-x-8 text-sm font-medium">
+          <Link href="#features" className="text-gray-300 hover:text-tandym-lilac transition-colors">
             Features
           </Link>
-          <Link href="#pricing" className="text-neutral-300 hover:text-white transition-colors">
-            Pricing
+          <Link href="#how-it-works" className="text-gray-300 hover:text-tandym-lilac transition-colors">
+            How It Works
+          </Link>
+          <Link href="#benefits" className="text-gray-300 hover:text-tandym-lilac transition-colors">
+            Benefits
           </Link>
         </div>
 
         <div className="flex items-center space-x-4">
           <Link href="/auth/signin">
-            <Button 
-              variant="outline" 
-              className={`border-neutral-700 text-neutral-300 hover:bg-neutral-800/50 backdrop-blur-sm transition-all duration-300 ${
+            <Button
+              variant="outline"
+              className={`border-tandym-cobalt/50 text-tandym-lilac hover:bg-tandym-cobalt/10 hover:border-tandym-cobalt backdrop-blur-sm transition-all duration-300 rounded-full ${
                 isScrolled ? 'text-xs px-4 py-2' : 'text-sm'
               }`}
             >
               Sign In
             </Button>
           </Link>
-          <Link href="/auth/signup">
-            <Button 
-              className={`bg-white text-black hover:bg-neutral-200 transition-all duration-300 ${
-                isScrolled ? 'text-xs px-4 py-2' : 'text-sm'
+          <Link href="/auth/signin?userType=creator">
+            <Button
+              className={`bg-tandym-cobalt hover:bg-tandym-cobalt/90 text-white rounded-full shadow-lg shadow-tandym-cobalt/30 transition-all duration-300 ${
+                isScrolled ? 'text-xs px-4 py-2' : 'text-sm px-6 py-2'
               }`}
             >
-              Get Started
+              Create My Twin
             </Button>
           </Link>
         </div>

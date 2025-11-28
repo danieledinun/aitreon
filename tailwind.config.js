@@ -9,11 +9,21 @@ module.exports = {
   theme: {
   	extend: {
   		colors: {
+  			// Tandym.ai Brand Colors
+  			tandym: {
+  				cobalt: '#3256FF',        // Primary - Electric Cobalt
+  				lilac: '#C8B7FF',         // Secondary - Soft Lilac
+  				coral: '#FF6F61',         // Accent - Coral
+  				midnight: '#0A0A0F',      // Background Dark - Deep Midnight
+  				light: '#F5F5FA',         // Neutral Light
+  				'text-dark': '#111827',   // Neutral Text Dark
+  				'text-muted': '#6B7280',  // Neutral Text Muted
+  			},
   			primary: {
   				'50': '#eff6ff',
-  				'500': '#3b82f6',
-  				'600': '#2563eb',
-  				'700': '#1d4ed8',
+  				'500': '#3256FF',  // Updated to Tandym Cobalt
+  				'600': '#2845E6',
+  				'700': '#1d34CC',
   				DEFAULT: 'hsl(var(--primary))',
   				foreground: 'hsl(var(--primary-foreground))'
   			},
@@ -58,7 +68,11 @@ module.exports = {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
-  		}
+  		},
+  		fontFamily: {
+  			'poppins': ['Poppins', 'Inter', 'sans-serif'],
+  			'inter': ['Inter', 'Space Grotesk', 'sans-serif'],
+  		},
   	}
   },
   plugins: [require("tailwindcss-animate")],

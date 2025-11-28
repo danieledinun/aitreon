@@ -1,12 +1,34 @@
 import './globals.css'
-import { Inter } from 'next/font/google'
+import { Inter, Poppins } from 'next/font/google'
 import { Providers } from '@/components/providers'
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+})
+
+const poppins = Poppins({
+  weight: ['400', '500', '600', '700'],
+  subsets: ['latin'],
+  variable: '--font-poppins',
+})
 
 export const metadata = {
-  title: 'Aitrion - AI Creator Platform',
-  description: 'Connect with AI versions of your favorite creators',
+  title: 'Tandym.ai - Your AI Twin for YouTube Creators',
+  description: 'Create an AI twin that chats with your fans, references your YouTube videos, and drives engagement 24/7. Host it on a dedicated page, embed it on your site, and soon — let fans talk to it by voice.',
+  keywords: 'AI twin, YouTube creators, AI chatbot, creator tools, fan engagement, AI replica, content creator platform',
+  openGraph: {
+    title: 'Tandym.ai - Your AI Twin for YouTube Creators',
+    description: 'Create an AI twin that chats with your fans 24/7, powered by your YouTube videos.',
+    type: 'website',
+    locale: 'en_US',
+    siteName: 'Tandym.ai',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Tandym.ai - Your AI Twin for YouTube Creators',
+    description: 'Create an AI twin that chats with your fans 24/7, powered by your YouTube videos.',
+  },
 }
 
 export default function RootLayout({
@@ -15,7 +37,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${inter.variable} ${poppins.variable}`}>
       <body className={inter.className}>
         <Providers>
           {children}

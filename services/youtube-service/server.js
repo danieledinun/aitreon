@@ -265,17 +265,25 @@ app.post('/api/channel/info', async (req, res) => {
 // Get channel videos
 app.post('/api/channel/videos', async (req, res) => {
   try {
-    const { channelId, limit = 10 } = req.body
+    const { channelId, channelUrl, limit = 10 } = req.body
 
-    if (!channelId) {
-      return res.status(400).json({ error: 'channelId is required' })
+    // Support both channelId and channelUrl
+    let url
+    if (channelUrl) {
+      // Use the provided URL directly (supports @username, /channel/ID, /c/name, etc.)
+      url = channelUrl.endsWith('/videos') ? channelUrl : `${channelUrl}/videos`
+      console.log(`📹 Fetching ${limit} videos for channel URL: ${channelUrl}`)
+    } else if (channelId) {
+      // Fall back to channel ID format
+      url = `https://www.youtube.com/channel/${channelId}/videos`
+      console.log(`📹 Fetching ${limit} videos for channel ID: ${channelId}`)
+    } else {
+      return res.status(400).json({ error: 'channelId or channelUrl is required' })
     }
-
-    console.log(`📹 Fetching ${limit} videos for channel: ${channelId}`)
 
     // Fetch from the channel's videos tab to get actual videos with metadata
     // Don't use flatPlaylist to get upload dates, but use playlistEnd to limit fetching
-    const playlistData = await youtubedl(`https://www.youtube.com/channel/${channelId}/videos`, {
+    const playlistData = await youtubedl(url, {
       dumpSingleJson: true,
       skipDownload: true,
       playlistEnd: limit,
@@ -388,6 +396,85 @@ app.post('/api/channel/videos', async (req, res) => {
     console.error('Error fetching channel videos:', error)
     res.status(500).json({
       error: 'Failed to fetch channel videos',
+      details: error.message
+    })
+  }
+})
+
+// Get playlist videos
+app.post('/api/playlist/videos', async (req, res) => {
+  try {
+    const { playlistId, limit = 10 } = req.body
+
+    if (!playlistId) {
+      return res.status(400).json({ error: 'playlistId is required' })
+    }
+
+    console.log(`📋 Fetching ${limit} videos for playlist: ${playlistId}`)
+
+    const playlistData = await youtubedl(`https://www.youtube.com/playlist?list=${playlistId}`, {
+      dumpSingleJson: true,
+      skipDownload: true,
+      playlistEnd: limit,
+      noWarnings: true,
+      proxy: PROXY_URL,
+      ignoreErrors: true,
+      noCheckCertificates: true,
+      format: 'worst'
+    })
+
+    const videos = (playlistData.entries || []).slice(0, limit).map((video) => {
+      let thumbnail = `https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`
+      if (video.thumbnails && video.thumbnails.length > 0) {
+        const bestThumb = video.thumbnails[video.thumbnails.length - 1]
+        thumbnail = bestThumb.url || thumbnail
+      }
+
+      let duration = ''
+      if (video.duration) {
+        const hours = Math.floor(video.duration / 3600)
+        const minutes = Math.floor((video.duration % 3600) / 60)
+        const seconds = video.duration % 60
+        if (hours > 0) {
+          duration = `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+        } else {
+          duration = `${minutes}:${seconds.toString().padStart(2, '0')}`
+        }
+      }
+
+      let publishedAt = ''
+      const dateStr = video.upload_date || video.uploadDate
+      if (dateStr && typeof dateStr === 'string' && dateStr.length === 8) {
+        const year = dateStr.substring(0, 4)
+        const month = dateStr.substring(4, 6)
+        const day = dateStr.substring(6, 8)
+        publishedAt = `${year}-${month}-${day}`
+      }
+
+      return {
+        id: video.id,
+        title: video.title || '',
+        description: video.description || '',
+        thumbnail,
+        duration,
+        publishedAt,
+        viewCount: video.view_count || 0,
+        url: video.url || `https://www.youtube.com/watch?v=${video.id}`
+      }
+    })
+
+    console.log(`✅ Found ${videos.length} videos in playlist`)
+
+    res.json({
+      playlistTitle: playlistData.title || 'Playlist',
+      totalVideos: playlistData.playlist_count || videos.length,
+      videos
+    })
+
+  } catch (error) {
+    console.error('Error fetching playlist videos:', error)
+    res.status(500).json({
+      error: 'Failed to fetch playlist videos',
       details: error.message
     })
   }
