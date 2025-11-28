@@ -225,25 +225,25 @@ Thank you for taking the time to listen to me. I can't wait to help answer your 
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <Link href="/creator" className="text-gray-600 dark:text-neutral-400 hover:text-gray-900 dark:hover:text-white">
+            <Link href="/creator" className="text-gray-600 dark:text-neutral-400 hover:text-tandym-cobalt dark:hover:text-white">
               <ArrowLeft className="h-5 w-5" />
             </Link>
-            <h1 className="text-3xl font-bold flex items-center gap-3 text-gray-900 dark:text-white">
-              <Volume2 className="h-7 w-7 text-green-400" />
+            <h1 className="text-3xl font-bold font-poppins flex items-center gap-3 text-gray-900 dark:text-white">
+              <Volume2 className="h-7 w-7 text-tandym-cobalt" />
               Voice Cloning
             </h1>
           </div>
-          <p className="text-gray-600 dark:text-neutral-400 text-lg">Create a custom voice for your AI responses</p>
+          <p className="text-gray-600 dark:text-neutral-400 text-lg">Create a custom voice for your AI twin responses</p>
         </div>
       </div>
 
       <div className="max-w-4xl mx-auto space-y-8">
         {/* Instructions */}
         <Card className="p-6 mb-8 bg-white dark:bg-neutral-900/50 border-gray-300 dark:border-neutral-700">
-          <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">How Voice Cloning Works</h2>
+          <h2 className="text-lg font-semibold font-poppins mb-4 text-gray-900 dark:text-white">How Voice Cloning Works</h2>
           <div className="space-y-3 text-sm text-gray-700 dark:text-neutral-300">
             <p>
-              <strong className="text-gray-900 dark:text-white">Voice cloning</strong> creates a custom AI voice that sounds like you. This voice will be used when fans click "Read Aloud" on your AI responses.
+              <strong className="text-gray-900 dark:text-white">Voice cloning</strong> creates a custom AI voice that sounds like you. This voice will be used when fans click "Read Aloud" on your AI twin responses.
             </p>
             <p>
               For the best results, provide a <strong className="text-gray-900 dark:text-white">1-minute audio sample</strong> that is:
@@ -260,13 +260,13 @@ Thank you for taking the time to listen to me. I can't wait to help answer your 
 
         {/* Current Voice Status */}
         {creator.voiceSettings?.elevenlabsVoiceId && (
-          <Card className="p-6 mb-8 bg-gradient-to-br from-green-900/20 to-green-800/10 border-green-800/30">
-            <div className="flex items-center gap-2 text-green-400 mb-2">
+          <Card className="p-6 mb-8 bg-gradient-to-br from-tandym-cobalt/10 to-tandym-lilac/10 border-tandym-cobalt/30">
+            <div className="flex items-center gap-2 text-tandym-cobalt mb-2">
               <CheckCircle className="h-5 w-5" />
-              <h3 className="font-semibold text-gray-900 dark:text-white">Voice Clone Active</h3>
+              <h3 className="font-semibold font-poppins text-gray-900 dark:text-white">Voice Clone Active</h3>
             </div>
-            <p className="text-sm text-green-300">
-              Your custom voice is currently active and being used for AI responses.
+            <p className="text-sm text-tandym-lilac dark:text-tandym-lilac">
+              Your custom voice is currently active and being used for AI twin responses.
             </p>
           </Card>
         )}
@@ -276,7 +276,7 @@ Thank you for taking the time to listen to me. I can't wait to help answer your 
           <Button
             variant={activeTab === 'record' ? 'default' : 'outline'}
             onClick={() => setActiveTab('record')}
-            className={`flex items-center gap-2 ${activeTab === 'record' ? 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800' : 'border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-800'}`}
+            className={`flex items-center gap-2 ${activeTab === 'record' ? 'bg-gradient-to-r from-tandym-cobalt to-tandym-lilac hover:from-tandym-cobalt/90 hover:to-tandym-lilac/90' : 'border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-800'}`}
           >
             <Mic className="h-4 w-4" />
             Record Voice
@@ -284,7 +284,7 @@ Thank you for taking the time to listen to me. I can't wait to help answer your 
           <Button
             variant={activeTab === 'upload' ? 'default' : 'outline'}
             onClick={() => setActiveTab('upload')}
-            className={`flex items-center gap-2 ${activeTab === 'upload' ? 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800' : 'border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-800'}`}
+            className={`flex items-center gap-2 ${activeTab === 'upload' ? 'bg-gradient-to-r from-tandym-cobalt to-tandym-lilac hover:from-tandym-cobalt/90 hover:to-tandym-lilac/90' : 'border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-800'}`}
           >
             <Upload className="h-4 w-4" />
             Upload Audio
@@ -293,11 +293,11 @@ Thank you for taking the time to listen to me. I can't wait to help answer your 
 
         {activeTab === 'record' && (
           <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Record Your Voice</h3>
-            
+            <h3 className="text-lg font-semibold font-poppins mb-4 text-gray-900 dark:text-white">Record Your Voice</h3>
+
             {/* Script */}
             <div className="bg-gray-50 p-4 rounded-lg mb-6">
-              <h4 className="font-medium mb-3 text-gray-900 dark:text-white">Please read this script clearly and naturally:</h4>
+              <h4 className="font-medium font-poppins mb-3 text-gray-900 dark:text-white">Please read this script clearly and naturally:</h4>
               <div className="text-sm leading-relaxed whitespace-pre-line text-gray-700 dark:text-gray-300 max-h-40 overflow-y-auto border border-gray-200 dark:border-gray-600 p-3 rounded bg-white dark:bg-gray-800">
                 {voiceScript}
               </div>
@@ -306,14 +306,14 @@ Thank you for taking the time to listen to me. I can't wait to help answer your 
             {/* Recording Controls */}
             <div className="flex items-center gap-4 mb-6">
               {!isRecording ? (
-                <Button onClick={startRecording} className="bg-red-600 hover:bg-red-700">
+                <Button onClick={startRecording} className="bg-tandym-coral hover:bg-tandym-coral/90">
                   <Mic className="h-4 w-4 mr-2" />
                   Start Recording
                 </Button>
               ) : (
-                <Button onClick={stopRecording} variant="outline" className="border-red-500 text-red-600">
+                <Button onClick={stopRecording} variant="outline" className="border-tandym-coral text-tandym-coral">
                   <Square className="h-4 w-4 mr-2" />
-                  Square Recording ({formatDuration(recordingDuration)})
+                  Stop Recording ({formatDuration(recordingDuration)})
                 </Button>
               )}
 
@@ -355,18 +355,18 @@ Thank you for taking the time to listen to me. I can't wait to help answer your 
             </div>
 
             {isRecording && (
-              <div className="flex items-center gap-2 text-red-600 mb-4 p-3 bg-red-50 rounded-lg">
-                <div className="w-3 h-3 bg-red-600 rounded-full animate-pulse"></div>
+              <div className="flex items-center gap-2 text-tandym-coral mb-4 p-3 bg-tandym-coral/5 dark:bg-tandym-coral/10 rounded-lg border border-tandym-coral/30">
+                <div className="w-3 h-3 bg-tandym-coral rounded-full animate-pulse"></div>
                 <span className="font-medium">Recording in progress...</span>
                 <span className="text-sm">Speak clearly and naturally. Try to read the entire script for best results.</span>
               </div>
             )}
-            
+
             {recordingDuration > 0 && !isRecording && (
               <div className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                 Recording duration: {formatDuration(recordingDuration)}
                 {recordingDuration < 30 && (
-                  <span className="text-amber-600 ml-2">⚠ Consider recording for at least 30-60 seconds for better quality</span>
+                  <span className="text-tandym-coral ml-2">⚠ Consider recording for at least 30-60 seconds for better quality</span>
                 )}
               </div>
             )}
@@ -375,7 +375,7 @@ Thank you for taking the time to listen to me. I can't wait to help answer your 
 
         {activeTab === 'upload' && (
           <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Upload Audio File</h3>
+            <h3 className="text-lg font-semibold font-poppins mb-4 text-gray-900 dark:text-white">Upload Audio File</h3>
             
             <div className="mb-6">
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
@@ -448,17 +448,17 @@ Thank you for taking the time to listen to me. I can't wait to help answer your 
         {/* Submit Section */}
         {(audioBlob || uploadedFile) && (
           <Card className="p-6 mt-6">
-            <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Create Voice Clone</h3>
-            
+            <h3 className="text-lg font-semibold font-poppins mb-4 text-gray-900 dark:text-white">Create Voice Clone</h3>
+
             {submitStatus === 'success' && (
-              <div className="flex items-center gap-2 text-green-600 mb-4 p-3 bg-green-50 rounded-lg">
+              <div className="flex items-center gap-2 text-tandym-cobalt mb-4 p-3 bg-tandym-cobalt/5 dark:bg-tandym-cobalt/10 rounded-lg border border-tandym-cobalt/30">
                 <CheckCircle className="h-5 w-5" />
                 <span>Voice clone created successfully! Redirecting to settings...</span>
               </div>
             )}
-            
+
             {submitStatus === 'error' && (
-              <div className="flex items-center gap-2 text-red-600 mb-4 p-3 bg-red-50 rounded-lg">
+              <div className="flex items-center gap-2 text-tandym-coral mb-4 p-3 bg-tandym-coral/5 dark:bg-tandym-coral/10 rounded-lg border border-tandym-coral/30">
                 <AlertCircle className="h-5 w-5" />
                 <span>Failed to create voice clone. Please check your audio file and try again.</span>
               </div>
