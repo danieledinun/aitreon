@@ -171,7 +171,7 @@ export default function ChatInterface({
             <button
               key={`citation-${citationNumber}`}
               onClick={() => window.open(
-                `https://youtube.com/watch?v=${citation.videoId}&t=${Math.floor(citation.startTime || 0)}s`,
+                `https://www.youtube.com/watch?v=${citation.videoId}&t=${Math.floor(citation.startTime || 0)}s`,
                 '_blank'
               )}
               className="inline-flex items-center justify-center w-5 h-5 text-xs font-medium text-blue-600 bg-blue-100 border border-blue-200 rounded-full hover:bg-blue-200 transition-colors mx-0.5"
@@ -277,7 +277,7 @@ export default function ChatInterface({
                   {message.citations.map((citation, index) => (
                     <a
                       key={index}
-                      href={`https://youtube.com/watch?v=${citation.videoId}&t=${Math.floor(citation.startTime || 0)}s`}
+                      href={`https://www.youtube.com/watch?v=${citation.videoId}&t=${Math.floor(citation.startTime || 0)}s`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="block p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors text-xs"
