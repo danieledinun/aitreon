@@ -206,7 +206,31 @@ export class EnhancedRAGService {
       .order('start_time', { ascending: true })
       .limit(limit)
 
-    return chunks || []
+    if (!chunks || chunks.length === 0) return []
+
+    // Get unique video IDs to fetch YouTube IDs
+    const uniqueVideoIds = [...new Set(chunks.map(r => r.video_id))]
+
+    // Fetch YouTube IDs for all videos
+    const youtubeIdMap = new Map<string, string>()
+    if (uniqueVideoIds.length > 0) {
+      const { data: videos } = await supabase
+        .from('videos')
+        .select('id, youtube_id')
+        .in('id', uniqueVideoIds)
+
+      if (videos) {
+        videos.forEach((video: any) => {
+          youtubeIdMap.set(video.id, video.youtube_id)
+        })
+      }
+    }
+
+    // Add YouTube IDs to chunks
+    return chunks.map(chunk => ({
+      ...chunk,
+      youtube_id: youtubeIdMap.get(chunk.video_id) || chunk.video_id
+    }))
   }
 
   /**
