@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Search, MessageCircle, Play, Star, Users, Video, Filter, Grid, List, Heart, Clock, TrendingUp, Bookmark, Eye, Crown, User, CreditCard, Settings, Mail, Phone, MapPin, Calendar, Shield, Edit, CheckCircle, Lock, Plus, MoreHorizontal, Check } from 'lucide-react'
+import { Search, MessageCircle, Play, Star, Users, Video, Filter, Grid, List, Heart, Clock, TrendingUp, Bookmark, Eye, Sparkles, User, CreditCard, Settings, Mail, Phone, MapPin, Calendar, Shield, Edit, CheckCircle, Lock, Plus, MoreHorizontal, Check } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useSession, signOut } from 'next-auth/react'
 import Link from 'next/link'
@@ -523,17 +523,17 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
+    <div className="min-h-screen bg-tandym-light dark:bg-tandym-midnight">
       {/* Modern Header */}
       <header className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-700/50 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-6">
-              <Link href="/" className="flex items-center">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 shadow-lg">
-                  <Crown className="h-6 w-6 text-white" />
+              <Link href="/" className="flex items-center group">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-tandym-cobalt to-tandym-lilac shadow-lg transition-transform group-hover:scale-110">
+                  <Sparkles className="h-6 w-6 text-white" />
                 </div>
-                <span className="ml-3 text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Aitrion</span>
+                <span className="ml-3 text-2xl font-bold font-poppins bg-gradient-to-r from-tandym-cobalt via-tandym-lilac to-tandym-coral bg-clip-text text-transparent">Tandym.ai</span>
               </Link>
 
               {/* Quick Navigation */}
@@ -571,11 +571,11 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
 
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-3">
-                <Avatar className="h-9 w-9 ring-2 ring-blue-500/20">
+                <Avatar className="h-9 w-9 ring-2 ring-tandym-cobalt/20">
                   <AvatarImage src={session?.user?.image || undefined} />
-                  <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500 text-white">{getInitials(session?.user?.name || 'User')}</AvatarFallback>
+                  <AvatarFallback className="bg-gradient-to-r from-tandym-cobalt to-tandym-lilac text-white">{getInitials(session?.user?.name || 'User')}</AvatarFallback>
                 </Avatar>
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300 hidden sm:block">
+                <span className="text-sm font-medium text-tandym-text-dark dark:text-gray-300 hidden sm:block">
                   {session?.user?.name}
                 </span>
               </div>
@@ -590,21 +590,21 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Hero Welcome Section */}
         <div className="mb-8">
-          <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 rounded-2xl p-8 text-white relative overflow-hidden">
+          <div className="bg-gradient-to-r from-tandym-cobalt via-tandym-lilac to-tandym-coral rounded-2xl p-8 text-white relative overflow-hidden">
             <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%23ffffff%22%20fill-opacity%3D%220.1%22%3E%3Ccircle%20cx%3D%2230%22%20cy%3D%2230%22%20r%3D%223%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-20"></div>
             <div className="relative z-10">
-              <h1 className="text-4xl font-bold mb-3">
+              <h1 className="text-4xl font-bold font-poppins mb-3">
                 Welcome back, {session?.user?.name?.split(' ')[0]}! ✨
               </h1>
-              <p className="text-xl text-blue-100 mb-6">
-                Discover and chat with AI versions of your favorite creators
+              <p className="text-xl text-white/90 mb-6 font-inter">
+                Chat with AI twins of your favorite creators — in Tandym
               </p>
               <div className="flex items-center space-x-6 text-sm">
                 <div className="flex items-center space-x-2">
                   <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
                     <Users className="h-4 w-4" />
                   </div>
-                  <span>{creators.length} Creators Available</span>
+                  <span>{creators.length} Creator Twins Available</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
@@ -621,23 +621,23 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
           <div className="flex flex-col lg:flex-row gap-6 items-start">
             <TabsList className="grid w-full lg:w-auto grid-cols-2 md:grid-cols-4 lg:grid-cols-1 lg:flex-col h-auto p-1">
-              <TabsTrigger value="discover" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white justify-start">
+              <TabsTrigger value="discover" className="data-[state=active]:bg-tandym-cobalt data-[state=active]:text-white justify-start">
                 <Search className="h-4 w-4 mr-2" />
                 Discover
               </TabsTrigger>
-              <TabsTrigger value="following" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white justify-start">
+              <TabsTrigger value="following" className="data-[state=active]:bg-tandym-cobalt data-[state=active]:text-white justify-start">
                 <Users className="h-4 w-4 mr-2" />
                 Following
               </TabsTrigger>
-              <TabsTrigger value="subscriptions" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white justify-start">
+              <TabsTrigger value="subscriptions" className="data-[state=active]:bg-tandym-cobalt data-[state=active]:text-white justify-start">
                 <CreditCard className="h-4 w-4 mr-2" />
                 Subscribed
               </TabsTrigger>
-              <TabsTrigger value="recent" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white justify-start">
+              <TabsTrigger value="recent" className="data-[state=active]:bg-tandym-cobalt data-[state=active]:text-white justify-start">
                 <Clock className="h-4 w-4 mr-2" />
                 Recent
               </TabsTrigger>
-              <TabsTrigger value="profile" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white justify-start">
+              <TabsTrigger value="profile" className="data-[state=active]:bg-tandym-cobalt data-[state=active]:text-white justify-start">
                 <User className="h-4 w-4 mr-2" />
                 Profile
               </TabsTrigger>
@@ -717,13 +717,13 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
                   </div>
                 ) : filteredCreators.length === 0 ? (
                   <div className="text-center py-16">
-                    <div className="w-32 h-32 mx-auto bg-gradient-to-br from-blue-100 to-purple-100 dark:from-gray-800 dark:to-gray-700 rounded-full flex items-center justify-center mb-6">
-                      <Search className="h-16 w-16 text-gray-400" />
+                    <div className="w-32 h-32 mx-auto bg-gradient-to-br from-tandym-cobalt/10 to-tandym-lilac/10 dark:from-gray-800 dark:to-gray-700 rounded-full flex items-center justify-center mb-6">
+                      <Search className="h-16 w-16 text-tandym-cobalt" />
                     </div>
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+                    <h3 className="text-xl font-semibold font-poppins text-tandym-text-dark dark:text-white mb-3">
                       No creators found
                     </h3>
-                    <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto">
+                    <p className="text-tandym-text-muted dark:text-gray-400 max-w-md mx-auto">
                       Try adjusting your search criteria or browse all creators to discover amazing content
                     </p>
                   </div>
@@ -740,18 +740,18 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
               <TabsContent value="following" className="space-y-8 mt-0">
                 {subscribed.length === 0 ? (
                   <div className="text-center py-12">
-                    <div className="w-32 h-32 mx-auto bg-gradient-to-br from-purple-100 to-pink-100 dark:from-gray-700 dark:to-gray-600 rounded-full flex items-center justify-center mb-6">
-                      <Users className="h-16 w-16 text-purple-500" />
+                    <div className="w-32 h-32 mx-auto bg-gradient-to-br from-tandym-lilac/20 to-tandym-coral/20 dark:from-gray-700 dark:to-gray-600 rounded-full flex items-center justify-center mb-6">
+                      <Users className="h-16 w-16 text-tandym-lilac" />
                     </div>
-                    <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">
+                    <h3 className="text-2xl font-semibold font-poppins text-tandym-text-dark dark:text-white mb-3">
                       No Followed Creators
                     </h3>
-                    <p className="text-gray-600 dark:text-gray-400 mb-8 max-w-md mx-auto">
-                      Follow creators to see their content and chat with their AI replicas
+                    <p className="text-tandym-text-muted dark:text-gray-400 mb-8 max-w-md mx-auto">
+                      Follow creators to see their content and chat with their AI twins
                     </p>
                     <Button
                       onClick={() => setActiveTab('discover')}
-                      className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg"
+                      className="bg-gradient-to-r from-tandym-lilac to-tandym-coral hover:from-tandym-lilac/90 hover:to-tandym-coral/90 text-white shadow-lg"
                     >
                       <Search className="h-4 w-4 mr-2" />
                       Discover Creators
@@ -761,11 +761,11 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
                   <div className="space-y-6">
                     <div className="flex items-center justify-between mb-6">
                       <div>
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                        <h2 className="text-2xl font-bold font-poppins text-tandym-text-dark dark:text-white">
                           Following
                         </h2>
-                        <p className="text-gray-600 dark:text-gray-400">
-                          Creators you're following and can chat with
+                        <p className="text-tandym-text-muted dark:text-gray-400">
+                          Creator twins you're following and can chat with
                         </p>
                       </div>
                       <Badge variant="secondary" className="text-sm">
@@ -787,18 +787,18 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
               <TabsContent value="subscriptions" className="space-y-8 mt-0">
                 {subscriptions.length === 0 ? (
                   <div className="text-center py-12">
-                    <div className="w-32 h-32 mx-auto bg-gradient-to-br from-green-100 to-emerald-100 dark:from-gray-700 dark:to-gray-600 rounded-full flex items-center justify-center mb-6">
-                      <CreditCard className="h-16 w-16 text-green-500" />
+                    <div className="w-32 h-32 mx-auto bg-gradient-to-br from-tandym-cobalt/10 to-tandym-lilac/10 dark:from-gray-700 dark:to-gray-600 rounded-full flex items-center justify-center mb-6">
+                      <CreditCard className="h-16 w-16 text-tandym-cobalt" />
                     </div>
-                    <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">
+                    <h3 className="text-2xl font-semibold font-poppins text-tandym-text-dark dark:text-white mb-3">
                       No Active Subscriptions
                     </h3>
-                    <p className="text-gray-600 dark:text-gray-400 mb-8 max-w-md mx-auto">
+                    <p className="text-tandym-text-muted dark:text-gray-400 mb-8 max-w-md mx-auto">
                       Subscribe to creators to unlock exclusive content and support their work
                     </p>
                     <Button
                       onClick={() => setActiveTab('discover')}
-                      className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white shadow-lg"
+                      className="bg-gradient-to-r from-tandym-cobalt to-tandym-lilac hover:from-tandym-cobalt/90 hover:to-tandym-lilac/90 text-white shadow-lg"
                     >
                       <Search className="h-4 w-4 mr-2" />
                       Discover Creators
@@ -808,10 +808,10 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
                   <div className="space-y-6">
                     <div className="flex items-center justify-between mb-6">
                       <div>
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                        <h2 className="text-2xl font-bold font-poppins text-tandym-text-dark dark:text-white">
                           Active Subscriptions
                         </h2>
-                        <p className="text-gray-600 dark:text-gray-400">
+                        <p className="text-tandym-text-muted dark:text-gray-400">
                           Your paid subscriptions and premium content access
                         </p>
                       </div>
@@ -825,15 +825,15 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
                         <Card key={subscription.id} className="group hover:shadow-xl transition-all duration-300 border-0 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm hover:bg-white dark:hover:bg-gray-800">
                           <CardHeader className="pb-4">
                             <div className="flex items-center space-x-3">
-                              <Avatar className="h-12 w-12 ring-2 ring-green-500/30">
+                              <Avatar className="h-12 w-12 ring-2 ring-tandym-cobalt/30">
                                 <AvatarImage src={subscription.creators?.profile_image} />
-                                <AvatarFallback className="bg-gradient-to-br from-green-500 to-emerald-500 text-white font-semibold">
+                                <AvatarFallback className="bg-gradient-to-br from-tandym-cobalt to-tandym-lilac text-white font-semibold">
                                   {getInitials(subscription.creators?.display_name || 'Creator')}
                                 </AvatarFallback>
                               </Avatar>
                               <div className="flex-1">
-                                <CardTitle className="text-lg">{subscription.creators?.display_name}</CardTitle>
-                                <Badge className="mt-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                <CardTitle className="text-lg font-poppins">{subscription.creators?.display_name}</CardTitle>
+                                <Badge className="mt-1 bg-tandym-cobalt/10 text-tandym-cobalt dark:bg-tandym-cobalt/20 dark:text-tandym-lilac">
                                   {subscription.status === 'ACTIVE' ? 'Active' : subscription.status}
                                 </Badge>
                               </div>
@@ -862,7 +862,7 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
                               href={`/${subscription.creators?.username || subscription.creators?.display_name?.toLowerCase().replace(/\\s+/g, '')}`}
                               className="w-full"
                             >
-                              <Button className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white">
+                              <Button className="w-full bg-gradient-to-r from-tandym-cobalt to-tandym-lilac hover:from-tandym-cobalt/90 hover:to-tandym-lilac/90 text-white">
                                 <MessageCircle className="h-4 w-4 mr-2" />
                                 Premium Chat
                               </Button>
@@ -885,10 +885,10 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
                 <div>
                   <div className="flex items-center justify-between mb-6">
                     <div>
-                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                      <h2 className="text-2xl font-bold font-poppins text-tandym-text-dark dark:text-white">
                         Profile Settings
                       </h2>
-                      <p className="text-gray-600 dark:text-gray-400">
+                      <p className="text-tandym-text-muted dark:text-gray-400">
                         Manage your personal information and account settings
                       </p>
                     </div>
@@ -921,8 +921,8 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
                     {/* Profile Information Card */}
                     <Card className="lg:col-span-2 border-0 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm">
                       <CardHeader>
-                        <CardTitle className="flex items-center">
-                          <User className="h-5 w-5 mr-2 text-blue-600" />
+                        <CardTitle className="flex items-center font-poppins">
+                          <User className="h-5 w-5 mr-2 text-tandym-cobalt" />
                           Personal Information
                         </CardTitle>
                         <CardDescription>
@@ -1016,27 +1016,27 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
                     {/* Account Overview Card */}
                     <Card className="border-0 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm">
                       <CardHeader>
-                        <CardTitle className="flex items-center">
-                          <Shield className="h-5 w-5 mr-2 text-green-600" />
+                        <CardTitle className="flex items-center font-poppins">
+                          <Shield className="h-5 w-5 mr-2 text-tandym-cobalt" />
                           Account Overview
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-4">
-                        <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                        <div className="flex items-center justify-between p-3 bg-tandym-cobalt/5 dark:bg-tandym-cobalt/10 rounded-lg">
                           <div className="flex items-center">
-                            <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
+                            <CheckCircle className="h-5 w-5 text-tandym-cobalt mr-2" />
                             <span className="text-sm font-medium">Account Status</span>
                           </div>
-                          <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                          <Badge className="bg-tandym-cobalt/10 text-tandym-cobalt dark:bg-tandym-cobalt/20 dark:text-tandym-lilac">
                             Active
                           </Badge>
                         </div>
-                        <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                        <div className="flex items-center justify-between p-3 bg-tandym-lilac/10 dark:bg-tandym-lilac/10 rounded-lg">
                           <div className="flex items-center">
-                            <Mail className="h-5 w-5 text-blue-600 mr-2" />
+                            <Mail className="h-5 w-5 text-tandym-lilac mr-2" />
                             <span className="text-sm font-medium">Email Verified</span>
                           </div>
-                          <CheckCircle className="h-5 w-5 text-green-600" />
+                          <CheckCircle className="h-5 w-5 text-tandym-cobalt" />
                         </div>
                         <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                           <div className="flex items-center">
@@ -1054,8 +1054,8 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
                   {/* Payment Methods Section */}
                   <Card className="border-0 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm">
                     <CardHeader>
-                      <CardTitle className="flex items-center">
-                        <CreditCard className="h-5 w-5 mr-2 text-purple-600" />
+                      <CardTitle className="flex items-center font-poppins">
+                        <CreditCard className="h-5 w-5 mr-2 text-tandym-coral" />
                         Payment Methods
                       </CardTitle>
                       <CardDescription>
@@ -1065,14 +1065,14 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
                     <CardContent>
                       {paymentMethods.length === 0 ? (
                         <div className="text-center py-8">
-                          <CreditCard className="h-16 w-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-                          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                          <CreditCard className="h-16 w-16 text-tandym-coral/40 dark:text-gray-600 mx-auto mb-4" />
+                          <h3 className="text-lg font-medium font-poppins text-tandym-text-dark dark:text-white mb-2">
                             No Payment Methods
                           </h3>
-                          <p className="text-gray-600 dark:text-gray-400 mb-4">
+                          <p className="text-tandym-text-muted dark:text-gray-400 mb-4">
                             Add a payment method to subscribe to creators
                           </p>
-                          <Button className="bg-purple-600 hover:bg-purple-700 text-white">
+                          <Button className="bg-tandym-coral hover:bg-tandym-coral/90 text-white">
                             <Plus className="h-4 w-4 mr-2" />
                             Add Payment Method
                           </Button>
@@ -1110,8 +1110,8 @@ export default function FanDashboard({ userId }: FanDashboardProps) {
                   {/* Account Security Section */}
                   <Card className="border-0 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm">
                     <CardHeader>
-                      <CardTitle className="flex items-center">
-                        <Lock className="h-5 w-5 mr-2 text-red-600" />
+                      <CardTitle className="flex items-center font-poppins">
+                        <Lock className="h-5 w-5 mr-2 text-tandym-coral" />
                         Account Security
                       </CardTitle>
                       <CardDescription>
