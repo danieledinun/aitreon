@@ -25,7 +25,8 @@ export class SuggestedQuestionsGenerator {
       })
 
       if (!creator) {
-        console.log('❌ Creator not found')
+        console.error(`❌ Creator not found: ${creatorId}`)
+        console.error('Cannot generate questions for non-existent creator')
         return this.getFallbackQuestions()
       }
 
@@ -40,7 +41,9 @@ export class SuggestedQuestionsGenerator {
       })
 
       if (videos.length === 0) {
-        console.log('⚠️ No processed videos found, using creator-specific fallback questions')
+        console.warn('⚠️  PRODUCTION ISSUE: No processed videos found for creator:', creatorId)
+        console.warn('Creator needs to sync their YouTube content before AI questions can be generated')
+        console.warn('Using creator-specific fallback questions (better than generic, but not ideal)')
         return this.getCreatorSpecificFallback(creator)
       }
 
@@ -67,6 +70,11 @@ export class SuggestedQuestionsGenerator {
 
     } catch (error) {
       console.error('❌ Error generating suggested questions:', error)
+      console.error('Stack trace:', error instanceof Error ? error.stack : 'No stack trace')
+      console.error(`Creator ID: ${creatorId}`)
+
+      // Log the error to monitoring/alerting system if available
+      // This indicates a critical failure in question generation
       return this.getFallbackQuestions()
     }
   }
@@ -393,39 +401,15 @@ Make each question feel like it came from someone who watches their content regu
   }
 
   // Fallback questions when AI generation fails
+  // IMPORTANT: We return an empty array instead of generic questions
+  // Generic questions are NOT production-ready and don't relate to creator content
   private static getFallbackQuestions(): SuggestedQuestion[] {
-    return [
-      {
-        question: "What's your framework for making important decisions?",
-        category: "decision_making",
-        confidence: 0.7,
-        basedOn: ["general"]
-      },
-      {
-        question: "How do you prioritize when everything seems important?",
-        category: "prioritization",
-        confidence: 0.7,
-        basedOn: ["general"]
-      },
-      {
-        question: "What's your process for learning new skills quickly?",
-        category: "learning",
-        confidence: 0.7,
-        basedOn: ["general"]
-      },
-      {
-        question: "How do you handle setbacks and failures?",
-        category: "resilience",
-        confidence: 0.7,
-        basedOn: ["general"]
-      },
-      {
-        question: "What metrics do you track to measure progress?",
-        category: "metrics",
-        confidence: 0.7,
-        basedOn: ["general"]
-      }
-    ]
+    console.warn('⚠️  CRITICAL: getFallbackQuestions() called - AI generation failed!')
+    console.warn('⚠️  This means suggested questions could not be generated from creator content')
+    console.warn('⚠️  Returning empty array - creator should manually set questions or fix AI generation')
+
+    // Return empty array - no questions is better than irrelevant generic questions
+    return []
   }
 
   // Regenerate questions (useful for admin or periodic updates)
