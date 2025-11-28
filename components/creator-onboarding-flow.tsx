@@ -335,33 +335,33 @@ export default function CreatorOnboardingFlow({ userId }: OnboardingFlowProps) {
   })
 
   const steps = [
-    { 
-      number: 1, 
-      title: 'Connect Channel', 
+    {
+      number: 1,
+      title: 'Connect Channel',
       description: 'Link your YouTube channel',
       icon: Youtube,
-      color: 'from-red-500 to-red-600'
+      color: 'from-tandym-coral to-red-600'
     },
-    { 
-      number: 2, 
-      title: 'Select Content', 
+    {
+      number: 2,
+      title: 'Select Content',
       description: 'Choose videos for training',
       icon: Play,
-      color: 'from-blue-500 to-blue-600'
+      color: 'from-tandym-cobalt to-tandym-lilac'
     },
-    { 
-      number: 3, 
-      title: 'AI Personality', 
-      description: 'Define your AI character',
+    {
+      number: 3,
+      title: 'AI Twin Personality',
+      description: 'Define your AI twin character',
       icon: Bot,
-      color: 'from-purple-500 to-purple-600'
+      color: 'from-tandym-lilac to-tandym-coral'
     },
-    { 
-      number: 4, 
-      title: 'Launch Ready', 
+    {
+      number: 4,
+      title: 'Launch Ready',
       description: 'Add starter questions',
       icon: MessageCircle,
-      color: 'from-green-500 to-green-600'
+      color: 'from-tandym-cobalt to-tandym-coral'
     }
   ]
 
@@ -607,7 +607,7 @@ export default function CreatorOnboardingFlow({ userId }: OnboardingFlowProps) {
   const currentStepData = steps[currentStep - 1]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative">
+    <div className="min-h-screen bg-gradient-to-br from-tandym-midnight via-slate-800 to-tandym-midnight relative">
       {/* Background Effects */}
       <div className="fixed inset-0 opacity-20 -z-10">
         <div className="w-full h-full bg-repeat bg-center" style={{
@@ -615,22 +615,22 @@ export default function CreatorOnboardingFlow({ userId }: OnboardingFlowProps) {
           backgroundSize: '40px 40px'
         }}></div>
       </div>
-      <div className="fixed top-20 -left-40 w-80 h-80 bg-blue-500/5 rounded-full blur-3xl -z-10"></div>
-      <div className="fixed bottom-20 -right-40 w-80 h-80 bg-purple-500/5 rounded-full blur-3xl -z-10"></div>
+      <div className="fixed top-20 -left-40 w-80 h-80 bg-tandym-cobalt/5 rounded-full blur-3xl -z-10"></div>
+      <div className="fixed bottom-20 -right-40 w-80 h-80 bg-tandym-lilac/5 rounded-full blur-3xl -z-10"></div>
 
       <div className="relative z-10 min-h-screen flex flex-col pb-8">
         {/* Header */}
         <div className="pt-8 pb-4 px-8">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-8">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-r from-blue-500 to-purple-600 mb-6 shadow-lg">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-r from-tandym-cobalt to-tandym-lilac mb-6 shadow-lg">
                 <Sparkles className="w-8 h-8 text-white" />
               </div>
-              <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-                Welcome to <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">Aitrion</span>
+              <h1 className="text-4xl md:text-5xl font-bold font-poppins text-white mb-4">
+                Welcome to <span className="bg-gradient-to-r from-tandym-cobalt via-tandym-lilac to-tandym-coral bg-clip-text text-transparent">Tandym.ai</span>
               </h1>
               <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-                Create your AI replica in minutes and start earning from day one
+                Create your AI twin in minutes — in Tandym with you
               </p>
             </div>
             
@@ -682,8 +682,8 @@ export default function CreatorOnboardingFlow({ userId }: OnboardingFlowProps) {
               
               {/* Progress Bar */}
               <div className="w-full bg-gray-700/50 rounded-full h-2 mb-2">
-                <div 
-                  className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-500 ease-out"
+                <div
+                  className="bg-gradient-to-r from-tandym-cobalt to-tandym-lilac h-2 rounded-full transition-all duration-500 ease-out"
                   style={{ width: `${progress}%` }}
                 />
               </div>
@@ -762,7 +762,7 @@ export default function CreatorOnboardingFlow({ userId }: OnboardingFlowProps) {
                           </p>
                         )}
                         <p className="text-sm text-gray-400">
-                          Your unique URL: <span className="text-blue-400">aitrion.com/{basicInfo.username || 'your_username'}</span>
+                          Your unique URL: <span className="text-tandym-cobalt">tandym.ai/{basicInfo.username || 'your_username'}</span>
                         </p>
                       </div>
                       
@@ -840,27 +840,27 @@ export default function CreatorOnboardingFlow({ userId }: OnboardingFlowProps) {
                       )}
                     </div>
 
-                    <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-400/20 rounded-2xl p-6">
-                      <h3 className="font-semibold text-blue-300 mb-3 flex items-center gap-2 text-lg">
+                    <div className="bg-gradient-to-r from-tandym-cobalt/10 to-tandym-lilac/10 border border-tandym-cobalt/20 rounded-2xl p-6">
+                      <h3 className="font-semibold font-poppins text-tandym-cobalt mb-3 flex items-center gap-2 text-lg">
                         <Target className="w-5 h-5" />
                         What's next?
                       </h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-blue-200">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-tandym-lilac">
                         <div className="flex items-center gap-2">
-                          <Check className="w-4 h-4 text-green-400" />
+                          <Check className="w-4 h-4 text-tandym-cobalt" />
                           <span>Analyze your channel content</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Check className="w-4 h-4 text-green-400" />
+                          <Check className="w-4 h-4 text-tandym-cobalt" />
                           <span>Select training videos</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Check className="w-4 h-4 text-green-400" />
-                          <span>Configure AI personality</span>
+                          <Check className="w-4 h-4 text-tandym-cobalt" />
+                          <span>Configure AI twin personality</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Check className="w-4 h-4 text-green-400" />
-                          <span>Launch your AI replica</span>
+                          <Check className="w-4 h-4 text-tandym-cobalt" />
+                          <span>Launch your AI twin</span>
                         </div>
                       </div>
                     </div>
@@ -898,7 +898,7 @@ export default function CreatorOnboardingFlow({ userId }: OnboardingFlowProps) {
                         >
                           {videos.every(v => v.selected) ? 'Deselect All' : 'Select All'}
                         </Button>
-                        <Badge className="bg-blue-500/20 text-blue-300 border-blue-400/20 px-4 py-2 text-lg rounded-xl">
+                        <Badge className="bg-tandym-cobalt/20 text-tandym-cobalt border-tandym-cobalt/20 px-4 py-2 text-lg rounded-xl">
                           {videos.filter(v => v.selected).length} selected
                         </Badge>
                       </div>
@@ -910,17 +910,17 @@ export default function CreatorOnboardingFlow({ userId }: OnboardingFlowProps) {
                           key={video.id}
                           className={`
                             border rounded-2xl p-4 cursor-pointer transition-all duration-200 hover:scale-105
-                            ${video.selected 
-                              ? 'border-blue-400 bg-blue-500/10 shadow-lg shadow-blue-500/25' 
+                            ${video.selected
+                              ? 'border-tandym-cobalt bg-tandym-cobalt/10 shadow-lg shadow-tandym-cobalt/25'
                               : 'border-white/20 bg-white/5 hover:border-white/30'
                             }
                           `}
                           onClick={() => toggleVideoSelection(video.id)}
                         >
                           <div className="flex items-start gap-4">
-                            <Checkbox 
+                            <Checkbox
                               checked={video.selected}
-                              className="mt-1 border-white/30 data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500"
+                              className="mt-1 border-white/30 data-[state=checked]:bg-tandym-cobalt data-[state=checked]:border-tandym-cobalt"
                               onChange={() => toggleVideoSelection(video.id)}
                             />
                             <img 
@@ -943,11 +943,11 @@ export default function CreatorOnboardingFlow({ userId }: OnboardingFlowProps) {
                     </div>
 
                     {videos.filter(v => v.selected).length > 0 && (
-                      <div className="bg-green-500/10 border border-green-400/20 rounded-2xl p-6">
+                      <div className="bg-tandym-cobalt/10 border border-tandym-cobalt/20 rounded-2xl p-6">
                         <div className="flex items-center gap-3">
-                          <CheckCircle2 className="w-6 h-6 text-green-400" />
-                          <p className="text-green-200 text-lg">
-                            <span className="font-semibold">{videos.filter(v => v.selected).length} videos</span> selected for AI training
+                          <CheckCircle2 className="w-6 h-6 text-tandym-cobalt" />
+                          <p className="text-tandym-lilac text-lg">
+                            <span className="font-semibold">{videos.filter(v => v.selected).length} videos</span> selected for AI twin training
                           </p>
                         </div>
                       </div>
@@ -1121,26 +1121,26 @@ export default function CreatorOnboardingFlow({ userId }: OnboardingFlowProps) {
                     </div>
 
                     {/* Info Card */}
-                    <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-400/20 rounded-2xl p-6">
-                      <h3 className="font-semibold text-purple-300 mb-4 flex items-center gap-2 text-lg">
+                    <div className="bg-gradient-to-r from-tandym-lilac/10 to-tandym-coral/10 border border-tandym-lilac/20 rounded-2xl p-6">
+                      <h3 className="font-semibold font-poppins text-tandym-lilac mb-4 flex items-center gap-2 text-lg">
                         <Zap className="w-5 h-5" />
-                        Quick AI Setup
+                        Quick AI Twin Setup
                       </h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-purple-200">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-tandym-lilac">
                         <div className="flex items-start gap-2">
-                          <Check className="w-4 h-4 text-green-400 mt-0.5" />
+                          <Check className="w-4 h-4 text-tandym-cobalt mt-0.5" />
                           <span>Essential personality configuration</span>
                         </div>
                         <div className="flex items-start gap-2">
-                          <Check className="w-4 h-4 text-green-400 mt-0.5" />
+                          <Check className="w-4 h-4 text-tandym-cobalt mt-0.5" />
                           <span>Production-ready AI setup</span>
                         </div>
                         <div className="flex items-start gap-2">
-                          <Check className="w-4 h-4 text-green-400 mt-0.5" />
+                          <Check className="w-4 h-4 text-tandym-cobalt mt-0.5" />
                           <span>Can be refined later in AI settings</span>
                         </div>
                         <div className="flex items-start gap-2">
-                          <Check className="w-4 h-4 text-green-400 mt-0.5" />
+                          <Check className="w-4 h-4 text-tandym-cobalt mt-0.5" />
                           <span>Ready to launch in minutes</span>
                         </div>
                       </div>
@@ -1181,32 +1181,32 @@ export default function CreatorOnboardingFlow({ userId }: OnboardingFlowProps) {
                       ))}
                     </div>
 
-                    <div className="bg-gradient-to-r from-green-500/10 to-blue-500/10 border border-green-400/20 rounded-2xl p-8">
+                    <div className="bg-gradient-to-r from-tandym-cobalt/10 to-tandym-lilac/10 border border-tandym-cobalt/20 rounded-2xl p-8">
                       <div className="text-center mb-6">
-                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-r from-green-500 to-blue-600 mb-4 shadow-lg">
+                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-r from-tandym-cobalt to-tandym-lilac mb-4 shadow-lg">
                           <Zap className="w-8 h-8 text-white" />
                         </div>
-                        <h3 className="font-bold text-green-300 mb-2 text-2xl">
+                        <h3 className="font-bold font-poppins text-tandym-cobalt mb-2 text-2xl">
                           Ready to Launch!
                         </h3>
-                        <p className="text-green-200 text-lg mb-6">
-                          Your AI replica will be live and ready to interact with fans in seconds.
+                        <p className="text-tandym-lilac text-lg mb-6">
+                          Your AI twin will be live and ready to engage with fans — in Tandym with you.
                         </p>
                       </div>
-                      
+
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div className="text-center p-4 bg-white/5 rounded-xl">
-                          <Users className="w-8 h-8 text-blue-400 mx-auto mb-2" />
+                          <Users className="w-8 h-8 text-tandym-cobalt mx-auto mb-2" />
                           <div className="font-medium text-white">Profile Ready</div>
                           <div className="text-sm text-gray-400">All set up</div>
                         </div>
                         <div className="text-center p-4 bg-white/5 rounded-xl">
-                          <Play className="w-8 h-8 text-green-400 mx-auto mb-2" />
+                          <Play className="w-8 h-8 text-tandym-lilac mx-auto mb-2" />
                           <div className="font-medium text-white">{videos.filter(v => v.selected).length} Videos</div>
                           <div className="text-sm text-gray-400">Ready for training</div>
                         </div>
                         <div className="text-center p-4 bg-white/5 rounded-xl">
-                          <Bot className="w-8 h-8 text-purple-400 mx-auto mb-2" />
+                          <Bot className="w-8 h-8 text-tandym-coral mx-auto mb-2" />
                           <div className="font-medium text-white">AI Configured</div>
                           <div className="text-sm text-gray-400">Personality defined</div>
                         </div>
@@ -1293,7 +1293,7 @@ export default function CreatorOnboardingFlow({ userId }: OnboardingFlowProps) {
                     handleFinalSubmit()
                   }}
                   disabled={false}
-                  className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white rounded-xl px-8 h-14 text-xl font-bold shadow-lg shadow-green-500/25"
+                  className="bg-gradient-to-r from-tandym-cobalt to-tandym-lilac hover:from-tandym-cobalt/90 hover:to-tandym-lilac/90 text-white rounded-xl px-8 h-14 text-xl font-bold shadow-lg shadow-tandym-cobalt/25"
                 >
                   {loading || processingVideos ? (
                     <>
@@ -1302,7 +1302,7 @@ export default function CreatorOnboardingFlow({ userId }: OnboardingFlowProps) {
                     </>
                   ) : (
                     <>
-                      🚀 Launch My AI Replica
+                      🚀 Launch My AI Twin
                       <ExternalLink className="w-6 h-6 ml-3" />
                     </>
                   )}
