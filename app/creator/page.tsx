@@ -417,27 +417,27 @@ export default async function CreatorDashboard() {
           {/* Creator Header */}
           <div className="flex items-start justify-between gap-6">
             <div className="flex items-center space-x-4 flex-1 min-w-0">
-              <Avatar className="h-12 w-12 border-2 border-gray-300 dark:border-neutral-700 shrink-0">
+              <Avatar className="h-12 w-12 border-2 border-tandym-cobalt/30 shrink-0">
                 <AvatarImage src={effectiveCreator?.profile_image || undefined} />
-                <AvatarFallback className="bg-gradient-to-br from-purple-600 to-blue-600 text-white font-bold">
+                <AvatarFallback className="bg-gradient-to-br from-tandym-cobalt to-tandym-lilac text-white font-bold font-poppins">
                   {effectiveCreator?.display_name?.split(' ').map((n: string) => n[0]).join('').toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <div className="min-w-0 flex-1">
-                <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white truncate">
+                <h1 className="text-2xl lg:text-3xl font-bold font-poppins text-tandym-text-dark dark:text-white truncate">
                   Welcome back, {effectiveCreator?.display_name}
                 </h1>
-                <p className="text-gray-600 dark:text-neutral-400 text-base lg:text-lg">
-                  Here's what's happening with your AI replica
+                <p className="text-tandym-text-muted dark:text-neutral-400 text-base lg:text-lg">
+                  Here's what's happening with your AI twin
                 </p>
               </div>
             </div>
-            
+
             <div className="flex items-center shrink-0">
               <Link href={`/${effectiveCreator?.username}`} target="_blank">
-                <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 whitespace-nowrap flex items-center">
+                <Button className="bg-tandym-cobalt hover:bg-tandym-cobalt/90 text-white rounded-full shadow-lg shadow-tandym-cobalt/30 whitespace-nowrap flex items-center transition-all duration-300 hover:scale-105">
                   <ExternalLink className="w-4 h-4 mr-2" />
-                  Check Your Page
+                  View Your Twin Page
                 </Button>
               </Link>
             </div>
@@ -448,23 +448,23 @@ export default async function CreatorDashboard() {
           {/* Fan Header */}
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <Avatar className="h-12 w-12 border-2 border-gray-300 dark:border-neutral-700">
+              <Avatar className="h-12 w-12 border-2 border-tandym-cobalt/30">
                 <AvatarImage src={session.user.image || undefined} />
-                <AvatarFallback className="bg-gradient-to-br from-blue-600 to-purple-600 text-white font-bold">
+                <AvatarFallback className="bg-gradient-to-br from-tandym-cobalt to-tandym-lilac text-white font-bold font-poppins">
                   {(session.user.name || 'U').split(' ').map((n: string) => n[0]).join('').toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Welcome back, {session.user.name?.split(' ')[0] || 'Fan'}!</h1>
-                <p className="text-gray-500 dark:text-neutral-400 text-lg">Discover and chat with AI creators</p>
+                <h1 className="text-3xl font-bold font-poppins text-tandym-text-dark dark:text-white">Welcome back, {session.user.name?.split(' ')[0] || 'Fan'}!</h1>
+                <p className="text-tandym-text-muted dark:text-neutral-400 text-lg">Discover and chat with AI twins — in Tandym</p>
               </div>
             </div>
-            
+
             <div className="flex items-center space-x-3">
               <Link href="/creator/setup">
-                <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 flex items-center">
+                <Button className="bg-gradient-to-r from-tandym-lilac to-tandym-coral hover:opacity-90 text-white rounded-full shadow-lg shadow-tandym-lilac/30 flex items-center transition-all duration-300 hover:scale-105">
                   <Plus className="w-4 h-4 mr-2" />
-                  Become Creator
+                  Create Your Twin
                 </Button>
               </Link>
             </div>
@@ -475,53 +475,61 @@ export default async function CreatorDashboard() {
       {/* Metrics Cards */}
       {effectiveCreator ? (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          <Card className="bg-white/50 dark:bg-neutral-900/50 border-gray-300 dark:border-neutral-700 hover:bg-gray-50/70 dark:hover:bg-neutral-900/70 transition-colors">
+          <Card className="bg-white rounded-2xl border border-gray-100 hover:shadow-lg hover:border-tandym-coral/30 transition-all duration-300 group">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600 dark:text-neutral-300">Subscribers</CardTitle>
-              <DollarSign className="h-4 w-4 text-green-400" />
+              <CardTitle className="text-sm font-medium text-tandym-text-muted font-poppins">Subscribers</CardTitle>
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-tandym-coral to-tandym-lilac/60 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <DollarSign className="h-5 w-5 text-white" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-gray-900 dark:text-white">{subscriberCount}</div>
-              <p className="text-xs text-gray-500 dark:text-neutral-400">
+              <div className="text-2xl font-bold font-poppins text-tandym-text-dark dark:text-white">{subscriberCount}</div>
+              <p className="text-xs text-tandym-text-muted">
                 Paid subscribers generating revenue
               </p>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/50 dark:bg-neutral-900/50 border-gray-300 dark:border-neutral-700 hover:bg-gray-50/70 dark:hover:bg-neutral-900/70 transition-colors">
+          <Card className="bg-white rounded-2xl border border-gray-100 hover:shadow-lg hover:border-tandym-cobalt/30 transition-all duration-300 group">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600 dark:text-neutral-300">Followers</CardTitle>
-              <Users className="h-4 w-4 text-blue-400" />
+              <CardTitle className="text-sm font-medium text-tandym-text-muted font-poppins">Followers</CardTitle>
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-tandym-cobalt to-tandym-lilac flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Users className="h-5 w-5 text-white" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-gray-900 dark:text-white">{followerCount}</div>
-              <p className="text-xs text-gray-500 dark:text-neutral-400">
-                Free followers interested in your content
-              </p>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-white/50 dark:bg-neutral-900/50 border-gray-300 dark:border-neutral-700 hover:bg-gray-50/70 dark:hover:bg-neutral-900/70 transition-colors">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600 dark:text-neutral-300">Videos Processed</CardTitle>
-              <Play className="h-4 w-4 text-green-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-gray-900 dark:text-white">{effectiveCreator?._count?.videos || 0}</div>
-              <p className="text-xs text-gray-500 dark:text-neutral-400">
-                Training your AI personality
+              <div className="text-2xl font-bold font-poppins text-tandym-text-dark dark:text-white">{followerCount}</div>
+              <p className="text-xs text-tandym-text-muted">
+                Free followers interested in your AI twin
               </p>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/50 dark:bg-neutral-900/50 border-gray-300 dark:border-neutral-700 hover:bg-gray-50/70 dark:hover:bg-neutral-900/70 transition-colors">
+          <Card className="bg-white rounded-2xl border border-gray-100 hover:shadow-lg hover:border-tandym-lilac/30 transition-all duration-300 group">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600 dark:text-neutral-300">Chat Sessions</CardTitle>
-              <MessageCircle className="h-4 w-4 text-purple-400" />
+              <CardTitle className="text-sm font-medium text-tandym-text-muted font-poppins">Videos Processed</CardTitle>
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-tandym-lilac to-tandym-coral flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Play className="h-5 w-5 text-white" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-gray-900 dark:text-white">{totalChatSessionsCount}</div>
-              <p className="text-xs text-gray-500 dark:text-neutral-400">
+              <div className="text-2xl font-bold font-poppins text-tandym-text-dark dark:text-white">{effectiveCreator?._count?.videos || 0}</div>
+              <p className="text-xs text-tandym-text-muted">
+                Training your AI twin's knowledge
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white rounded-2xl border border-gray-100 hover:shadow-lg hover:border-tandym-cobalt/30 transition-all duration-300 group">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-tandym-text-muted font-poppins">Chat Sessions</CardTitle>
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-tandym-cobalt to-tandym-coral flex items-center justify-center group-hover:scale-110 transition-transform">
+                <MessageCircle className="h-5 w-5 text-white" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold font-poppins text-tandym-text-dark dark:text-white">{totalChatSessionsCount}</div>
+              <p className="text-xs text-tandym-text-muted">
                 {totalMessages} total messages exchanged
               </p>
             </CardContent>
@@ -529,40 +537,46 @@ export default async function CreatorDashboard() {
         </div>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <Card className="bg-white/50 dark:bg-neutral-900/50 border-gray-300 dark:border-neutral-700 hover:bg-gray-50/70 dark:hover:bg-neutral-900/70 transition-colors">
+          <Card className="bg-white rounded-2xl border border-gray-100 hover:shadow-lg hover:border-tandym-coral/30 transition-all duration-300 group">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600 dark:text-neutral-300">Your Subscriptions</CardTitle>
-              <Users className="h-4 w-4 text-green-400" />
+              <CardTitle className="text-sm font-medium text-tandym-text-muted font-poppins">Your Subscriptions</CardTitle>
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-tandym-coral to-tandym-lilac flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Users className="h-5 w-5 text-white" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-gray-900 dark:text-white">{userSubscriptions?.length || 0}</div>
-              <p className="text-xs text-gray-500 dark:text-neutral-400">
-                Active creator subscriptions
+              <div className="text-2xl font-bold font-poppins text-tandym-text-dark dark:text-white">{userSubscriptions?.length || 0}</div>
+              <p className="text-xs text-tandym-text-muted">
+                Active AI twin subscriptions
               </p>
             </CardContent>
           </Card>
-          
-          <Card className="bg-white/50 dark:bg-neutral-900/50 border-gray-300 dark:border-neutral-700 hover:bg-gray-50/70 dark:hover:bg-neutral-900/70 transition-colors">
+
+          <Card className="bg-white rounded-2xl border border-gray-100 hover:shadow-lg hover:border-tandym-cobalt/30 transition-all duration-300 group">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600 dark:text-neutral-300">Available Creators</CardTitle>
-              <Bot className="h-4 w-4 text-blue-400" />
+              <CardTitle className="text-sm font-medium text-tandym-text-muted font-poppins">Available Creators</CardTitle>
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-tandym-cobalt to-tandym-lilac flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Bot className="h-5 w-5 text-white" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-gray-900 dark:text-white">{availableCreators.length}</div>
-              <p className="text-xs text-gray-500 dark:text-neutral-400">
-                Ready to chat with AI replicas
+              <div className="text-2xl font-bold font-poppins text-tandym-text-dark dark:text-white">{availableCreators.length}</div>
+              <p className="text-xs text-tandym-text-muted">
+                Ready to chat with AI twins
               </p>
             </CardContent>
           </Card>
-          
-          <Card className="bg-white/50 dark:bg-neutral-900/50 border-gray-300 dark:border-neutral-700 hover:bg-gray-50/70 dark:hover:bg-neutral-900/70 transition-colors">
+
+          <Card className="bg-white rounded-2xl border border-gray-100 hover:shadow-lg hover:border-tandym-lilac/30 transition-all duration-300 group">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600 dark:text-neutral-300">Ready to Chat</CardTitle>
-              <MessageCircle className="h-4 w-4 text-purple-400" />
+              <CardTitle className="text-sm font-medium text-tandym-text-muted font-poppins">Ready to Chat</CardTitle>
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-tandym-lilac to-tandym-coral flex items-center justify-center group-hover:scale-110 transition-transform">
+                <MessageCircle className="h-5 w-5 text-white" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-gray-900 dark:text-white">∞</div>
-              <p className="text-xs text-gray-500 dark:text-neutral-400">
+              <div className="text-2xl font-bold font-poppins text-tandym-text-dark dark:text-white">∞</div>
+              <p className="text-xs text-tandym-text-muted">
                 AI conversations available
               </p>
             </CardContent>
@@ -576,13 +590,15 @@ export default async function CreatorDashboard() {
           {/* Real-time Analytics Section */}
           <div className="grid gap-6 lg:grid-cols-3">
             {/* Performance Metrics */}
-            <Card className="lg:col-span-2 bg-white/50 dark:bg-neutral-900/50 border-gray-300 dark:border-neutral-700">
+            <Card className="lg:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm">
               <CardHeader>
-                <CardTitle className="text-gray-900 dark:text-white flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-green-400" />
+                <CardTitle className="text-tandym-text-dark dark:text-white flex items-center gap-2 font-poppins">
+                  <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-tandym-cobalt to-tandym-lilac flex items-center justify-center">
+                    <TrendingUp className="w-4 h-4 text-white" />
+                  </div>
                   Performance Analytics
                 </CardTitle>
-                <CardDescription className="text-gray-500 dark:text-neutral-400">
+                <CardDescription className="text-tandym-text-muted">
                   Real-time engagement and interaction metrics
                 </CardDescription>
               </CardHeader>
@@ -590,35 +606,35 @@ export default async function CreatorDashboard() {
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-600 dark:text-neutral-300">Engagement Rate</span>
-                      <span className="text-gray-900 dark:text-white font-medium">{engagementData.rate}%</span>
+                      <span className="text-tandym-text-muted font-medium">Engagement Rate</span>
+                      <span className="text-tandym-text-dark dark:text-white font-bold font-poppins">{engagementData.rate}%</span>
                     </div>
-                    <Progress value={engagementData.rate} className="bg-gray-200 dark:bg-neutral-800" />
-                    <p className="text-xs text-gray-500 dark:text-neutral-400">Active conversations vs total sessions</p>
+                    <Progress value={engagementData.rate} className="bg-gray-100 [&>div]:bg-gradient-to-r [&>div]:from-tandym-cobalt [&>div]:to-tandym-lilac" />
+                    <p className="text-xs text-tandym-text-muted">Active conversations vs total sessions</p>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-600 dark:text-neutral-300">User Satisfaction</span>
-                      <span className="text-gray-900 dark:text-white font-medium">{engagementData.userSatisfaction}%</span>
+                      <span className="text-tandym-text-muted font-medium">User Satisfaction</span>
+                      <span className="text-tandym-text-dark dark:text-white font-bold font-poppins">{engagementData.userSatisfaction}%</span>
                     </div>
-                    <Progress value={engagementData.userSatisfaction} className="bg-gray-200 dark:bg-neutral-800" />
-                    <p className="text-xs text-gray-500 dark:text-neutral-400">Based on session completion rates</p>
+                    <Progress value={engagementData.userSatisfaction} className="bg-gray-100 [&>div]:bg-gradient-to-r [&>div]:from-tandym-lilac [&>div]:to-tandym-coral" />
+                    <p className="text-xs text-tandym-text-muted">Based on session completion rates</p>
                   </div>
                 </div>
-                
+
                 <div className="grid gap-4 md:grid-cols-3">
-                  <div className="text-center p-4 rounded-lg bg-gray-50/50 dark:bg-neutral-800/50 border border-gray-200 dark:border-neutral-700">
-                    <div className="text-2xl font-bold text-green-400">{totalChatSessionsCount}</div>
-                    <div className="text-sm text-gray-600 dark:text-neutral-400">Total Sessions</div>
+                  <div className="text-center p-4 rounded-xl bg-gradient-to-br from-tandym-cobalt/10 to-tandym-lilac/10 border border-tandym-cobalt/20">
+                    <div className="text-2xl font-bold font-poppins bg-gradient-to-r from-tandym-cobalt to-tandym-lilac bg-clip-text text-transparent">{totalChatSessionsCount}</div>
+                    <div className="text-sm text-tandym-text-muted">Total Sessions</div>
                   </div>
-                  <div className="text-center p-4 rounded-lg bg-gray-50/50 dark:bg-neutral-800/50 border border-gray-200 dark:border-neutral-700">
-                    <div className="text-2xl font-bold text-blue-400">{totalMessages}</div>
-                    <div className="text-sm text-gray-600 dark:text-neutral-400">Messages</div>
+                  <div className="text-center p-4 rounded-xl bg-gradient-to-br from-tandym-lilac/10 to-tandym-coral/10 border border-tandym-lilac/20">
+                    <div className="text-2xl font-bold font-poppins bg-gradient-to-r from-tandym-lilac to-tandym-coral bg-clip-text text-transparent">{totalMessages}</div>
+                    <div className="text-sm text-tandym-text-muted">Messages</div>
                   </div>
-                  <div className="text-center p-4 rounded-lg bg-gray-50/50 dark:bg-neutral-800/50 border border-gray-200 dark:border-neutral-700">
-                    <div className="text-2xl font-bold text-purple-400">{totalChatSessionsCount > 0 ? Math.round(totalMessages / totalChatSessionsCount) : 0}</div>
-                    <div className="text-sm text-gray-600 dark:text-neutral-400">Avg Per Session</div>
+                  <div className="text-center p-4 rounded-xl bg-gradient-to-br from-tandym-coral/10 to-tandym-cobalt/10 border border-tandym-coral/20">
+                    <div className="text-2xl font-bold font-poppins bg-gradient-to-r from-tandym-coral to-tandym-cobalt bg-clip-text text-transparent">{totalChatSessionsCount > 0 ? Math.round(totalMessages / totalChatSessionsCount) : 0}</div>
+                    <div className="text-sm text-tandym-text-muted">Avg Per Session</div>
                   </div>
                 </div>
 
@@ -698,29 +714,31 @@ export default async function CreatorDashboard() {
             </Card>
 
             {/* Followers Management */}
-            <Card className="bg-white/50 dark:bg-neutral-900/50 border-gray-300 dark:border-neutral-700">
+            <Card className="bg-white rounded-2xl border border-gray-100 shadow-sm">
               <CardHeader>
-                <CardTitle className="text-gray-900 dark:text-white flex items-center gap-2">
-                  <Users className="w-5 h-5 text-blue-400" />
+                <CardTitle className="text-tandym-text-dark dark:text-white flex items-center gap-2 font-poppins">
+                  <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-tandym-cobalt to-tandym-lilac flex items-center justify-center">
+                    <Users className="w-4 h-4 text-white" />
+                  </div>
                   Your Followers
                 </CardTitle>
-                <CardDescription className="text-gray-500 dark:text-neutral-400">
-                  Fans following your AI replica
+                <CardDescription className="text-tandym-text-muted">
+                  Fans following your AI twin
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center justify-between p-3 rounded-lg bg-blue-50/50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+                <div className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-br from-tandym-cobalt/10 to-tandym-lilac/10 border border-tandym-cobalt/20">
                   <div className="flex items-center space-x-3">
-                    <div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900">
-                      <Users className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-tandym-cobalt to-tandym-lilac">
+                      <Users className="w-6 h-6 text-white" />
                     </div>
                     <div>
-                      <div className="text-lg font-bold text-blue-700 dark:text-blue-300">{followerCount}</div>
-                      <div className="text-sm text-blue-600 dark:text-blue-400">Total Followers</div>
+                      <div className="text-lg font-bold font-poppins bg-gradient-to-r from-tandym-cobalt to-tandym-lilac bg-clip-text text-transparent">{followerCount}</div>
+                      <div className="text-sm text-tandym-text-muted">Total Followers</div>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-xs text-blue-600 dark:text-blue-400">
+                    <div className="text-xs text-tandym-cobalt font-medium">
                       {followers.filter(f => {
                         const followDate = new Date(f.created_at)
                         const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
@@ -916,30 +934,35 @@ export default async function CreatorDashboard() {
           </Card>
 
           {/* Become a Creator CTA */}
-          <Card className="bg-gradient-to-r from-purple-900/20 to-blue-900/20 border-purple-700/50">
-            <CardHeader>
-              <CardTitle className="text-white dark:text-white flex items-center gap-2">
-                <Plus className="w-5 h-5 text-purple-400" />
-                Ready to Create?
+          <Card className="bg-gradient-to-r from-tandym-midnight via-tandym-cobalt/20 to-tandym-midnight border border-tandym-cobalt/30 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-tandym-cobalt/10 via-transparent to-tandym-lilac/10"></div>
+            <CardHeader className="relative">
+              <CardTitle className="text-white flex items-center gap-2 font-poppins">
+                <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-tandym-lilac to-tandym-coral flex items-center justify-center">
+                  <Plus className="w-5 h-5 text-white" />
+                </div>
+                Ready to Create Your AI Twin?
               </CardTitle>
-              <CardDescription className="text-purple-100 dark:text-purple-200">
-                Transform into a creator and build your own AI replica
+              <CardDescription className="text-gray-300">
+                Transform into a creator and build your own AI twin — in Tandym
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="relative">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
-                  <p className="text-sm text-purple-50 dark:text-purple-100 mb-2">
-                    Share your knowledge and personality with the world through AI
+                  <p className="text-sm text-gray-200 mb-2">
+                    Share your knowledge and personality with the world through your AI twin
                   </p>
-                  <div className="text-xs text-purple-200 dark:text-purple-300">
-                    • Connect your YouTube channel • Build your AI personality • Start earning
+                  <div className="text-xs text-gray-300 space-y-1">
+                    <div>• Connect your YouTube channel</div>
+                    <div>• Train your AI twin's personality</div>
+                    <div>• Engage fans 24/7</div>
                   </div>
                 </div>
                 <Link href="/creator/setup">
-                  <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 shrink-0 flex items-center">
+                  <Button className="bg-gradient-to-r from-tandym-lilac to-tandym-coral hover:opacity-90 text-white rounded-full shadow-lg shadow-tandym-lilac/40 shrink-0 flex items-center transition-all duration-300 hover:scale-105">
                     <Plus className="h-4 w-4 mr-2" />
-                    Become Creator
+                    Create Your Twin
                   </Button>
                 </Link>
               </div>
