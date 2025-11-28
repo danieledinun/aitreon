@@ -1091,7 +1091,7 @@ export default function CreatorInteraction({
       })
       .join('\n\n')
 
-    return `🤖 Chat with ${creator.display_name} on AITreon\n\n${conversationText}\n\n---\nPowered by ⚡ AITreon\nContinue the conversation: ${window.location.href}`
+    return `🤖 Chat with ${creator.display_name} on Tandym.ai\n\n${conversationText}\n\n---\nPowered by ⚡ Tandym.ai\nContinue the conversation: ${window.location.href}`
   }
 
   // Handle share conversation
@@ -1131,7 +1131,7 @@ export default function CreatorInteraction({
               className="rounded-full object-cover"
             />
           ) : (
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+            <div className="w-10 h-10 bg-gradient-to-br from-tandym-cobalt to-tandym-lilac rounded-full flex items-center justify-center">
               <span className="text-white text-sm font-medium">
                 {session?.user?.name?.charAt(0) || session?.user?.email?.charAt(0) || 'U'}
               </span>
@@ -1165,7 +1165,7 @@ export default function CreatorInteraction({
                     className="rounded-full object-cover"
                   />
                 ) : (
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                  <div className="w-12 h-12 bg-gradient-to-br from-tandym-cobalt to-tandym-lilac rounded-full flex items-center justify-center">
                     <span className="text-white font-medium">
                       {session?.user?.name?.charAt(0) || session?.user?.email?.charAt(0) || 'U'}
                     </span>
@@ -1252,9 +1252,9 @@ export default function CreatorInteraction({
           <p className="text-gray-600 mb-4 text-center">
             You've reached the 2-message limit for anonymous users. Create an account to continue your conversation with {creator.display_name}!
           </p>
-          <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-4">
-            <h3 className="font-medium text-orange-800 mb-2">Free Account Benefits:</h3>
-            <ul className="text-sm text-orange-700 space-y-1">
+          <div className="bg-tandym-coral/10 border border-tandym-coral/30 rounded-lg p-4 mb-4">
+            <h3 className="font-medium font-poppins text-tandym-coral mb-2">Free Account Benefits:</h3>
+            <ul className="text-sm text-tandym-coral/90 space-y-1">
               <li>• 5 messages per day per creator</li>
               <li>• Access to all creator conversations</li>
               <li>• Save your chat history</li>
@@ -1266,12 +1266,12 @@ export default function CreatorInteraction({
         {/* Action Buttons */}
         <div className="space-y-3">
           <Link href="/auth/signin" className="w-full">
-            <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white">
+            <Button className="w-full bg-gradient-to-r from-tandym-cobalt to-tandym-lilac hover:from-tandym-cobalt/90 hover:to-tandym-lilac/90 text-white">
               Sign In
             </Button>
           </Link>
           <Link href="/auth/signin" className="w-full">
-            <Button variant="outline" className="w-full border-orange-500 text-orange-500 hover:bg-orange-50">
+            <Button variant="outline" className="w-full border-tandym-cobalt text-tandym-cobalt hover:bg-tandym-cobalt/10">
               Create Account
             </Button>
           </Link>
@@ -1305,7 +1305,7 @@ export default function CreatorInteraction({
           <h3 className="text-sm text-gray-500 mb-4 font-medium">Actions</h3>
           <div className="space-y-1">
             {/* Share Conversation */}
-            <button 
+            <button
               onClick={() => {
                 handleShareConversation()
                 onClose()
@@ -1313,7 +1313,7 @@ export default function CreatorInteraction({
               className="w-full flex items-center justify-between p-4 hover:bg-gray-50 rounded-xl transition-colors group"
             >
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center">
+                <div className="w-10 h-10 bg-tandym-coral rounded-full flex items-center justify-center">
                   <Share className="w-5 h-5 text-white" />
                 </div>
                 <span className="text-gray-900 font-medium">Share Conversation</span>
@@ -1322,7 +1322,7 @@ export default function CreatorInteraction({
             </button>
 
             {/* View Socials */}
-            <button 
+            <button
               onClick={() => {
                 if (creator.youtubeChannelUrl) {
                   window.open(creator.youtubeChannelUrl, '_blank')
@@ -1334,7 +1334,7 @@ export default function CreatorInteraction({
               className="w-full flex items-center justify-between p-4 hover:bg-gray-50 rounded-xl transition-colors group"
             >
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                <div className="w-10 h-10 bg-tandym-cobalt rounded-full flex items-center justify-center">
                   <LinkIcon className="w-5 h-5 text-white" />
                 </div>
                 <span className="text-gray-900 font-medium">View Socials</span>
@@ -1363,7 +1363,7 @@ export default function CreatorInteraction({
 
         {/* Footer */}
         <div className="text-center text-sm text-gray-400">
-          Powered by <span className="font-medium">⚡ AITreon</span>
+          Powered by <span className="font-medium">⚡ Tandym.ai</span>
         </div>
       </div>
     </div>
@@ -1387,7 +1387,7 @@ export default function CreatorInteraction({
           {citations.map((citation, index) => (
             <div key={index} className="border rounded-lg p-4">
               <div className="flex items-start gap-3">
-                <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full font-medium">
+                <span className="bg-tandym-cobalt/10 text-tandym-cobalt text-xs px-2 py-1 rounded-full font-medium">
                   {index + 1}
                 </span>
                 <div className="flex-1">
@@ -1556,7 +1556,7 @@ export default function CreatorInteraction({
                     className="rounded-full object-cover"
                   />
                 ) : (
-                  <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-orange-500 rounded-full flex items-center justify-center">
+                  <div className="w-8 h-8 bg-gradient-to-br from-tandym-cobalt to-tandym-lilac rounded-full flex items-center justify-center">
                     <span className="text-white text-xs font-bold">
                       {((creator.display_name || 'U')).charAt(0)}
                     </span>
@@ -1601,7 +1601,7 @@ export default function CreatorInteraction({
                     className="rounded-full object-cover"
                   />
                 ) : (
-                  <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-orange-500 rounded-full flex items-center justify-center">
+                  <div className="w-20 h-20 bg-gradient-to-br from-tandym-cobalt to-tandym-lilac rounded-full flex items-center justify-center">
                     <span className="text-white text-2xl font-bold">
                       {((creator.display_name || 'U')).charAt(0)}
                     </span>
@@ -1625,16 +1625,16 @@ export default function CreatorInteraction({
 
           {/* Action Buttons */}
           <div className="flex space-x-4 mb-12">
-            <Button 
-              className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 rounded-full flex items-center space-x-2"
+            <Button
+              className="bg-gradient-to-r from-tandym-cobalt to-tandym-lilac hover:from-tandym-cobalt/90 hover:to-tandym-lilac/90 text-white px-8 py-3 rounded-full flex items-center space-x-2"
               onClick={() => inputRef.current?.focus()}
             >
               <MessageCircle className="w-5 h-5" />
               <span>Chat</span>
             </Button>
-            <Button 
-              variant="outline" 
-              className="border-orange-500 text-orange-500 hover:bg-orange-50 px-8 py-3 rounded-full flex items-center space-x-2"
+            <Button
+              variant="outline"
+              className="border-tandym-cobalt text-tandym-cobalt hover:bg-tandym-cobalt/10 px-8 py-3 rounded-full flex items-center space-x-2"
               onClick={startVoiceCall}
             >
               <Phone className="w-5 h-5" />
@@ -1668,8 +1668,8 @@ export default function CreatorInteraction({
                     className="w-full text-left p-4 rounded-2xl border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all group"
                   >
                     <div className="flex items-start space-x-3">
-                      <div className="w-6 h-6 rounded-full bg-orange-100 flex items-center justify-center mt-0.5 group-hover:bg-orange-200 transition-colors">
-                        <span className="text-orange-600 text-xs font-medium">Q</span>
+                      <div className="w-6 h-6 rounded-full bg-tandym-cobalt/10 flex items-center justify-center mt-0.5 group-hover:bg-tandym-cobalt/20 transition-colors">
+                        <span className="text-tandym-cobalt text-xs font-medium">Q</span>
                       </div>
                       <div className="flex-1">
                         <span className="text-gray-900 font-medium">{questionObj.question}</span>
@@ -1703,7 +1703,7 @@ export default function CreatorInteraction({
                     <Button
                       onClick={sendMessage}
                       disabled={!input.trim() || loading || (!session?.user?.id && anonymousMessageCount >= 2)}
-                      className="w-8 h-8 p-0 bg-orange-500 hover:bg-orange-600 rounded-full disabled:bg-gray-300 disabled:cursor-not-allowed"
+                      className="w-8 h-8 p-0 bg-gradient-to-r from-tandym-cobalt to-tandym-lilac hover:from-tandym-cobalt/90 hover:to-tandym-lilac/90 rounded-full disabled:bg-gray-300 disabled:cursor-not-allowed"
                     >
                       <Send className="w-4 h-4" />
                     </Button>
@@ -1763,7 +1763,7 @@ export default function CreatorInteraction({
                   className="rounded-full object-cover"
                 />
               ) : (
-                <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-orange-500 rounded-full flex items-center justify-center">
+                <div className="w-8 h-8 bg-gradient-to-br from-tandym-cobalt to-tandym-lilac rounded-full flex items-center justify-center">
                   <span className="text-white text-xs font-bold">
                     {(creator.displayName || (creator.display_name || 'U')).charAt(0)}
                   </span>
@@ -1824,7 +1824,7 @@ export default function CreatorInteraction({
                         className="rounded-full object-cover"
                       />
                     ) : (
-                      <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-orange-500 rounded-full flex items-center justify-center">
+                      <div className="w-8 h-8 bg-gradient-to-br from-tandym-cobalt to-tandym-lilac rounded-full flex items-center justify-center">
                         <span className="text-white text-xs font-bold">
                           {(creator.displayName || (creator.display_name || 'U')).charAt(0)}
                         </span>
@@ -1950,7 +1950,7 @@ export default function CreatorInteraction({
 
               {message.role === 'user' && (
                 <div className="flex justify-end mb-4">
-                  <div className={`${message.messageType === 'voice_transcript' ? 'bg-blue-600 border border-blue-500' : 'bg-orange-500'} text-white rounded-2xl rounded-tr-md px-4 py-3 max-w-2xl`}>
+                  <div className={`${message.messageType === 'voice_transcript' ? 'bg-tandym-cobalt border border-tandym-cobalt/50' : 'bg-gradient-to-r from-tandym-cobalt to-tandym-lilac'} text-white rounded-2xl rounded-tr-md px-4 py-3 max-w-2xl`}>
                     {message.messageType === 'voice_transcript' && (
                       <div className="flex items-center mb-2 text-blue-100 text-sm">
                         <Mic className="w-3 h-3 mr-1" />
@@ -2026,7 +2026,7 @@ export default function CreatorInteraction({
                       sendMessage()
                     }}
                     disabled={!input.trim() || loading || (!session?.user?.id && anonymousMessageCount >= 2)}
-                    className="w-8 h-8 p-0 bg-orange-500 hover:bg-orange-600 rounded-full disabled:bg-gray-300 disabled:cursor-not-allowed"
+                    className="w-8 h-8 p-0 bg-gradient-to-r from-tandym-cobalt to-tandym-lilac hover:from-tandym-cobalt/90 hover:to-tandym-lilac/90 rounded-full disabled:bg-gray-300 disabled:cursor-not-allowed"
                   >
                     <Send className="w-4 h-4" />
                   </Button>
@@ -2147,7 +2147,7 @@ export default function CreatorInteraction({
                           setSessionId(undefined)
                           setShowChatHistory(false)
                         }}
-                        className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-orange-300 hover:bg-orange-50 transition-colors text-gray-600 hover:text-orange-600"
+                        className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-tandym-cobalt hover:bg-tandym-cobalt/10 transition-colors text-gray-600 hover:text-tandym-cobalt"
                       >
                         <div className="text-center">
                           <div className="font-medium">Start New Chat</div>
