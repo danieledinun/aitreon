@@ -164,9 +164,9 @@ export default function KnowledgeBasePage({ creator }: KnowledgeBasePageProps) {
   )
 
   const getSyncStatus = (video: Video) => {
-    if (!video.is_processed) return { status: 'processing', color: 'bg-orange-500', text: 'Processing' }
-    if (video.synced_at) return { status: 'synced', color: 'bg-green-500', text: 'Synced' }
-    return { status: 'processed', color: 'bg-blue-500', text: 'Processed' }
+    if (!video.is_processed) return { status: 'processing', color: 'bg-tandym-coral', text: 'Processing' }
+    if (video.synced_at) return { status: 'synced', color: 'bg-tandym-cobalt', text: 'Synced' }
+    return { status: 'processed', color: 'bg-tandym-lilac', text: 'Processed' }
   }
 
   const formatDuration = (seconds?: number) => {
@@ -197,16 +197,16 @@ export default function KnowledgeBasePage({ creator }: KnowledgeBasePageProps) {
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <Link href="/creator" className="text-gray-600 dark:text-neutral-400 hover:text-gray-900 dark:hover:text-white">
+            <Link href="/creator" className="text-gray-600 dark:text-neutral-400 hover:text-tandym-cobalt dark:hover:text-white">
               <ArrowLeft className="h-5 w-5" />
             </Link>
-            <h1 className="text-3xl font-bold flex items-center gap-3 text-gray-900 dark:text-white">
-              <Database className="h-7 w-7 text-blue-400" />
+            <h1 className="text-3xl font-bold font-poppins flex items-center gap-3 text-gray-900 dark:text-white">
+              <Database className="h-7 w-7 text-tandym-cobalt" />
               Knowledge Base
             </h1>
           </div>
           <p className="text-gray-600 dark:text-neutral-400 text-lg">
-            View and manage the content your AI replica has learned from
+            View and manage the content your AI twin has learned from
           </p>
         </div>
 
@@ -218,20 +218,20 @@ export default function KnowledgeBasePage({ creator }: KnowledgeBasePageProps) {
 
       {/* Sync Status Banner */}
       {syncState.isActive && (
-        <Card className="p-4 bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800">
+        <Card className="p-4 bg-tandym-cobalt/5 dark:bg-tandym-cobalt/10 border-tandym-cobalt/30">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Zap className="h-5 w-5 text-blue-600 animate-pulse" />
+              <Zap className="h-5 w-5 text-tandym-cobalt animate-pulse" />
               <div>
-                <h3 className="font-semibold text-blue-900 dark:text-blue-100">
+                <h3 className="font-semibold font-poppins text-gray-900 dark:text-white">
                   Sync in Progress - {syncState.syncType === 'single' ? 'Single Video' : syncState.syncType === 'playlist' ? 'Playlist' : 'Whole Channel'}
                 </h3>
-                <p className="text-sm text-blue-700 dark:text-blue-300">
+                <p className="text-sm text-gray-700 dark:text-neutral-300">
                   {syncState.progress?.message || 'Processing your content...'}
                 </p>
               </div>
             </div>
-            <Badge variant="secondary" className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
+            <Badge variant="secondary" className="bg-tandym-lilac/10 text-tandym-lilac dark:bg-tandym-lilac/20 dark:text-tandym-lilac">
               {syncState.progress?.current || 0} / {syncState.progress?.total || 0}
             </Badge>
           </div>
@@ -240,20 +240,20 @@ export default function KnowledgeBasePage({ creator }: KnowledgeBasePageProps) {
 
       {/* Sync Complete Banner */}
       {syncState.result && !syncState.isActive && (
-        <Card className="p-4 bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800">
+        <Card className="p-4 bg-tandym-cobalt/5 dark:bg-tandym-cobalt/10 border-tandym-cobalt/30">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <CheckCircle className="h-5 w-5 text-green-600" />
+              <CheckCircle className="h-5 w-5 text-tandym-cobalt" />
               <div>
-                <h3 className="font-semibold text-green-900 dark:text-green-100">
+                <h3 className="font-semibold font-poppins text-gray-900 dark:text-white">
                   Sync Complete!
                 </h3>
-                <p className="text-sm text-green-700 dark:text-green-300">
+                <p className="text-sm text-gray-700 dark:text-neutral-300">
                   Successfully processed {syncState.result.transcriptsExtracted} transcripts from {syncState.result.videosFound} videos
                 </p>
               </div>
             </div>
-            <Badge variant="secondary" className="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
+            <Badge variant="secondary" className="bg-tandym-lilac/10 text-tandym-lilac dark:bg-tandym-lilac/20 dark:text-tandym-lilac">
               {Math.round(syncState.result.successRate)}% Success
             </Badge>
           </div>
@@ -264,34 +264,34 @@ export default function KnowledgeBasePage({ creator }: KnowledgeBasePageProps) {
       <Card className="bg-white/50 dark:bg-neutral-900/50 border-gray-300 dark:border-neutral-700">
         <div className="p-4">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Knowledge Base Overview</h3>
-            <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+            <h3 className="text-lg font-semibold font-poppins text-gray-900 dark:text-white">Knowledge Base Overview</h3>
+            <Badge variant="secondary" className="bg-tandym-cobalt/10 text-tandym-cobalt dark:bg-tandym-cobalt/20 dark:text-tandym-lilac">
               {Math.round((processedVideos.length / (videos.length || 1)) * 100)}% Processed
             </Badge>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-6 gap-4 text-center">
             <div className="space-y-1">
-              <div className="text-2xl font-bold text-blue-600">{videos.length}</div>
+              <div className="text-2xl font-bold text-tandym-cobalt">{videos.length}</div>
               <div className="text-xs text-gray-500 dark:text-neutral-400">Total Videos</div>
             </div>
             <div className="space-y-1">
-              <div className="text-2xl font-bold text-green-600">{processedVideos.length}</div>
+              <div className="text-2xl font-bold text-tandym-cobalt">{processedVideos.length}</div>
               <div className="text-xs text-gray-500 dark:text-neutral-400">Processed</div>
             </div>
             <div className="space-y-1">
-              <div className="text-2xl font-bold text-purple-600">{syncedVideos.length}</div>
+              <div className="text-2xl font-bold text-tandym-lilac">{syncedVideos.length}</div>
               <div className="text-xs text-gray-500 dark:text-neutral-400">Synced</div>
             </div>
             <div className="space-y-1">
-              <div className="text-2xl font-bold text-orange-600">{totalChunks}</div>
+              <div className="text-2xl font-bold text-tandym-coral">{totalChunks}</div>
               <div className="text-xs text-gray-500 dark:text-neutral-400">Chunks</div>
             </div>
             <div className="space-y-1">
-              <div className="text-2xl font-bold text-amber-600">{unprocessedVideos.length}</div>
+              <div className="text-2xl font-bold text-tandym-lilac">{unprocessedVideos.length}</div>
               <div className="text-xs text-gray-500 dark:text-neutral-400">In Queue</div>
             </div>
             <div className="space-y-1">
-              <div className="text-2xl font-bold text-emerald-600">{Math.round(videos.reduce((acc, v) => acc + (v.duration || 0), 0) / 60)}m</div>
+              <div className="text-2xl font-bold text-tandym-cobalt">{Math.round(videos.reduce((acc, v) => acc + (v.duration || 0), 0) / 60)}m</div>
               <div className="text-xs text-gray-500 dark:text-neutral-400">Total Duration</div>
             </div>
           </div>
@@ -336,8 +336,8 @@ export default function KnowledgeBasePage({ creator }: KnowledgeBasePageProps) {
           <TabsContent value="videos" className="mt-6">
             {loading ? (
               <Card className="p-12 text-center bg-white dark:bg-neutral-900/50 border-gray-300 dark:border-neutral-700">
-                <Loader2 className="h-16 w-16 mx-auto mb-4 text-blue-500 animate-spin" />
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                <Loader2 className="h-16 w-16 mx-auto mb-4 text-tandym-cobalt animate-spin" />
+                <h3 className="text-lg font-semibold font-poppins text-gray-900 dark:text-white mb-2">
                   Loading videos...
                 </h3>
                 <p className="text-gray-600 dark:text-neutral-400">
@@ -346,8 +346,8 @@ export default function KnowledgeBasePage({ creator }: KnowledgeBasePageProps) {
               </Card>
             ) : error ? (
               <Card className="p-12 text-center bg-white dark:bg-neutral-900/50 border-gray-300 dark:border-neutral-700">
-                <AlertCircle className="h-16 w-16 mx-auto mb-4 text-red-500" />
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                <AlertCircle className="h-16 w-16 mx-auto mb-4 text-tandym-coral" />
+                <h3 className="text-lg font-semibold font-poppins text-gray-900 dark:text-white mb-2">
                   Error Loading Videos
                 </h3>
                 <p className="text-gray-600 dark:text-neutral-400 mb-4">
@@ -361,11 +361,11 @@ export default function KnowledgeBasePage({ creator }: KnowledgeBasePageProps) {
             ) : filteredVideos.length === 0 ? (
               <Card className="p-12 text-center bg-white dark:bg-neutral-900/50 border-gray-300 dark:border-neutral-700">
                 <Video className="h-16 w-16 mx-auto mb-4 text-gray-400 dark:text-neutral-600" />
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                <h3 className="text-lg font-semibold font-poppins text-gray-900 dark:text-white mb-2">
                   {searchTerm ? 'No videos found' : 'No videos synced yet'}
                 </h3>
                 <p className="text-gray-600 dark:text-neutral-400 mb-4">
-                  {searchTerm 
+                  {searchTerm
                     ? 'Try adjusting your search terms'
                     : 'Connect your YouTube channel to start building your AI knowledge base'
                   }
@@ -373,7 +373,7 @@ export default function KnowledgeBasePage({ creator }: KnowledgeBasePageProps) {
                 {!searchTerm && (
                   <>
                     {syncState.isActive ? (
-                      <Button 
+                      <Button
                         disabled={true}
                         className="bg-gray-400 cursor-not-allowed"
                       >
@@ -382,7 +382,7 @@ export default function KnowledgeBasePage({ creator }: KnowledgeBasePageProps) {
                       </Button>
                     ) : (
                       <Link href="/creator/sync">
-                        <Button className="bg-blue-600 hover:bg-blue-700">
+                        <Button className="bg-tandym-cobalt hover:bg-tandym-cobalt/90">
                           Sync YouTube Channel
                         </Button>
                       </Link>
@@ -443,14 +443,14 @@ export default function KnowledgeBasePage({ creator }: KnowledgeBasePageProps) {
                               <Badge
                                 variant="secondary"
                                 className={`${
-                                  syncStatus.status === 'synced' ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' :
-                                  syncStatus.status === 'processed' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' :
-                                  'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300'
+                                  syncStatus.status === 'synced' ? 'bg-tandym-cobalt/10 text-tandym-cobalt dark:bg-tandym-cobalt/20 dark:text-tandym-lilac' :
+                                  syncStatus.status === 'processed' ? 'bg-tandym-lilac/10 text-tandym-lilac dark:bg-tandym-lilac/20 dark:text-tandym-lilac' :
+                                  'bg-tandym-coral/10 text-tandym-coral dark:bg-tandym-coral/20 dark:text-tandym-coral'
                                 }`}
                               >
                                 <div className={`w-2 h-2 rounded-full mr-1 ${
-                                  syncStatus.status === 'synced' ? 'bg-green-500' :
-                                  syncStatus.status === 'processed' ? 'bg-blue-500' : 'bg-orange-500'
+                                  syncStatus.status === 'synced' ? 'bg-tandym-cobalt' :
+                                  syncStatus.status === 'processed' ? 'bg-tandym-lilac' : 'bg-tandym-coral'
                                 }`} />
                                 {syncStatus.text}
                               </Badge>
@@ -514,19 +514,19 @@ export default function KnowledgeBasePage({ creator }: KnowledgeBasePageProps) {
 
           <TabsContent value="content" className="mt-6 space-y-6">
             {/* Knowledge Base Summary */}
-            <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/10 dark:to-purple-950/10 p-6 rounded-lg border border-blue-200 dark:border-blue-800">
-              <h4 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
-                <Database className="h-5 w-5 text-blue-600" />
+            <div className="bg-gradient-to-r from-tandym-cobalt/5 to-tandym-lilac/5 dark:from-tandym-cobalt/10 dark:to-tandym-lilac/10 p-6 rounded-lg border border-tandym-cobalt/30">
+              <h4 className="font-semibold font-poppins text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                <Database className="h-5 w-5 text-tandym-cobalt" />
                 Knowledge Base Summary
               </h4>
               <p className="text-gray-700 dark:text-neutral-300">
-                Your AI replica has been trained on <strong>{processedVideos.length} processed videos</strong> containing <strong>{totalChunks} content chunks</strong>.
+                Your AI twin has been trained on <strong>{processedVideos.length} processed videos</strong> containing <strong>{totalChunks} content chunks</strong>.
                 This knowledge base allows your AI to provide accurate, contextual responses based on your actual content using advanced vector search.
               </p>
 
               {unprocessedVideos.length > 0 && (
-                <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-950/20 rounded border border-amber-200 dark:border-amber-800">
-                  <p className="text-sm text-amber-800 dark:text-amber-200 flex items-center gap-2">
+                <div className="mt-4 p-3 bg-tandym-coral/5 dark:bg-tandym-coral/10 rounded border border-tandym-coral/30">
+                  <p className="text-sm text-tandym-coral dark:text-tandym-coral flex items-center gap-2">
                     <AlertCircle className="h-4 w-4" />
                     {unprocessedVideos.length} videos are still being processed and will be available soon.
                   </p>
@@ -537,8 +537,8 @@ export default function KnowledgeBasePage({ creator }: KnowledgeBasePageProps) {
             {/* AI Style Card Section */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-3">
-                  <Brain className="h-6 w-6 text-purple-500" />
+                <h3 className="text-xl font-semibold font-poppins text-gray-900 dark:text-white flex items-center gap-3">
+                  <Brain className="h-6 w-6 text-tandym-lilac" />
                   AI Communication Style Analysis
                 </h3>
               </div>
@@ -576,7 +576,7 @@ export default function KnowledgeBasePage({ creator }: KnowledgeBasePageProps) {
 
               <div className="space-y-4">
                 <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-neutral-400">
-                  <Badge className={selectedVideo.is_processed ? "bg-green-600 text-white" : "bg-orange-500 text-white"}>
+                  <Badge className={selectedVideo.is_processed ? "bg-tandym-cobalt text-white" : "bg-tandym-coral text-white"}>
                     {selectedVideo.is_processed ? 'Processed' : 'Processing'}
                   </Badge>
                   <span>{formatDuration(selectedVideo.duration)}</span>
