@@ -170,7 +170,7 @@ export async function POST(request: NextRequest) {
               creator_id: creator.id,
               video_id: videoRecord.id,
               video_title: metadata.title,
-              video_url: `https://youtube.com/watch?v=${videoId}`,
+              video_url: `https://www.youtube.com/watch?v=${videoId}`,
               content: chunk.content,
               start_time: chunk.start_time,
               end_time: chunk.end_time,

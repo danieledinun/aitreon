@@ -20,7 +20,7 @@ async function addTranscriptToRAG(videoId: string, transcriptResult: TranscriptR
       .join('\n')
 
     const episodeContent = `Video ID: ${videoId}
-URL: https://youtube.com/watch?v=${videoId}
+URL: https://www.youtube.com/watch?v=${videoId}
 Language: ${transcriptResult.language}
 Transcript Quality: ${transcriptResult.is_generated ? 'Auto-generated' : 'Manual'} (${Math.round((transcriptResult.confidence || 0) * 100)}% confidence)
 
