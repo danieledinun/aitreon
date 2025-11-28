@@ -131,12 +131,12 @@ export default function SuggestedQuestionsPage({ creatorId, existingQuestions }:
             <Link href="/creator" className="text-gray-600 dark:text-neutral-400 hover:text-gray-900 dark:hover:text-white">
               <ArrowLeft className="h-5 w-5" />
             </Link>
-            <h1 className="text-3xl font-bold flex items-center gap-3 text-gray-900 dark:text-white">
-              <HelpCircle className="h-7 w-7 text-purple-400" />
+            <h1 className="text-3xl font-bold font-poppins flex items-center gap-3 text-gray-900 dark:text-white">
+              <HelpCircle className="h-7 w-7 text-tandym-cobalt" />
               Suggested Questions
             </h1>
           </div>
-          <p className="text-gray-600 dark:text-neutral-400 text-lg">Create questions that users can quickly ask your AI replica</p>
+          <p className="text-gray-600 dark:text-neutral-400 text-lg">Create questions that users can quickly ask your AI twin</p>
         </div>
       </div>
 
@@ -144,10 +144,10 @@ export default function SuggestedQuestionsPage({ creatorId, existingQuestions }:
           
         {/* Instructions */}
         <Card className="p-6 mb-6 bg-white dark:bg-neutral-900/50 border-gray-300 dark:border-neutral-700">
-          <h3 className="font-semibold text-lg mb-3 text-gray-900 dark:text-white">How Suggested Questions Work</h3>
+          <h3 className="font-semibold font-poppins text-lg mb-3 text-gray-900 dark:text-white">How Suggested Questions Work</h3>
           <div className="text-gray-700 dark:text-neutral-300 space-y-2 text-sm">
-            <p>• Suggested questions appear as quick-click buttons on your AI replica's chat interface</p>
-            <p>• Users can click these questions to instantly start conversations with your AI</p>
+            <p>• Suggested questions appear as quick-click buttons on your AI twin's chat interface</p>
+            <p>• Users can click these questions to instantly start conversations with your AI twin</p>
             <p>• Good questions are specific, engaging, and showcase your expertise</p>
             <p>• Questions are displayed in the order you create them</p>
           </div>
@@ -156,10 +156,10 @@ export default function SuggestedQuestionsPage({ creatorId, existingQuestions }:
         {/* Questions List */}
         <Card className="p-6 bg-white dark:bg-neutral-900/50 border-gray-300 dark:border-neutral-700">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="font-semibold text-lg text-gray-900 dark:text-white">Your Suggested Questions</h3>
+            <h3 className="font-semibold font-poppins text-lg text-gray-900 dark:text-white">Your Suggested Questions</h3>
             <div className="flex gap-2">
               {questions.length === 0 && (
-                <Button 
+                <Button
                   onClick={addDefaultQuestions}
                   variant="outline"
                   size="sm"
@@ -168,7 +168,7 @@ export default function SuggestedQuestionsPage({ creatorId, existingQuestions }:
                   Add Examples
                 </Button>
               )}
-              <Button onClick={addQuestion} size="sm" className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800">
+              <Button onClick={addQuestion} size="sm" className="bg-gradient-to-r from-tandym-cobalt to-tandym-lilac hover:from-tandym-cobalt/90 hover:to-tandym-lilac/90">
                 <Plus className="h-4 w-4 mr-1" />
                 Add Question
               </Button>
@@ -179,7 +179,7 @@ export default function SuggestedQuestionsPage({ creatorId, existingQuestions }:
             <div className="text-center py-12 text-gray-600 dark:text-neutral-400">
               <HelpCircle className="h-12 w-12 mx-auto mb-4 text-gray-400 dark:text-neutral-600" />
               <p className="text-gray-900 dark:text-white">No suggested questions yet</p>
-              <p className="text-sm">Add questions to help users start conversations with your AI</p>
+              <p className="text-sm">Add questions to help users start conversations with your AI twin</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -215,7 +215,7 @@ export default function SuggestedQuestionsPage({ creatorId, existingQuestions }:
                       onClick={() => removeQuestion(question.id)}
                       variant="outline"
                       size="sm"
-                      className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 border-red-300 dark:border-red-800/30"
+                      className="text-tandym-coral hover:text-tandym-coral/90 hover:bg-tandym-coral/10 border-tandym-coral/30"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -227,11 +227,11 @@ export default function SuggestedQuestionsPage({ creatorId, existingQuestions }:
 
           {questions.length > 0 && (
             <div className="mt-6 flex justify-end">
-              <Button 
+              <Button
                 onClick={saveQuestions}
                 disabled={loading || questions.every(q => !q.question.trim())}
                 className={`flex items-center gap-2 ${
-                  saved ? 'bg-green-600 hover:bg-green-700' : 'bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800'
+                  saved ? 'bg-tandym-cobalt hover:bg-tandym-cobalt/90' : 'bg-gradient-to-r from-tandym-cobalt to-tandym-lilac hover:from-tandym-cobalt/90 hover:to-tandym-lilac/90'
                 }`}
               >
                 <Save className="h-4 w-4" />
