@@ -74,7 +74,7 @@ export default function AiConfigPage({ creatorId }: AiConfigPageProps) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center space-y-3">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto text-blue-400" />
+          <Loader2 className="h-8 w-8 animate-spin mx-auto text-tandym-cobalt" />
           <p className="text-gray-600 dark:text-neutral-400">Loading AI configuration...</p>
         </div>
       </div>
@@ -87,42 +87,42 @@ export default function AiConfigPage({ creatorId }: AiConfigPageProps) {
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <Link href="/creator" className="text-gray-600 dark:text-neutral-400 hover:text-gray-900 dark:hover:text-white">
+            <Link href="/creator" className="text-gray-600 dark:text-neutral-400 hover:text-tandym-cobalt dark:hover:text-white">
               <ArrowLeft className="h-5 w-5" />
             </Link>
-            <h1 className="text-3xl font-bold flex items-center gap-3 text-gray-900 dark:text-white">
-              <Settings className="h-7 w-7 text-blue-400" />
-              AI Replica Configuration
+            <h1 className="text-3xl font-bold font-poppins flex items-center gap-3 text-gray-900 dark:text-white">
+              <Settings className="h-7 w-7 text-tandym-cobalt" />
+              AI Twin Configuration
             </h1>
           </div>
           <p className="text-gray-600 dark:text-neutral-400 text-lg">
-            Configure your AI personality to match your unique style and voice
+            Configure your AI twin personality to match your unique style and voice
           </p>
         </div>
         {configExists && (
-          <Badge className="bg-green-600 text-white">
+          <Badge className="bg-tandym-cobalt text-white">
             Configuration Active
           </Badge>
         )}
       </div>
 
       {/* AI Setup Status Recap */}
-      <Card className="bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border-purple-200 dark:border-purple-800/30">
+      <Card className="bg-gradient-to-br from-tandym-cobalt/5 to-tandym-lilac/5 dark:from-tandym-cobalt/20 dark:to-tandym-lilac/20 border-tandym-cobalt/20 dark:border-tandym-cobalt/30">
         <div className="p-6">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-            <Settings className="w-5 h-5 text-purple-500" />
+          <h2 className="text-xl font-semibold font-poppins text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+            <Settings className="w-5 h-5 text-tandym-cobalt" />
             Configuration Overview
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="flex items-center justify-between p-4 bg-white/70 dark:bg-neutral-800/70 rounded-lg border border-gray-200 dark:border-neutral-700">
-              <span className="text-sm text-gray-600 dark:text-neutral-300">AI Personality</span>
-              <Badge variant={currentConfig?.personality ? "default" : "secondary"} className={currentConfig?.personality ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300" : "bg-gray-100 text-gray-600 dark:bg-neutral-700 dark:text-neutral-400"}>
+              <span className="text-sm text-gray-600 dark:text-neutral-300">AI Twin Personality</span>
+              <Badge variant={currentConfig?.personality ? "default" : "secondary"} className={currentConfig?.personality ? "bg-tandym-cobalt/10 text-tandym-cobalt dark:bg-tandym-cobalt/20 dark:text-tandym-lilac" : "bg-gray-100 text-gray-600 dark:bg-neutral-700 dark:text-neutral-400"}>
                 {currentConfig?.personality ? 'Configured' : 'Default'}
               </Badge>
             </div>
             <div className="flex items-center justify-between p-4 bg-white/70 dark:bg-neutral-800/70 rounded-lg border border-gray-200 dark:border-neutral-700">
               <span className="text-sm text-gray-600 dark:text-neutral-300">Questions</span>
-              <Badge variant={currentConfig?.suggested_questions ? "default" : "secondary"} className={currentConfig?.suggested_questions ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300" : "bg-gray-100 text-gray-600 dark:bg-neutral-700 dark:text-neutral-400"}>
+              <Badge variant={currentConfig?.suggested_questions ? "default" : "secondary"} className={currentConfig?.suggested_questions ? "bg-tandym-lilac/10 text-tandym-lilac dark:bg-tandym-lilac/20 dark:text-tandym-lilac" : "bg-gray-100 text-gray-600 dark:bg-neutral-700 dark:text-neutral-400"}>
                 {currentConfig?.suggested_questions ? 'Configured' : 'None'}
               </Badge>
             </div>
@@ -159,16 +159,16 @@ export default function AiConfigPage({ creatorId }: AiConfigPageProps) {
 
         <TabsContent value="speech">
           <div className="mb-6">
-            <Card className="p-6 bg-gradient-to-br from-green-900/20 to-green-800/10 border-green-800/30">
+            <Card className="p-6 bg-gradient-to-br from-tandym-cobalt/10 to-tandym-lilac/10 border-tandym-cobalt/30">
               <div className="flex items-start gap-4">
-                <Mic className="h-8 w-8 text-green-400 mt-1" />
+                <Mic className="h-8 w-8 text-tandym-cobalt mt-1" />
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Speech Pattern Analysis</h3>
+                  <h3 className="text-xl font-semibold font-poppins text-gray-900 dark:text-white">Speech Pattern Analysis</h3>
                   <p className="text-gray-700 dark:text-neutral-300 mt-2">
                     Extract your unique speaking style directly from your video transcripts. This AI-powered analysis
-                    identifies your catchphrases, opening/closing patterns, and vocabulary preferences to make your AI replica sound more authentic.
+                    identifies your catchphrases, opening/closing patterns, and vocabulary preferences to make your AI twin sound more authentic.
                   </p>
-                  <ul className="mt-3 space-y-1 text-sm text-green-700 dark:text-green-300">
+                  <ul className="mt-3 space-y-1 text-sm text-tandym-lilac dark:text-tandym-lilac">
                     <li>• Automatically extract catchphrases and signature phrases</li>
                     <li>• Identify opening and closing patterns</li>
                     <li>• Discover your preferred vocabulary and words you avoid</li>
@@ -187,7 +187,7 @@ export default function AiConfigPage({ creatorId }: AiConfigPageProps) {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <Card className="p-6 bg-white dark:bg-neutral-900 border-gray-300 dark:border-neutral-700">
             <div className="flex items-center gap-3">
-              <Loader2 className="h-6 w-6 animate-spin text-blue-400" />
+              <Loader2 className="h-6 w-6 animate-spin text-tandym-cobalt" />
               <span className="text-gray-900 dark:text-white">Saving AI configuration...</span>
             </div>
           </Card>
