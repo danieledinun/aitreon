@@ -58,9 +58,9 @@ function SignInContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userType })
       })
-      
+
       if (response.ok) {
-        signIn(provider, { 
+        signIn(provider, {
           callbackUrl: `${callbackUrl}?userType=${userType}`
         })
       } else {
@@ -69,7 +69,7 @@ function SignInContent() {
       }
     } catch (error) {
       console.error('Sign-in validation error:', error)
-      signIn(provider, { 
+      signIn(provider, {
         callbackUrl: `${callbackUrl}?userType=${userType}`
       })
     }
@@ -77,26 +77,28 @@ function SignInContent() {
 
   if (!userType) {
     return (
-      <div className="min-h-screen bg-white dark:bg-neutral-950 lg:grid lg:grid-cols-2">
+      <div className="min-h-screen bg-tandym-light dark:bg-tandym-midnight lg:grid lg:grid-cols-2">
         {/* Left side - Hero content */}
         <div className="flex flex-col justify-center px-4 py-12 sm:px-6 lg:px-20 xl:px-24">
           <div className="mx-auto w-full max-w-sm lg:w-96">
             {/* Logo */}
             <div>
-              <Link href="/" className="flex items-center">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-r from-blue-600 to-purple-600">
-                  <Sparkles className="h-5 w-5 text-white" />
+              <Link href="/" className="flex items-center group">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-tandym-cobalt to-tandym-lilac transition-transform group-hover:scale-110">
+                  <Sparkles className="h-6 w-6 text-white" />
                 </div>
-                <span className="ml-2 text-2xl font-bold text-gray-900 dark:text-white">Aitrion</span>
+                <span className="ml-3 text-2xl font-bold font-poppins bg-gradient-to-r from-tandym-cobalt via-tandym-lilac to-tandym-coral bg-clip-text text-transparent">
+                  Tandym.ai
+                </span>
               </Link>
             </div>
 
             <div className="mt-8">
-              <h2 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
-                Welcome to Aitrion
+              <h2 className="text-3xl font-bold font-poppins tracking-tight text-tandym-text-dark dark:text-white">
+                Welcome to Tandym
               </h2>
-              <p className="mt-3 text-sm text-gray-600 dark:text-neutral-400">
-                The platform where creators and fans connect through AI
+              <p className="mt-3 text-sm text-tandym-text-muted dark:text-neutral-400">
+                Create your AI twin or chat with your favorite creators — in Tandym
               </p>
             </div>
 
@@ -105,49 +107,49 @@ function SignInContent() {
                 {/* Fan Option */}
                 <button
                   onClick={() => setUserType('fan')}
-                  className="group relative flex w-full items-center justify-start space-x-4 rounded-xl border-2 border-transparent bg-gray-50 dark:bg-neutral-900 p-6 text-left transition-all hover:border-blue-200 hover:bg-blue-50 dark:hover:border-blue-800 dark:hover:bg-blue-950/30 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="group relative flex w-full items-center justify-start space-x-4 rounded-2xl border-2 border-transparent bg-white dark:bg-neutral-900 p-6 text-left transition-all hover:border-tandym-cobalt/40 hover:bg-tandym-cobalt/5 dark:hover:border-tandym-cobalt/60 dark:hover:bg-tandym-cobalt/10 focus:outline-none focus:ring-2 focus:ring-tandym-cobalt shadow-sm hover:shadow-md"
                 >
-                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/50">
-                    <MessageCircle className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-tandym-cobalt to-tandym-lilac">
+                    <MessageCircle className="h-6 w-6 text-white" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400">
+                    <h3 className="text-lg font-semibold font-poppins text-tandym-text-dark dark:text-white group-hover:text-tandym-cobalt dark:group-hover:text-tandym-cobalt">
                       I'm a Fan
                     </h3>
-                    <p className="mt-1 text-sm text-gray-600 dark:text-neutral-400">
-                      Chat with AI versions of your favorite creators
+                    <p className="mt-1 text-sm text-tandym-text-muted dark:text-neutral-400">
+                      Chat with AI twins of your favorite creators
                     </p>
                   </div>
                   <div className="opacity-0 transition-opacity group-hover:opacity-100">
-                    <div className="h-2 w-2 rounded-full bg-blue-600"></div>
+                    <div className="h-3 w-3 rounded-full bg-tandym-cobalt"></div>
                   </div>
                 </button>
 
                 {/* Creator Option */}
                 <button
                   onClick={() => setUserType('creator')}
-                  className="group relative flex w-full items-center justify-start space-x-4 rounded-xl border-2 border-transparent bg-gray-50 dark:bg-neutral-900 p-6 text-left transition-all hover:border-purple-200 hover:bg-purple-50 dark:hover:border-purple-800 dark:hover:bg-purple-950/30 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="group relative flex w-full items-center justify-start space-x-4 rounded-2xl border-2 border-transparent bg-white dark:bg-neutral-900 p-6 text-left transition-all hover:border-tandym-lilac/40 hover:bg-tandym-lilac/5 dark:hover:border-tandym-lilac/60 dark:hover:bg-tandym-lilac/10 focus:outline-none focus:ring-2 focus:ring-tandym-lilac shadow-sm hover:shadow-md"
                 >
-                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-purple-100 dark:bg-purple-900/50">
-                    <Video className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-tandym-lilac to-tandym-coral">
+                    <Video className="h-6 w-6 text-white" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400">
+                    <h3 className="text-lg font-semibold font-poppins text-tandym-text-dark dark:text-white group-hover:text-tandym-lilac dark:group-hover:text-tandym-lilac">
                       I'm a Creator
                     </h3>
-                    <p className="mt-1 text-sm text-gray-600 dark:text-neutral-400">
-                      Create an AI version of yourself for fans
+                    <p className="mt-1 text-sm text-tandym-text-muted dark:text-neutral-400">
+                      Create your AI twin and engage fans 24/7
                     </p>
                   </div>
                   <div className="opacity-0 transition-opacity group-hover:opacity-100">
-                    <div className="h-2 w-2 rounded-full bg-purple-600"></div>
+                    <div className="h-3 w-3 rounded-full bg-tandym-lilac"></div>
                   </div>
                 </button>
               </div>
 
               <div className="mt-8">
-                <p className="text-center text-xs text-gray-500 dark:text-neutral-500">
-                  Join thousands of creators and millions of fans already on Aitrion
+                <p className="text-center text-xs text-tandym-text-muted dark:text-neutral-500">
+                  Join creators and fans already in Tandym
                 </p>
               </div>
             </div>
@@ -155,39 +157,42 @@ function SignInContent() {
         </div>
 
         {/* Right side - Visual */}
-        <div className="hidden lg:block relative">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-purple-700 to-indigo-800"></div>
+        <div className="hidden lg:block relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-tandym-midnight via-[#1A1A2E] to-tandym-midnight"></div>
+          {/* Gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-tandym-cobalt/5 to-tandym-lilac/10"></div>
+
           <div className="relative h-full flex flex-col justify-center items-center p-12 text-white">
             <div className="max-w-md text-center">
               <div className="mb-8 flex justify-center">
                 <div className="relative">
-                  <div className="h-24 w-24 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                    <Sparkles className="h-12 w-12 text-white" />
+                  <div className="h-24 w-24 rounded-2xl bg-gradient-to-br from-tandym-cobalt/30 to-tandym-lilac/30 backdrop-blur-sm border border-tandym-cobalt/30 flex items-center justify-center">
+                    <Sparkles className="h-12 w-12 text-tandym-lilac" />
                   </div>
-                  <div className="absolute -top-2 -right-2 h-8 w-8 rounded-full bg-yellow-400 flex items-center justify-center">
-                    <Star className="h-4 w-4 text-yellow-800" />
+                  <div className="absolute -top-2 -right-2 h-8 w-8 rounded-full bg-tandym-coral flex items-center justify-center">
+                    <Star className="h-4 w-4 text-white" />
                   </div>
                 </div>
               </div>
-              <h3 className="text-2xl font-bold mb-4">
-                Transform Your Content Into Conversations
+              <h3 className="text-3xl font-bold font-poppins mb-4">
+                You and your twin — in Tandym
               </h3>
-              <p className="text-white/80 mb-8">
-                Whether you're a fan looking to connect or a creator ready to engage, 
-                Aitrion brings authentic AI-powered interactions to life.
+              <p className="text-gray-300 mb-8 leading-relaxed">
+                Whether you're a fan looking to connect or a creator ready to scale,
+                Tandym brings AI-powered engagement to life.
               </p>
               <div className="space-y-4">
-                <div className="flex items-center text-sm">
-                  <div className="h-2 w-2 rounded-full bg-white/60 mr-3"></div>
-                  <span>24/7 AI conversations with your favorite creators</span>
+                <div className="flex items-center text-sm text-gray-300">
+                  <div className="h-2 w-2 rounded-full bg-tandym-cobalt mr-3"></div>
+                  <span>24/7 AI conversations powered by YouTube content</span>
                 </div>
-                <div className="flex items-center text-sm">
-                  <div className="h-2 w-2 rounded-full bg-white/60 mr-3"></div>
-                  <span>Turn your content into passive income</span>
+                <div className="flex items-center text-sm text-gray-300">
+                  <div className="h-2 w-2 rounded-full bg-tandym-lilac mr-3"></div>
+                  <span>Dedicated pages + embeddable widgets</span>
                 </div>
-                <div className="flex items-center text-sm">
-                  <div className="h-2 w-2 rounded-full bg-white/60 mr-3"></div>
-                  <span>Connect authentically with your audience</span>
+                <div className="flex items-center text-sm text-gray-300">
+                  <div className="h-2 w-2 rounded-full bg-tandym-coral mr-3"></div>
+                  <span>Drive engagement and grow your channel</span>
                 </div>
               </div>
             </div>
@@ -198,14 +203,14 @@ function SignInContent() {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-neutral-950 lg:grid lg:grid-cols-2">
+    <div className="min-h-screen bg-tandym-light dark:bg-tandym-midnight lg:grid lg:grid-cols-2">
       {/* Left side - Form */}
       <div className="flex flex-col justify-center px-4 py-12 sm:px-6 lg:px-20 xl:px-24">
         <div className="mx-auto w-full max-w-sm lg:w-96">
           {/* Back button */}
           <button
             onClick={() => setUserType(null)}
-            className="mb-8 inline-flex items-center text-sm font-medium text-gray-600 dark:text-neutral-400 hover:text-gray-900 dark:hover:text-white"
+            className="mb-8 inline-flex items-center text-sm font-medium text-tandym-text-muted dark:text-neutral-400 hover:text-tandym-cobalt dark:hover:text-tandym-cobalt transition-colors"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back
@@ -213,22 +218,24 @@ function SignInContent() {
 
           {/* Logo */}
           <div>
-            <Link href="/" className="flex items-center">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-r from-blue-600 to-purple-600">
-                <Sparkles className="h-5 w-5 text-white" />
+            <Link href="/" className="flex items-center group">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-tandym-cobalt to-tandym-lilac transition-transform group-hover:scale-110">
+                <Sparkles className="h-6 w-6 text-white" />
               </div>
-              <span className="ml-2 text-2xl font-bold text-gray-900 dark:text-white">Aitrion</span>
+              <span className="ml-3 text-2xl font-bold font-poppins bg-gradient-to-r from-tandym-cobalt via-tandym-lilac to-tandym-coral bg-clip-text text-transparent">
+                Tandym.ai
+              </span>
             </Link>
           </div>
 
           <div className="mt-8">
-            <h2 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-              {userType === 'fan' ? 'Join as a Fan' : 'Start Creating'}
+            <h2 className="text-2xl font-bold font-poppins tracking-tight text-tandym-text-dark dark:text-white">
+              {userType === 'fan' ? 'Join as a Fan' : 'Create Your AI Twin'}
             </h2>
-            <p className="mt-2 text-sm text-gray-600 dark:text-neutral-400">
-              {userType === 'fan' 
-                ? 'Connect with your favorite creators through AI conversations' 
-                : 'Create your AI replica and monetize your expertise'
+            <p className="mt-2 text-sm text-tandym-text-muted dark:text-neutral-400">
+              {userType === 'fan'
+                ? 'Connect with your favorite creators through AI conversations'
+                : 'Train your AI twin on your YouTube content and engage fans 24/7'
               }
             </p>
           </div>
@@ -238,7 +245,7 @@ function SignInContent() {
               {/* Social Login Buttons */}
               <Button
                 onClick={() => handleSocialAuth('google')}
-                className="w-full h-12 bg-white dark:bg-neutral-800 border border-gray-300 dark:border-neutral-600 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-neutral-700 font-medium"
+                className="w-full h-12 bg-white dark:bg-neutral-800 border-2 border-gray-200 dark:border-neutral-600 text-tandym-text-dark dark:text-white hover:bg-gray-50 hover:border-tandym-cobalt/30 dark:hover:bg-neutral-700 font-medium transition-all rounded-xl"
               >
                 <svg className="mr-3 h-5 w-5" viewBox="0 0 24 24">
                   <path
@@ -263,7 +270,7 @@ function SignInContent() {
 
               <Button
                 onClick={() => handleSocialAuth('facebook')}
-                className="w-full h-12 bg-[#1877F2] hover:bg-[#166FE5] text-white font-medium"
+                className="w-full h-12 bg-[#1877F2] hover:bg-[#166FE5] text-white font-medium rounded-xl transition-all"
               >
                 <svg className="mr-3 h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
                   <path
@@ -277,7 +284,7 @@ function SignInContent() {
 
               <Button
                 onClick={() => handleSocialAuth('apple')}
-                className="w-full h-12 bg-black hover:bg-gray-800 text-white font-medium"
+                className="w-full h-12 bg-black hover:bg-gray-800 text-white font-medium rounded-xl transition-all"
               >
                 <svg className="mr-3 h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
                   <path
@@ -291,10 +298,10 @@ function SignInContent() {
             {/* Divider */}
             <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300 dark:border-neutral-700" />
+                <div className="w-full border-t border-gray-200 dark:border-neutral-700" />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="bg-white dark:bg-neutral-950 px-2 text-gray-500 dark:text-neutral-500">
+                <span className="bg-tandym-light dark:bg-tandym-midnight px-2 text-tandym-text-muted dark:text-neutral-500">
                   Or continue with email
                 </span>
               </div>
@@ -303,14 +310,14 @@ function SignInContent() {
             {/* Email Form */}
             <form onSubmit={handleEmailAuth} className="space-y-4">
               {error && (
-                <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/50 border border-red-200 dark:border-red-800">
+                <div className="p-3 rounded-xl bg-red-50 dark:bg-red-900/50 border border-red-200 dark:border-red-800">
                   <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
                 </div>
               )}
 
               {emailForm === 'signup' && (
                 <div>
-                  <Label htmlFor="name" className="text-gray-900 dark:text-white">
+                  <Label htmlFor="name" className="text-tandym-text-dark dark:text-white font-medium">
                     Full Name
                   </Label>
                   <Input
@@ -318,7 +325,7 @@ function SignInContent() {
                     type="text"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="mt-1 h-12"
+                    className="mt-1 h-12 rounded-xl border-gray-200 focus:border-tandym-cobalt focus:ring-tandym-cobalt"
                     required
                     placeholder="Enter your full name"
                   />
@@ -326,7 +333,7 @@ function SignInContent() {
               )}
 
               <div>
-                <Label htmlFor="email" className="text-gray-900 dark:text-white">
+                <Label htmlFor="email" className="text-tandym-text-dark dark:text-white font-medium">
                   Email Address
                 </Label>
                 <Input
@@ -334,14 +341,14 @@ function SignInContent() {
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="mt-1 h-12"
+                  className="mt-1 h-12 rounded-xl border-gray-200 focus:border-tandym-cobalt focus:ring-tandym-cobalt"
                   required
                   placeholder="Enter your email"
                 />
               </div>
 
               <div>
-                <Label htmlFor="password" className="text-gray-900 dark:text-white">
+                <Label htmlFor="password" className="text-tandym-text-dark dark:text-white font-medium">
                   Password
                 </Label>
                 <div className="relative mt-1">
@@ -350,7 +357,7 @@ function SignInContent() {
                     type={showPassword ? 'text' : 'password'}
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    className="h-12 pr-12"
+                    className="h-12 pr-12 rounded-xl border-gray-200 focus:border-tandym-cobalt focus:ring-tandym-cobalt"
                     required
                     placeholder="Enter your password"
                     minLength={6}
@@ -358,7 +365,7 @@ function SignInContent() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-tandym-text-muted hover:text-tandym-cobalt transition-colors"
                   >
                     {showPassword ? (
                       <EyeOff className="h-5 w-5" />
@@ -372,11 +379,11 @@ function SignInContent() {
               <Button
                 type="submit"
                 disabled={loading}
-                className={`w-full h-12 ${
+                className={`w-full h-12 rounded-full font-medium disabled:opacity-50 transition-all ${
                   userType === 'fan'
-                    ? 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500'
-                    : 'bg-purple-600 hover:bg-purple-700 focus:ring-purple-500'
-                } text-white font-medium disabled:opacity-50`}
+                    ? 'bg-tandym-cobalt hover:bg-tandym-cobalt/90 text-white shadow-lg shadow-tandym-cobalt/30 hover:shadow-tandym-cobalt/50'
+                    : 'bg-gradient-to-r from-tandym-lilac to-tandym-coral hover:opacity-90 text-white shadow-lg shadow-tandym-lilac/30 hover:shadow-tandym-lilac/50'
+                }`}
               >
                 {loading ? (
                   <div className="flex items-center">
@@ -396,10 +403,10 @@ function SignInContent() {
                     setFormData({ name: '', email: '', password: '' })
                     setError('')
                   }}
-                  className="text-sm font-medium text-gray-600 dark:text-neutral-400 hover:text-gray-900 dark:hover:text-white"
+                  className="text-sm font-medium text-tandym-text-muted dark:text-neutral-400 hover:text-tandym-cobalt dark:hover:text-tandym-cobalt transition-colors"
                 >
-                  {emailForm === 'signin' 
-                    ? "Don't have an account? Sign up" 
+                  {emailForm === 'signin'
+                    ? "Don't have an account? Sign up"
                     : "Already have an account? Sign in"}
                 </button>
               </div>
@@ -408,11 +415,11 @@ function SignInContent() {
             <div className="mt-6">
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300 dark:border-neutral-700" />
+                  <div className="w-full border-t border-gray-200 dark:border-neutral-700" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-white dark:bg-neutral-950 px-2 text-gray-500 dark:text-neutral-500">
-                    {userType === 'fan' ? 'Join thousands of fans' : 'Join hundreds of creators'}
+                  <span className="bg-tandym-light dark:bg-tandym-midnight px-2 text-tandym-text-muted dark:text-neutral-500">
+                    {userType === 'fan' ? 'Join fans in Tandym' : 'Join creators in Tandym'}
                   </span>
                 </div>
               </div>
@@ -422,17 +429,17 @@ function SignInContent() {
             <div className="text-center mt-6">
               <button
                 onClick={() => setUserType(userType === 'fan' ? 'creator' : 'fan')}
-                className="text-sm font-medium text-gray-600 dark:text-neutral-400 hover:text-gray-900 dark:hover:text-white"
+                className="text-sm font-medium text-tandym-text-muted dark:text-neutral-400 hover:text-tandym-cobalt dark:hover:text-tandym-cobalt transition-colors"
               >
-                {userType === 'fan' ? 'Not a fan? Join as a creator' : 'Not a creator? Join as a fan'}
+                {userType === 'fan' ? 'Not a fan? Create your AI twin' : 'Not a creator? Join as a fan'}
               </button>
             </div>
 
             <div className="mt-8">
-              <p className="text-xs text-gray-600 dark:text-neutral-400 text-center">
+              <p className="text-xs text-tandym-text-muted dark:text-neutral-400 text-center">
                 {userType === 'fan'
-                  ? 'By continuing, you agree to our Terms of Service and Privacy Policy. Start chatting with AI creators instantly.'
-                  : 'By continuing, you agree to our Terms of Service and Privacy Policy. Connect your YouTube and start earning.'}
+                  ? 'By continuing, you agree to our Terms of Service and Privacy Policy. Start chatting in Tandym instantly.'
+                  : 'By continuing, you agree to our Terms of Service and Privacy Policy. Connect your YouTube and launch your twin.'}
               </p>
             </div>
           </div>
@@ -440,69 +447,70 @@ function SignInContent() {
       </div>
 
       {/* Right side - Visual for signed in state */}
-      <div className="hidden lg:block relative">
+      <div className="hidden lg:block relative overflow-hidden">
         <div className={`absolute inset-0 ${
           userType === 'fan'
-            ? 'bg-gradient-to-br from-blue-600 via-cyan-700 to-teal-800'
-            : 'bg-gradient-to-br from-purple-600 via-pink-700 to-rose-800'
+            ? 'bg-gradient-to-br from-tandym-cobalt via-[#2845E6] to-[#1d34CC]'
+            : 'bg-gradient-to-br from-tandym-lilac via-[#B8A3FF] to-tandym-coral'
         }`}></div>
+
         <div className="relative h-full flex flex-col justify-center items-center p-12 text-white">
           <div className="max-w-md text-center">
             <div className="mb-8 flex justify-center">
               <div className="relative">
-                <div className="h-24 w-24 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                <div className="h-24 w-24 rounded-2xl bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center">
                   {userType === 'fan' ? (
                     <MessageCircle className="h-12 w-12 text-white" />
                   ) : (
                     <Video className="h-12 w-12 text-white" />
                   )}
                 </div>
-                <div className="absolute -top-2 -right-2 h-8 w-8 rounded-full bg-yellow-400 flex items-center justify-center">
-                  <Play className="h-4 w-4 text-yellow-800" />
+                <div className="absolute -top-2 -right-2 h-8 w-8 rounded-full bg-tandym-coral flex items-center justify-center">
+                  <Play className="h-4 w-4 text-white" />
                 </div>
               </div>
             </div>
-            <h3 className="text-2xl font-bold mb-4">
-              {userType === 'fan' 
-                ? 'Chat With Your Heroes' 
-                : 'Monetize Your Expertise'
+            <h3 className="text-3xl font-bold font-poppins mb-4">
+              {userType === 'fan'
+                ? 'Chat With AI Twins'
+                : 'Scale Yourself in Tandym'
               }
             </h3>
-            <p className="text-white/80 mb-8">
+            <p className="text-white/90 mb-8 leading-relaxed">
               {userType === 'fan'
-                ? 'Get instant access to AI versions of your favorite creators. Ask questions, get advice, and have meaningful conversations anytime.'
-                : 'Turn your knowledge into passive income. Your AI works 24/7, engaging fans while you focus on creating amazing content.'
+                ? 'Get instant access to AI twins of your favorite creators. Ask questions, get advice, and have meaningful conversations anytime.'
+                : 'Turn your YouTube content into an AI twin that engages fans 24/7. Drive views, boost engagement, and grow your channel — all in Tandym.'
               }
             </p>
             <div className="space-y-4">
               {userType === 'fan' ? (
                 <>
-                  <div className="flex items-center text-sm">
-                    <div className="h-2 w-2 rounded-full bg-white/60 mr-3"></div>
+                  <div className="flex items-center text-sm text-white/90">
+                    <div className="h-2 w-2 rounded-full bg-white/80 mr-3"></div>
                     <span>Instant AI conversations with creators</span>
                   </div>
-                  <div className="flex items-center text-sm">
-                    <div className="h-2 w-2 rounded-full bg-white/60 mr-3"></div>
+                  <div className="flex items-center text-sm text-white/90">
+                    <div className="h-2 w-2 rounded-full bg-white/80 mr-3"></div>
                     <span>Get personalized advice and insights</span>
                   </div>
-                  <div className="flex items-center text-sm">
-                    <div className="h-2 w-2 rounded-full bg-white/60 mr-3"></div>
+                  <div className="flex items-center text-sm text-white/90">
+                    <div className="h-2 w-2 rounded-full bg-white/80 mr-3"></div>
                     <span>Support creators you love</span>
                   </div>
                 </>
               ) : (
                 <>
-                  <div className="flex items-center text-sm">
-                    <div className="h-2 w-2 rounded-full bg-white/60 mr-3"></div>
-                    <span>AI trained on your YouTube content</span>
+                  <div className="flex items-center text-sm text-white/90">
+                    <div className="h-2 w-2 rounded-full bg-white/80 mr-3"></div>
+                    <span>AI twin trained on your YouTube library</span>
                   </div>
-                  <div className="flex items-center text-sm">
-                    <div className="h-2 w-2 rounded-full bg-white/60 mr-3"></div>
-                    <span>Earn while you sleep</span>
+                  <div className="flex items-center text-sm text-white/90">
+                    <div className="h-2 w-2 rounded-full bg-white/80 mr-3"></div>
+                    <span>Dedicated page + embeddable widget</span>
                   </div>
-                  <div className="flex items-center text-sm">
-                    <div className="h-2 w-2 rounded-full bg-white/60 mr-3"></div>
-                    <span>5-minute setup process</span>
+                  <div className="flex items-center text-sm text-white/90">
+                    <div className="h-2 w-2 rounded-full bg-white/80 mr-3"></div>
+                    <span>5-minute setup, 24/7 engagement</span>
                   </div>
                 </>
               )}
@@ -516,7 +524,7 @@ function SignInContent() {
 
 export default function SignInPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-tandym-light flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-tandym-cobalt"></div></div>}>
       <SignInContent />
     </Suspense>
   )
