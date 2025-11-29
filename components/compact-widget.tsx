@@ -37,6 +37,7 @@ export default function CompactWidget(props: CompactWidgetProps) {
     creator,
     theme = 'light',
     primaryColor = '#6366f1',
+    showAvatar = true,
     buttonText = 'Chat with me'
   } = props
 
