@@ -48,11 +48,11 @@ export default function DashboardGreeting({ creator, stats }: DashboardGreetingP
     .toUpperCase() || 'C'
 
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-tandym-midnight via-tandym-cobalt/20 to-tandym-lilac/20 border border-tandym-cobalt/30 p-8">
+    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#1e3a8a] via-[#4c6ef5] to-[#7c3aed] border border-white/10 p-8">
       {/* Background decorative elements */}
-      <div className="absolute inset-0 bg-gradient-to-br from-tandym-cobalt/10 via-transparent to-tandym-lilac/10" />
-      <div className="absolute -top-24 -right-24 w-96 h-96 bg-tandym-cobalt/20 rounded-full blur-3xl" />
-      <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-tandym-lilac/20 rounded-full blur-3xl" />
+      <div className="absolute inset-0 bg-gradient-to-br from-black/20 via-transparent to-black/10" />
+      <div className="absolute -top-24 -right-24 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
+      <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
 
       <div className="relative z-10 flex items-start justify-between gap-6 flex-wrap">
         {/* Left side - Greeting and info */}
@@ -82,16 +82,16 @@ export default function DashboardGreeting({ creator, stats }: DashboardGreetingP
               transition={{ duration: 0.4, delay: 0.1 }}
             >
               <div className="flex items-center gap-2 mb-2">
-                <p className="text-white/70 text-sm font-medium">{greeting},</p>
-                <Badge className="bg-tandym-coral/20 text-tandym-coral border-tandym-coral/30">
+                <p className="text-white text-sm font-medium">{greeting},</p>
+                <Badge className="bg-tandym-coral text-white border-0">
                   <Sparkles className="w-3 h-3 mr-1" />
                   Creator
                 </Badge>
               </div>
-              <h1 className="text-3xl lg:text-4xl font-bold font-poppins text-white mb-3 truncate">
+              <h1 className="text-3xl lg:text-4xl font-bold font-poppins text-white mb-3 truncate drop-shadow-lg">
                 {displayName}
               </h1>
-              <p className="text-white/80 text-base">
+              <p className="text-white/95 text-base">
                 Your AI twin is active and ready to engage with your audience
               </p>
             </motion.div>
@@ -106,36 +106,36 @@ export default function DashboardGreeting({ creator, stats }: DashboardGreetingP
               >
                 {stats.followers !== undefined && (
                   <div className="flex items-center gap-2">
-                    <div className="h-8 w-8 rounded-lg bg-white/10 backdrop-blur-sm flex items-center justify-center">
+                    <div className="h-8 w-8 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center">
                       <TrendingUp className="w-4 h-4 text-white" />
                     </div>
                     <div>
-                      <div className="text-white font-bold font-poppins">{stats.followers}</div>
-                      <div className="text-white/60 text-xs">Followers</div>
+                      <div className="text-white font-bold font-poppins text-lg">{stats.followers}</div>
+                      <div className="text-white/90 text-xs font-medium">Followers</div>
                     </div>
                   </div>
                 )}
 
                 {stats.messages !== undefined && (
                   <div className="flex items-center gap-2">
-                    <div className="h-8 w-8 rounded-lg bg-white/10 backdrop-blur-sm flex items-center justify-center">
+                    <div className="h-8 w-8 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center">
                       <Zap className="w-4 h-4 text-white" />
                     </div>
                     <div>
-                      <div className="text-white font-bold font-poppins">{stats.messages}</div>
-                      <div className="text-white/60 text-xs">Messages</div>
+                      <div className="text-white font-bold font-poppins text-lg">{stats.messages}</div>
+                      <div className="text-white/90 text-xs font-medium">Messages</div>
                     </div>
                   </div>
                 )}
 
                 {stats.videos !== undefined && (
                   <div className="flex items-center gap-2">
-                    <div className="h-8 w-8 rounded-lg bg-white/10 backdrop-blur-sm flex items-center justify-center">
+                    <div className="h-8 w-8 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center">
                       <Sparkles className="w-4 h-4 text-white" />
                     </div>
                     <div>
-                      <div className="text-white font-bold font-poppins">{stats.videos}</div>
-                      <div className="text-white/60 text-xs">Videos</div>
+                      <div className="text-white font-bold font-poppins text-lg">{stats.videos}</div>
+                      <div className="text-white/90 text-xs font-medium">Videos</div>
                     </div>
                   </div>
                 )}
