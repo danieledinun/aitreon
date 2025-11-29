@@ -156,11 +156,13 @@ const Logo = () => {
   return (
     <Link
       href="/creator"
-      className="font-normal flex items-center gap-3 text-sm text-gray-900 dark:text-white py-3 px-1 relative z-20"
+      className="font-normal flex items-center gap-3 text-sm py-3 px-1 relative z-20 group"
     >
-      <div className="h-6 w-6 bg-gradient-to-br from-orange-500 to-orange-600 dark:from-orange-400 dark:to-orange-500 rounded-lg flex-shrink-0 shadow-sm" />
-      <span className="font-semibold text-gray-900 dark:text-white whitespace-nowrap">
-        Aitrion Creator
+      <div className="h-8 w-8 bg-gradient-to-br from-tandym-cobalt to-tandym-lilac rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg group-hover:scale-110 transition-transform">
+        <Sparkles className="h-5 w-5 text-white" />
+      </div>
+      <span className="font-bold font-poppins text-lg bg-gradient-to-r from-tandym-cobalt via-tandym-lilac to-tandym-coral bg-clip-text text-transparent whitespace-nowrap">
+        Tandym.ai
       </span>
     </Link>
   )
@@ -171,9 +173,11 @@ const LogoIcon = () => {
     <div className="flex items-center justify-center py-3 px-2">
       <Link
         href="/creator"
-        className="font-normal flex items-center justify-center relative z-20"
+        className="font-normal flex items-center justify-center relative z-20 group"
       >
-        <div className="h-8 w-8 bg-gradient-to-br from-orange-500 to-orange-600 dark:from-orange-400 dark:to-orange-500 rounded-lg flex-shrink-0 shadow-sm" />
+        <div className="h-10 w-10 bg-gradient-to-br from-tandym-cobalt to-tandym-lilac rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg group-hover:scale-110 transition-transform">
+          <Sparkles className="h-6 w-6 text-white" />
+        </div>
       </Link>
     </div>
   )
