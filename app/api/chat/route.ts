@@ -218,8 +218,15 @@ export async function POST(request: NextRequest) {
       console.log('ℹ️  No citations to save')
     }
 
-    // Attach citations to the message for response
-    aiMessage.citations = citationData
+    // Attach original citations (with camelCase) to the message for response
+    // Don't use citationData which has snake_case for database
+    aiMessage.citations = citations.map(citation => ({
+      videoId: citation.videoId,
+      videoTitle: citation.videoTitle,
+      startTime: citation.startTime,
+      endTime: citation.endTime,
+      content: citation.content
+    }))
 
     // Update daily usage (only for users with limits)
     if (messageLimit > 0) {
