@@ -1521,6 +1521,22 @@ export default function CreatorInteraction({
     }
   }, [messages])
 
+  // Auto-scroll to video player when it opens
+  useEffect(() => {
+    if (inlineVideo) {
+      // Small delay to ensure the video player has rendered
+      setTimeout(() => {
+        const messageElement = document.getElementById(`message-${inlineVideo.messageId}`)
+        if (messageElement) {
+          messageElement.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          })
+        }
+      }, 100)
+    }
+  }, [inlineVideo])
+
   // Show message count for anonymous users
   const getDisplayMessageCount = () => {
     if (session?.user?.id) {
@@ -1811,7 +1827,7 @@ export default function CreatorInteraction({
           {/* Top blur overlay - positioned inside messages area */}
           <div className="absolute top-0 left-0 right-0 h-16 bg-gradient-to-b from-white via-white/90 via-white/70 via-white/40 to-transparent pointer-events-none z-10"></div>
           {messages.map((message, index) => (
-            <div key={message.id}>
+            <div key={message.id} id={`message-${message.id}`}>
               {message.role === 'assistant' && (
                 <div className="flex items-start space-x-3 mb-4 group">
                   <div className="relative flex-shrink-0">
