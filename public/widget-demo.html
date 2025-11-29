@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tandym.ai Widget Demo</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      line-height: 1.6;
+      color: #333;
+    }
+    h1 {
+      color: #6366f1;
+      margin-bottom: 10px;
+    }
+    .subtitle {
+      color: #666;
+      font-size: 18px;
+      margin-bottom: 40px;
+    }
+    .section {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 30px;
+      margin-bottom: 30px;
+    }
+    .section h2 {
+      margin-top: 0;
+      color: #333;
+    }
+    code {
+      background: #e9ecef;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+    }
+    .note {
+      background: #fff3cd;
+      border-left: 4px solid #ffc107;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 4px;
+    }
+    .button {
+      display: inline-block;
+      background: #6366f1;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 8px;
+      text-decoration: none;
+      margin-top: 10px;
+      transition: background 0.2s;
+    }
+    .button:hover {
+      background: #4f46e5;
+    }
+    .controls {
+      margin-top: 20px;
+    }
+    button {
+      background: #6366f1;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-right: 10px;
+      font-size: 14px;
+    }
+    button:hover {
+      background: #4f46e5;
+    }
+  </style>
+</head>
+<body>
+  <h1>Tandym.ai Chat Widget Demo</h1>
+  <p class="subtitle">Interactive demo of the embeddable chat widget</p>
+
+  <div class="section">
+    <h2>About This Demo</h2>
+    <p>This page demonstrates the Tandym.ai chat widget in action. The widget appears as a floating button in the bottom-right corner of the page.</p>
+    <p>Click the chat button to open the widget and start chatting with the creator's AI twin!</p>
+  </div>
+
+  <div class="section">
+    <h2>How It Works</h2>
+    <ol>
+      <li>The widget loads asynchronously and doesn't slow down your page</li>
+      <li>It appears as a customizable floating button</li>
+      <li>Clicking the button opens a chat interface</li>
+      <li>Users can have conversations with your AI twin</li>
+      <li>The widget is fully responsive and mobile-friendly</li>
+    </ol>
+  </div>
+
+  <div class="section">
+    <h2>Installation</h2>
+    <p>To add this widget to your website, simply paste this code before the closing <code>&lt;/body&gt;</code> tag:</p>
+    <div class="note">
+      <strong>Note:</strong> Replace <code>YOUR_USERNAME</code> with your actual creator username from Tandym.ai
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Widget Controls</h2>
+    <p>You can programmatically control the widget using JavaScript:</p>
+    <div class="controls">
+      <button onclick="window.tw && tw('open')">Open Widget</button>
+      <button onclick="window.tw && tw('close')">Close Widget</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Customization Options</h2>
+    <ul>
+      <li><strong>Position:</strong> bottom-right, bottom-left, top-right, top-left</li>
+      <li><strong>Theme:</strong> light, dark, or auto (follows system preference)</li>
+      <li><strong>Primary Color:</strong> Any hex color code</li>
+      <li><strong>Button Text:</strong> Customize the call-to-action text</li>
+      <li><strong>Size:</strong> Adjust width and height to fit your layout</li>
+      <li><strong>Avatar:</strong> Show or hide the creator's avatar</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>Get Your Widget</h2>
+    <p>Ready to add your AI twin to your website?</p>
+    <a href="http://localhost:3000/auth/signin?userType=creator" class="button">Get Started →</a>
+  </div>
+
+  <!-- Tandym.ai Chat Widget -->
+  <!--
+    NOTE: This is a demo. Replace localhost:3000 with your actual domain
+    and replace the username with your actual creator username
+  -->
+  <script>
+    (function(w,d,s,o,f,js,fjs){
+      w['TandymWidget']=o;w[o] = w[o] || function () { (w[o].q = w[o].q || []).push(arguments) };
+      js = d.createElement(s), fjs = d.getElementsByTagName(s)[0];
+      js.id = o; js.src = f; js.async = 1; fjs.parentNode.insertBefore(js, fjs);
+    }(window, document, 'script', 'tw', 'http://localhost:3000/widget.js'));
+    tw('init', {
+      username: 'YOUR_USERNAME',  // Replace with actual username
+      position: 'bottom-right',
+      theme: 'light',
+      primaryColor: '#6366f1',
+      showAvatar: true,
+      buttonText: 'Chat with me',
+      width: '400',
+      height: '600'
+    });
+  </script>
+</body>
+</html>
