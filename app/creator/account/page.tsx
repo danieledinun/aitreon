@@ -27,11 +27,18 @@ import {
   LogOut,
   Eye,
   EyeOff,
+  Check,
+  ArrowRight,
+  Loader2,
+  ChevronDown,
+  ChevronUp,
+  Zap,
 } from 'lucide-react'
 import { useCreatorPlan } from '@/lib/hooks/use-plan-limits'
-import { getPlanConfig } from '@/lib/plans'
+import { getPlanConfig, PLANS, type PlanTier } from '@/lib/plans'
 import Link from 'next/link'
 import { signOut } from 'next-auth/react'
+import { cn } from '@/lib/utils'
 
 export default function AccountSettingsPage() {
   const { data: session } = useSession()
@@ -40,6 +47,9 @@ export default function AccountSettingsPage() {
   const [success, setSuccess] = useState('')
   const [error, setError] = useState('')
   const [showPassword, setShowPassword] = useState(false)
+  const [showUpgrades, setShowUpgrades] = useState(false)
+  const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly')
+  const [upgrading, setUpgrading] = useState<PlanTier | null>(null)
 
   // Profile state
   const [profileData, setProfileData] = useState({
@@ -60,9 +70,10 @@ export default function AccountSettingsPage() {
 
   // Creator ID and plan
   const [creatorId, setCreatorId] = useState<string | null>(null)
-  const { plan, isLoading: planLoading } = useCreatorPlan(creatorId || undefined)
+  const { plan, isLoading: planLoading, refetch } = useCreatorPlan(creatorId || undefined)
 
   const currentPlan = plan ? getPlanConfig(plan.planTier) : null
+  const currentTier = (plan?.planTier || 'FREE') as PlanTier
 
   useEffect(() => {
     fetchAccountData()
@@ -195,6 +206,70 @@ export default function AccountSettingsPage() {
       setTimeout(() => setSuccess(''), 3000)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to upload image')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleUpgrade = async (targetTier: PlanTier) => {
+    if (!creatorId) return
+
+    setUpgrading(targetTier)
+    setError('')
+
+    try {
+      const response = await fetch(`/api/creators/${creatorId}/subscription/upgrade`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ targetTier, billingPeriod }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to upgrade')
+      }
+
+      if (data.requiresPayment && data.checkoutUrl) {
+        // Redirect to Stripe checkout
+        window.location.href = data.checkoutUrl
+      } else {
+        // Upgrade successful (e.g., downgrade to FREE)
+        await refetch()
+        setSuccess('Plan updated successfully!')
+        setTimeout(() => setSuccess(''), 3000)
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to upgrade plan')
+    } finally {
+      setUpgrading(null)
+    }
+  }
+
+  const handleCancelSubscription = async () => {
+    if (!creatorId || !confirm('Are you sure you want to cancel your subscription?')) return
+
+    setLoading(true)
+    setError('')
+
+    try {
+      const response = await fetch(`/api/creators/${creatorId}/subscription/cancel`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cancelImmediately: false }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to cancel')
+      }
+
+      await refetch()
+      setSuccess(data.message || 'Subscription canceled successfully')
+      setTimeout(() => setSuccess(''), 3000)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to cancel subscription')
     } finally {
       setLoading(false)
     }
@@ -412,22 +487,42 @@ export default function AccountSettingsPage() {
                   Manage your Tandym subscription
                 </CardDescription>
               </div>
-              <Link href="/creator/subscription">
-                <Button variant="outline">
-                  Manage Plan
+              <div className="flex gap-2">
+                {currentTier !== 'FREE' && plan.subscriptionStatus === 'active' && (
+                  <Button variant="outline" onClick={handleCancelSubscription} disabled={loading}>
+                    Cancel Plan
+                  </Button>
+                )}
+                <Button
+                  variant="outline"
+                  onClick={() => setShowUpgrades(!showUpgrades)}
+                  className="gap-2"
+                >
+                  {showUpgrades ? (
+                    <>
+                      Hide Plans <ChevronUp className="w-4 h-4" />
+                    </>
+                  ) : (
+                    <>
+                      View Plans <ChevronDown className="w-4 h-4" />
+                    </>
+                  )}
                 </Button>
-              </Link>
+              </div>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-6">
             <div className="flex items-center justify-between p-6 rounded-xl bg-gradient-to-br from-tandym-cobalt/10 to-tandym-lilac/10 border border-tandym-cobalt/20">
-              <div>
+              <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
                   <h3 className="text-2xl font-bold font-poppins text-tandym-text-dark">
                     {currentPlan.displayName}
                   </h3>
                   {plan.subscriptionStatus === 'trialing' && (
-                    <Badge className="bg-tandym-coral">Trial</Badge>
+                    <Badge className="bg-tandym-coral text-white">Trial</Badge>
+                  )}
+                  {plan.subscriptionStatus === 'canceled' && (
+                    <Badge variant="destructive">Canceled</Badge>
                   )}
                 </div>
                 <p className="text-tandym-text-muted mb-4">
@@ -462,6 +557,153 @@ export default function AccountSettingsPage() {
               </div>
               <Sparkles className="w-12 h-12 text-tandym-cobalt/30" />
             </div>
+
+            {/* Upgrade Options */}
+            {showUpgrades && (
+              <div className="space-y-6 pt-4 border-t">
+                {/* Billing Period Toggle */}
+                <div className="flex justify-center">
+                  <div className="flex items-center gap-4">
+                    <span
+                      className={cn(
+                        'text-sm font-medium transition-colors cursor-pointer',
+                        billingPeriod === 'monthly' ? 'text-tandym-text-dark' : 'text-tandym-text-muted'
+                      )}
+                      onClick={() => setBillingPeriod('monthly')}
+                    >
+                      Monthly
+                    </span>
+                    <button
+                      onClick={() =>
+                        setBillingPeriod(billingPeriod === 'monthly' ? 'yearly' : 'monthly')
+                      }
+                      className="relative inline-flex h-8 w-14 items-center rounded-full bg-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-tandym-cobalt focus:ring-offset-2"
+                    >
+                      <span
+                        className={cn(
+                          'inline-block h-6 w-6 transform rounded-full bg-gradient-to-r from-tandym-cobalt to-tandym-lilac transition-transform shadow-md',
+                          billingPeriod === 'yearly' ? 'translate-x-7' : 'translate-x-1'
+                        )}
+                      />
+                    </button>
+                    <span
+                      className={cn(
+                        'text-sm font-medium transition-colors cursor-pointer',
+                        billingPeriod === 'yearly' ? 'text-tandym-text-dark' : 'text-tandym-text-muted'
+                      )}
+                      onClick={() => setBillingPeriod('yearly')}
+                    >
+                      Yearly
+                    </span>
+                    {billingPeriod === 'yearly' && (
+                      <Badge className="bg-tandym-coral text-white">2 Months Free</Badge>
+                    )}
+                  </div>
+                </div>
+
+                {/* Plan Cards */}
+                <div className="grid md:grid-cols-4 gap-4">
+                  {Object.values(PLANS)
+                    .filter(p => p.tier !== 'ENTERPRISE')
+                    .map(planConfig => {
+                      const isCurrent = currentTier === planConfig.tier
+                      const isUpgrade =
+                        ['FREE', 'LITE', 'PRO', 'ULTIMATE'].indexOf(planConfig.tier) >
+                        ['FREE', 'LITE', 'PRO', 'ULTIMATE'].indexOf(currentTier)
+
+                      return (
+                        <Card
+                          key={planConfig.tier}
+                          className={cn(
+                            'relative',
+                            isCurrent && 'ring-2 ring-tandym-cobalt',
+                            planConfig.popular && 'ring-2 ring-tandym-lilac'
+                          )}
+                        >
+                          {planConfig.popular && (
+                            <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-tandym-lilac to-tandym-coral py-1 text-center rounded-t-lg">
+                              <span className="text-white text-xs font-bold">POPULAR</span>
+                            </div>
+                          )}
+
+                          <CardHeader className={cn(planConfig.popular ? 'pt-8' : 'pt-6')}>
+                            <CardTitle className="text-lg">{planConfig.displayName}</CardTitle>
+                            <div className="pt-3">
+                              <span className="text-2xl font-bold">
+                                $
+                                {billingPeriod === 'monthly'
+                                  ? planConfig.monthlyPrice
+                                  : planConfig.yearlyPrice}
+                              </span>
+                              <span className="text-sm text-tandym-text-muted">/mo</span>
+                            </div>
+                          </CardHeader>
+
+                          <CardContent className="space-y-4">
+                            <Button
+                              className="w-full"
+                              variant={isCurrent ? 'outline' : 'default'}
+                              size="sm"
+                              disabled={isCurrent || upgrading !== null}
+                              onClick={() => handleUpgrade(planConfig.tier)}
+                            >
+                              {upgrading === planConfig.tier ? (
+                                <>
+                                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                  Processing...
+                                </>
+                              ) : isCurrent ? (
+                                'Current Plan'
+                              ) : isUpgrade ? (
+                                <>
+                                  Upgrade <ArrowRight className="w-4 h-4 ml-2" />
+                                </>
+                              ) : (
+                                'Downgrade'
+                              )}
+                            </Button>
+
+                            <div className="space-y-2 text-xs">
+                              <div className="flex items-center gap-2">
+                                <Check className="w-3 h-3 text-green-500 flex-shrink-0" />
+                                <span>
+                                  {planConfig.limits.maxVideos === null
+                                    ? 'Unlimited videos'
+                                    : `${planConfig.limits.maxVideos} videos`}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Check className="w-3 h-3 text-green-500 flex-shrink-0" />
+                                <span>
+                                  {planConfig.limits.maxMessagesPerMonth === null
+                                    ? 'Unlimited messages'
+                                    : `${planConfig.limits.maxMessagesPerMonth} msg/mo`}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Check className="w-3 h-3 text-green-500 flex-shrink-0" />
+                                <span className="capitalize">{planConfig.limits.autoSync} sync</span>
+                              </div>
+                              {planConfig.limits.embedWidget && (
+                                <div className="flex items-center gap-2">
+                                  <Check className="w-3 h-3 text-green-500 flex-shrink-0" />
+                                  <span>Embed widget</span>
+                                </div>
+                              )}
+                              {planConfig.limits.removeBranding && (
+                                <div className="flex items-center gap-2">
+                                  <Check className="w-3 h-3 text-green-500 flex-shrink-0" />
+                                  <span>No branding</span>
+                                </div>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )
+                    })}
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
