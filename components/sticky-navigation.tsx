@@ -53,6 +53,9 @@ export default function StickyNavigation() {
           <Link href="#benefits" className="text-gray-300 hover:text-tandym-lilac transition-colors">
             Benefits
           </Link>
+          <Link href="/pricing" className="text-gray-300 hover:text-tandym-lilac transition-colors">
+            Pricing
+          </Link>
         </div>
 
         <div className="flex items-center space-x-4">
