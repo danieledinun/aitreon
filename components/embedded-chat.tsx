@@ -5,7 +5,6 @@ import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Send, MessageCircle, X, Sparkles } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import InlineVideoPlayer from './inline-video-player'
 
 interface ChatMessage {
   id: string
@@ -220,14 +219,16 @@ export default function EmbeddedChat({
                 <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 space-y-2">
                   <p className="text-xs font-semibold text-gray-500 dark:text-gray-400">Sources:</p>
                   {message.citations.map((citation, idx) => (
-                    <InlineVideoPlayer
+                    <a
                       key={idx}
-                      videoId={citation.videoId}
-                      title={citation.videoTitle}
-                      startTime={citation.startTime}
-                      endTime={citation.endTime}
-                      compact
-                    />
+                      href={`https://www.youtube.com/watch?v=${citation.videoId}${citation.startTime ? `&t=${Math.floor(citation.startTime)}s` : ''}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                    >
+                      📹 {citation.videoTitle}
+                      {citation.startTime && ` (${Math.floor(citation.startTime / 60)}:${(citation.startTime % 60).toFixed(0).padStart(2, '0')})`}
+                    </a>
                   ))}
                 </div>
               )}
