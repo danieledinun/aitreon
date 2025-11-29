@@ -31,7 +31,7 @@ export default function EmbedPage() {
     // Fetch creator's username
     const fetchCreator = async () => {
       try {
-        const res = await fetch('/api/creator/profile')
+        const res = await fetch('/api/creator/me')
         const data = await res.json()
         if (data.username) {
           setCreatorUsername(data.username)
