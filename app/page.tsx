@@ -462,6 +462,175 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Compact Pricing Section */}
+      <section className="bg-tandym-midnight py-20">
+        <div className="container mx-auto px-6 max-w-7xl">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold font-poppins text-white mb-4">
+              Simple, transparent pricing
+            </h2>
+            <p className="text-lg text-gray-300 max-w-3xl mx-auto">
+              Start free and scale as you grow. All plans include your dedicated AI twin page.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-4 gap-6 mb-12">
+            {/* Free Plan */}
+            <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 hover:border-tandym-cobalt/50 transition-all">
+              <div className="mb-4">
+                <h3 className="text-xl font-bold font-poppins text-white mb-2">Free</h3>
+                <div className="flex items-baseline gap-1 mb-3">
+                  <span className="text-4xl font-bold text-white">$0</span>
+                  <span className="text-gray-400">/mo</span>
+                </div>
+                <p className="text-sm text-gray-400">Perfect for testing</p>
+              </div>
+              <ul className="space-y-3 mb-6">
+                <li className="flex items-start gap-2 text-sm text-gray-300">
+                  <CheckCircle className="w-4 h-4 text-tandym-cobalt flex-shrink-0 mt-0.5" />
+                  Up to 10 videos
+                </li>
+                <li className="flex items-start gap-2 text-sm text-gray-300">
+                  <CheckCircle className="w-4 h-4 text-tandym-cobalt flex-shrink-0 mt-0.5" />
+                  100 messages/month
+                </li>
+                <li className="flex items-start gap-2 text-sm text-gray-300">
+                  <CheckCircle className="w-4 h-4 text-tandym-cobalt flex-shrink-0 mt-0.5" />
+                  Tandym watermark
+                </li>
+              </ul>
+              <Link href="/auth/signin?userType=creator&mode=signup">
+                <Button className="w-full bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-full">
+                  Get Started Free
+                </Button>
+              </Link>
+            </div>
+
+            {/* Creator Lite */}
+            <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 hover:border-tandym-lilac/50 transition-all">
+              <div className="mb-4">
+                <h3 className="text-xl font-bold font-poppins text-white mb-2">Creator Lite</h3>
+                <div className="flex items-baseline gap-1 mb-3">
+                  <span className="text-4xl font-bold text-white">$29</span>
+                  <span className="text-gray-400">/mo</span>
+                </div>
+                <p className="text-sm text-gray-400">For growing creators</p>
+              </div>
+              <ul className="space-y-3 mb-6">
+                <li className="flex items-start gap-2 text-sm text-gray-300">
+                  <CheckCircle className="w-4 h-4 text-tandym-lilac flex-shrink-0 mt-0.5" />
+                  Up to 50 videos
+                </li>
+                <li className="flex items-start gap-2 text-sm text-gray-300">
+                  <CheckCircle className="w-4 h-4 text-tandym-lilac flex-shrink-0 mt-0.5" />
+                  1,000 messages/month
+                </li>
+                <li className="flex items-start gap-2 text-sm text-gray-300">
+                  <CheckCircle className="w-4 h-4 text-tandym-lilac flex-shrink-0 mt-0.5" />
+                  Manual sync
+                </li>
+              </ul>
+              <Link href="/pricing">
+                <Button className="w-full bg-gradient-to-r from-tandym-cobalt to-tandym-lilac hover:opacity-90 text-white rounded-full">
+                  Start Free Trial
+                </Button>
+              </Link>
+            </div>
+
+            {/* Creator Pro - Most Popular */}
+            <div className="bg-gradient-to-br from-tandym-cobalt/20 to-tandym-lilac/20 backdrop-blur-sm rounded-2xl p-6 border-2 border-tandym-lilac relative">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                <span className="bg-gradient-to-r from-tandym-lilac to-tandym-coral text-white text-xs font-bold px-4 py-1 rounded-full">
+                  MOST POPULAR
+                </span>
+              </div>
+              <div className="mb-4">
+                <h3 className="text-xl font-bold font-poppins text-white mb-2">Creator Pro</h3>
+                <div className="flex items-baseline gap-1 mb-3">
+                  <span className="text-4xl font-bold text-white">$69</span>
+                  <span className="text-gray-400">/mo</span>
+                </div>
+                <p className="text-sm text-gray-400">For serious creators</p>
+              </div>
+              <ul className="space-y-3 mb-6">
+                <li className="flex items-start gap-2 text-sm text-gray-300">
+                  <CheckCircle className="w-4 h-4 text-tandym-lilac flex-shrink-0 mt-0.5" />
+                  Up to 100 videos
+                </li>
+                <li className="flex items-start gap-2 text-sm text-gray-300">
+                  <CheckCircle className="w-4 h-4 text-tandym-lilac flex-shrink-0 mt-0.5" />
+                  2,500 messages/month
+                </li>
+                <li className="flex items-start gap-2 text-sm text-gray-300">
+                  <CheckCircle className="w-4 h-4 text-tandym-lilac flex-shrink-0 mt-0.5" />
+                  Auto weekly sync
+                </li>
+                <li className="flex items-start gap-2 text-sm text-gray-300">
+                  <CheckCircle className="w-4 h-4 text-tandym-lilac flex-shrink-0 mt-0.5" />
+                  No watermark
+                </li>
+              </ul>
+              <Link href="/pricing">
+                <Button className="w-full bg-gradient-to-r from-tandym-lilac to-tandym-coral hover:opacity-90 text-white rounded-full">
+                  Start Free Trial
+                </Button>
+              </Link>
+            </div>
+
+            {/* Creator Ultimate */}
+            <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 hover:border-tandym-coral/50 transition-all">
+              <div className="mb-4">
+                <h3 className="text-xl font-bold font-poppins text-white mb-2">Creator Ultimate</h3>
+                <div className="flex items-baseline gap-1 mb-3">
+                  <span className="text-4xl font-bold text-white">$149</span>
+                  <span className="text-gray-400">/mo</span>
+                </div>
+                <p className="text-sm text-gray-400">For power users</p>
+              </div>
+              <ul className="space-y-3 mb-6">
+                <li className="flex items-start gap-2 text-sm text-gray-300">
+                  <CheckCircle className="w-4 h-4 text-tandym-coral flex-shrink-0 mt-0.5" />
+                  Unlimited videos
+                </li>
+                <li className="flex items-start gap-2 text-sm text-gray-300">
+                  <CheckCircle className="w-4 h-4 text-tandym-coral flex-shrink-0 mt-0.5" />
+                  10,000 messages/month
+                </li>
+                <li className="flex items-start gap-2 text-sm text-gray-300">
+                  <CheckCircle className="w-4 h-4 text-tandym-coral flex-shrink-0 mt-0.5" />
+                  Auto daily sync
+                </li>
+                <li className="flex items-start gap-2 text-sm text-gray-300">
+                  <CheckCircle className="w-4 h-4 text-tandym-coral flex-shrink-0 mt-0.5" />
+                  Priority support
+                </li>
+              </ul>
+              <Link href="/pricing">
+                <Button className="w-full bg-gradient-to-r from-tandym-coral to-tandym-cobalt hover:opacity-90 text-white rounded-full">
+                  Start Free Trial
+                </Button>
+              </Link>
+            </div>
+          </div>
+
+          {/* Learn More CTA */}
+          <div className="text-center">
+            <p className="text-gray-400 mb-4">
+              All paid plans include a 14-day free trial. Need more?
+            </p>
+            <Link href="/pricing">
+              <Button
+                variant="outline"
+                className="border-2 border-white/20 text-white hover:bg-white/10 rounded-full"
+              >
+                View Full Pricing & Features
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Testimonials Placeholder Section */}
       <section className="bg-tandym-light py-20">
         <div className="container mx-auto px-6 max-w-7xl">
