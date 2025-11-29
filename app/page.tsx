@@ -463,7 +463,7 @@ export default function HomePage() {
       </section>
 
       {/* Compact Pricing Section */}
-      <section className="bg-tandym-midnight py-20">
+      <section id="pricing" className="bg-tandym-midnight py-20">
         <div className="container mx-auto px-6 max-w-7xl">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold font-poppins text-white mb-4">
@@ -476,16 +476,16 @@ export default function HomePage() {
 
           <div className="grid md:grid-cols-4 gap-6 mb-12">
             {/* Free Plan */}
-            <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 hover:border-tandym-cobalt/50 transition-all">
-              <div className="mb-4">
-                <h3 className="text-xl font-bold font-poppins text-white mb-2">Free</h3>
+            <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 hover:border-tandym-cobalt/50 transition-all flex flex-col">
+              <div className="mb-4 min-h-[140px]">
+                <h3 className="text-xl font-bold font-poppins text-white mb-2 h-7">Free</h3>
                 <div className="flex items-baseline gap-1 mb-3">
                   <span className="text-4xl font-bold text-white">$0</span>
                   <span className="text-gray-400">/mo</span>
                 </div>
                 <p className="text-sm text-gray-400">Perfect for testing</p>
               </div>
-              <ul className="space-y-3 mb-6">
+              <ul className="space-y-3 mb-6 flex-1 min-h-[120px]">
                 <li className="flex items-start gap-2 text-sm text-gray-300">
                   <CheckCircle className="w-4 h-4 text-tandym-cobalt flex-shrink-0 mt-0.5" />
                   Up to 10 videos
@@ -499,7 +499,7 @@ export default function HomePage() {
                   Tandym watermark
                 </li>
               </ul>
-              <Link href="/auth/signin?userType=creator&mode=signup">
+              <Link href="/auth/signin?userType=creator&mode=signup" className="mt-auto">
                 <Button className="w-full bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-full">
                   Get Started Free
                 </Button>
@@ -507,16 +507,16 @@ export default function HomePage() {
             </div>
 
             {/* Creator Lite */}
-            <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 hover:border-tandym-lilac/50 transition-all">
-              <div className="mb-4">
-                <h3 className="text-xl font-bold font-poppins text-white mb-2">Creator Lite</h3>
+            <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 hover:border-tandym-lilac/50 transition-all flex flex-col">
+              <div className="mb-4 min-h-[140px]">
+                <h3 className="text-xl font-bold font-poppins text-white mb-2 h-7">Creator Lite</h3>
                 <div className="flex items-baseline gap-1 mb-3">
                   <span className="text-4xl font-bold text-white">$29</span>
                   <span className="text-gray-400">/mo</span>
                 </div>
                 <p className="text-sm text-gray-400">For growing creators</p>
               </div>
-              <ul className="space-y-3 mb-6">
+              <ul className="space-y-3 mb-6 flex-1 min-h-[120px]">
                 <li className="flex items-start gap-2 text-sm text-gray-300">
                   <CheckCircle className="w-4 h-4 text-tandym-lilac flex-shrink-0 mt-0.5" />
                   Up to 50 videos
@@ -530,7 +530,7 @@ export default function HomePage() {
                   Manual sync
                 </li>
               </ul>
-              <Link href="/pricing">
+              <Link href="/pricing" className="mt-auto">
                 <Button className="w-full bg-gradient-to-r from-tandym-cobalt to-tandym-lilac hover:opacity-90 text-white rounded-full">
                   Start Free Trial
                 </Button>
@@ -538,21 +538,21 @@ export default function HomePage() {
             </div>
 
             {/* Creator Pro - Most Popular */}
-            <div className="bg-gradient-to-br from-tandym-cobalt/20 to-tandym-lilac/20 backdrop-blur-sm rounded-2xl p-6 border-2 border-tandym-lilac relative">
+            <div className="bg-gradient-to-br from-tandym-cobalt/20 to-tandym-lilac/20 backdrop-blur-sm rounded-2xl p-6 border-2 border-tandym-lilac relative flex flex-col">
               <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                 <span className="bg-gradient-to-r from-tandym-lilac to-tandym-coral text-white text-xs font-bold px-4 py-1 rounded-full">
                   MOST POPULAR
                 </span>
               </div>
-              <div className="mb-4">
-                <h3 className="text-xl font-bold font-poppins text-white mb-2">Creator Pro</h3>
+              <div className="mb-4 min-h-[140px]">
+                <h3 className="text-xl font-bold font-poppins text-white mb-2 h-7">Creator Pro</h3>
                 <div className="flex items-baseline gap-1 mb-3">
                   <span className="text-4xl font-bold text-white">$69</span>
                   <span className="text-gray-400">/mo</span>
                 </div>
                 <p className="text-sm text-gray-400">For serious creators</p>
               </div>
-              <ul className="space-y-3 mb-6">
+              <ul className="space-y-3 mb-6 flex-1 min-h-[120px]">
                 <li className="flex items-start gap-2 text-sm text-gray-300">
                   <CheckCircle className="w-4 h-4 text-tandym-lilac flex-shrink-0 mt-0.5" />
                   Up to 100 videos
@@ -570,7 +570,7 @@ export default function HomePage() {
                   No watermark
                 </li>
               </ul>
-              <Link href="/pricing">
+              <Link href="/pricing" className="mt-auto">
                 <Button className="w-full bg-gradient-to-r from-tandym-lilac to-tandym-coral hover:opacity-90 text-white rounded-full">
                   Start Free Trial
                 </Button>
@@ -578,16 +578,16 @@ export default function HomePage() {
             </div>
 
             {/* Creator Ultimate */}
-            <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 hover:border-tandym-coral/50 transition-all">
-              <div className="mb-4">
-                <h3 className="text-xl font-bold font-poppins text-white mb-2">Creator Ultimate</h3>
+            <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 hover:border-tandym-coral/50 transition-all flex flex-col">
+              <div className="mb-4 min-h-[140px]">
+                <h3 className="text-xl font-bold font-poppins text-white mb-2 h-7">Creator Ultimate</h3>
                 <div className="flex items-baseline gap-1 mb-3">
                   <span className="text-4xl font-bold text-white">$149</span>
                   <span className="text-gray-400">/mo</span>
                 </div>
                 <p className="text-sm text-gray-400">For power users</p>
               </div>
-              <ul className="space-y-3 mb-6">
+              <ul className="space-y-3 mb-6 flex-1 min-h-[120px]">
                 <li className="flex items-start gap-2 text-sm text-gray-300">
                   <CheckCircle className="w-4 h-4 text-tandym-coral flex-shrink-0 mt-0.5" />
                   Unlimited videos
@@ -605,7 +605,7 @@ export default function HomePage() {
                   Priority support
                 </li>
               </ul>
-              <Link href="/pricing">
+              <Link href="/pricing" className="mt-auto">
                 <Button className="w-full bg-gradient-to-r from-tandym-coral to-tandym-cobalt hover:opacity-90 text-white rounded-full">
                   Start Free Trial
                 </Button>
