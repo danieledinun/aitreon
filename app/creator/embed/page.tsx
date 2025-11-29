@@ -101,6 +101,8 @@ export default function EmbedPage() {
         showAvatar: widgetConfig.showAvatar.toString(),
         greeting: widgetConfig.greetingText,
         welcome: widgetConfig.welcomeMessage,
+        mode: widgetConfig.widgetMode,
+        buttonText: widgetConfig.buttonText,
         ...(widgetConfig.customAvatar && { avatar: widgetConfig.customAvatar }),
         ...(widgetConfig.customLogo && { logo: widgetConfig.customLogo }),
       }).toString()}`

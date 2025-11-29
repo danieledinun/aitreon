@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import EmbeddedChat from '@/components/embedded-chat'
+import CompactWidget from '@/components/compact-widget'
 
 interface EmbedPageProps {
   params: {
@@ -14,6 +15,8 @@ interface EmbedPageProps {
     welcome?: string
     avatar?: string
     logo?: string
+    mode?: string
+    buttonText?: string
   }
 }
 
@@ -51,19 +54,27 @@ export default async function EmbedPage({ params, searchParams }: EmbedPageProps
   const welcomeMessage = searchParams.welcome
   const customAvatar = searchParams.avatar
   const customLogo = searchParams.logo
+  const widgetMode = searchParams.mode || 'full'
+  const buttonText = searchParams.buttonText || 'Chat with me'
 
-  return (
-    <EmbeddedChat
-      creator={creator}
-      theme={theme}
-      primaryColor={primaryColor}
-      showAvatar={showAvatar}
-      greetingText={greetingText}
-      welcomeMessage={welcomeMessage}
-      customAvatar={customAvatar}
-      customLogo={customLogo}
-    />
-  )
+  const commonProps = {
+    creator,
+    theme,
+    primaryColor,
+    showAvatar,
+    greetingText,
+    welcomeMessage,
+    customAvatar,
+    customLogo,
+    buttonText,
+  }
+
+  // Render compact widget or full chat based on mode
+  if (widgetMode === 'compact') {
+    return <CompactWidget {...commonProps} />
+  }
+
+  return <EmbeddedChat {...commonProps} />
 }
 
 export async function generateStaticParams() {
