@@ -200,32 +200,34 @@ export default function PricingPage() {
           </div>
 
           {/* Billing Toggle */}
-          <div className="flex items-center justify-center gap-4 mb-16">
-            <span className={cn(
-              "text-sm font-medium transition-colors",
-              billingPeriod === 'monthly' ? "text-white" : "text-gray-400"
-            )}>
-              Monthly
-            </span>
-            <button
-              onClick={() => setBillingPeriod(billingPeriod === 'monthly' ? 'yearly' : 'monthly')}
-              className="relative inline-flex h-8 w-14 items-center rounded-full bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-tandym-cobalt focus:ring-offset-2 focus:ring-offset-tandym-midnight"
-            >
-              <span
-                className={cn(
-                  "inline-block h-6 w-6 transform rounded-full bg-white transition-transform",
-                  billingPeriod === 'yearly' ? "translate-x-7" : "translate-x-1"
-                )}
-              />
-            </button>
-            <span className={cn(
-              "text-sm font-medium transition-colors",
-              billingPeriod === 'yearly' ? "text-white" : "text-gray-400"
-            )}>
-              Yearly
-            </span>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
+            <div className="flex items-center gap-4">
+              <span className={cn(
+                "text-sm font-medium transition-colors",
+                billingPeriod === 'monthly' ? "text-white" : "text-gray-400"
+              )}>
+                Monthly
+              </span>
+              <button
+                onClick={() => setBillingPeriod(billingPeriod === 'monthly' ? 'yearly' : 'monthly')}
+                className="relative inline-flex h-8 w-14 items-center rounded-full bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-tandym-cobalt focus:ring-offset-2 focus:ring-offset-tandym-midnight"
+              >
+                <span
+                  className={cn(
+                    "inline-block h-6 w-6 transform rounded-full bg-white transition-transform",
+                    billingPeriod === 'yearly' ? "translate-x-7" : "translate-x-1"
+                  )}
+                />
+              </button>
+              <span className={cn(
+                "text-sm font-medium transition-colors",
+                billingPeriod === 'yearly' ? "text-white" : "text-gray-400"
+              )}>
+                Yearly
+              </span>
+            </div>
             {billingPeriod === 'yearly' && (
-              <span className="ml-2 px-3 py-1 bg-tandym-coral text-white text-xs font-bold rounded-full">
+              <span className="px-3 py-1 bg-tandym-coral text-white text-xs font-bold rounded-full">
                 2 MONTHS FREE
               </span>
             )}
@@ -251,7 +253,7 @@ export default function PricingPage() {
               <div
                 key={index}
                 className={cn(
-                  "relative bg-white rounded-2xl border-2 transition-all duration-300 overflow-hidden",
+                  "relative bg-white rounded-2xl border-2 transition-all duration-300 overflow-hidden flex flex-col",
                   plan.borderColor,
                   plan.hoverBorder,
                   plan.popular && "ring-4 ring-tandym-lilac/20 shadow-2xl scale-105"
@@ -263,7 +265,7 @@ export default function PricingPage() {
                   </div>
                 )}
 
-                <div className={cn("p-8", plan.popular && "pt-16")}>
+                <div className={cn("p-8 flex flex-col flex-1", plan.popular && "pt-16")}>
                   {/* Icon */}
                   <div className={cn(
                     "inline-flex p-3 rounded-xl bg-gradient-to-br mb-4",
@@ -316,7 +318,7 @@ export default function PricingPage() {
                   </Link>
 
                   {/* Features */}
-                  <div className="space-y-3 mb-6">
+                  <div className="space-y-3 mb-6 flex-1">
                     {plan.features.map((feature, idx) => (
                       <div key={idx} className="flex items-start gap-2">
                         <Check className="w-5 h-5 text-green-500 shrink-0 mt-0.5" />
@@ -339,7 +341,7 @@ export default function PricingPage() {
                   )}
 
                   {/* Limits */}
-                  <div className="pt-6 border-t border-gray-200">
+                  <div className="pt-6 border-t border-gray-200 mt-auto">
                     <p className="text-xs font-semibold text-tandym-text-muted mb-3 uppercase">Knowledge Base:</p>
                     <div className="space-y-2">
                       <p className="text-sm text-tandym-text-dark">📹 {plan.limits.videos}</p>
