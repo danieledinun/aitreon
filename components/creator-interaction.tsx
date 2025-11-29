@@ -1042,7 +1042,7 @@ export default function CreatorInteraction({
   }
 
   // Function to format message content with numbered citations
-  const formatMessageWithCitations = (content: string, citations: Citation[] = []) => {
+  const formatMessageWithCitations = (content: string, citations: Citation[] = [], messageId: string = '') => {
     if (!citations.length) return content
 
     let formattedContent = content
@@ -1054,7 +1054,7 @@ export default function CreatorInteraction({
 
       formattedContent = formattedContent.replace(
         citationRegex,
-        `<span class="citation-link" data-citation-index="${index}" title="${citation.videoTitle} - ${Math.floor(citation.startTime || 0)}s">[${citationNumber}]</span>`
+        `<span class="citation-link" data-citation-index="${index}" data-message-id="${messageId}" title="${citation.videoTitle} - ${Math.floor(citation.startTime || 0)}s">[${citationNumber}]</span>`
       )
     })
 
@@ -1499,10 +1499,13 @@ export default function CreatorInteraction({
       if (target.classList.contains('citation-link')) {
         e.preventDefault()
         const citationIndex = parseInt(target.getAttribute('data-citation-index') || '0')
-        // Find the message with citations that contains this citation
-        const messageWithCitations = messages.find(m => m.citations && m.citations.length > citationIndex)
+        const messageId = target.getAttribute('data-message-id') || ''
+
+        // Find the specific message by ID (not just first with citations!)
+        const messageWithCitations = messages.find(m => m.id === messageId)
         if (messageWithCitations?.citations?.[citationIndex]) {
           const citation = messageWithCitations.citations[citationIndex]
+          console.log('🎬 Global handler - Opening video for message:', messageId, 'Citation:', citation.videoTitle)
           // Open inline embedded video instead of PiP
           setInlineVideo({
             videoId: citation.videoId,
@@ -1876,7 +1879,7 @@ export default function CreatorInteraction({
                           <div
                             className="whitespace-pre-wrap break-words"
                             dangerouslySetInnerHTML={{
-                              __html: formatMessageWithCitations(message.content, message.citations)
+                              __html: formatMessageWithCitations(message.content, message.citations, message.id)
                             }}
                             onClick={(e) => {
                               const target = e.target as HTMLElement
