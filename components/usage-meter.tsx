@@ -6,12 +6,11 @@ import { Video, MessageCircle } from 'lucide-react'
 import { usePlanLimits } from '@/lib/hooks/use-plan-limits'
 
 interface UsageMeterProps {
-  creatorId: string
   type: 'videos' | 'messages'
 }
 
-export default function UsageMeter({ creatorId, type }: UsageMeterProps) {
-  const { remainingVideos, remainingMessages, isLoading } = usePlanLimits(creatorId)
+export default function UsageMeter({ type }: UsageMeterProps) {
+  const { remainingVideos, remainingMessages, isLoading } = usePlanLimits()
 
   if (isLoading) {
     return (
