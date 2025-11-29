@@ -291,8 +291,8 @@ export default function EmbeddedChat({
           <Button
             onClick={handleSendMessage}
             disabled={!input.trim() || loading}
-            size="icon"
-            className="rounded-full shrink-0"
+            size="sm"
+            className="rounded-full shrink-0 w-10 h-10 p-0"
             style={{ backgroundColor: primaryColor }}
           >
             <Send className="w-4 h-4" />
