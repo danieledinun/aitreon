@@ -39,6 +39,7 @@ import {
 } from 'lucide-react'
 import ExpandableChatSessions from '@/components/ExpandableChatSessions'
 import VideoProcessingBanner from '@/components/VideoProcessingBanner'
+import DashboardGreeting from '@/components/DashboardGreeting'
 
 export default async function CreatorDashboard() {
   const session = await getServerSession(authOptions)
@@ -414,34 +415,19 @@ export default async function CreatorDashboard() {
             className="mb-6"
           />
 
-          {/* Creator Header */}
-          <div className="flex items-start justify-between gap-6">
-            <div className="flex items-center space-x-4 flex-1 min-w-0">
-              <Avatar className="h-12 w-12 border-2 border-tandym-cobalt/30 shrink-0">
-                <AvatarImage src={effectiveCreator?.profile_image || undefined} />
-                <AvatarFallback className="bg-gradient-to-br from-tandym-cobalt to-tandym-lilac text-white font-bold font-poppins">
-                  {effectiveCreator?.display_name?.split(' ').map((n: string) => n[0]).join('').toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <div className="min-w-0 flex-1">
-                <h1 className="text-2xl lg:text-3xl font-bold font-poppins text-tandym-text-dark dark:text-white truncate">
-                  Welcome back, {effectiveCreator?.display_name}
-                </h1>
-                <p className="text-tandym-text-muted dark:text-neutral-400 text-base lg:text-lg">
-                  Here's what's happening with your AI twin
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center shrink-0">
-              <Link href={`/${effectiveCreator?.username}`} target="_blank">
-                <Button className="bg-tandym-cobalt hover:bg-tandym-cobalt/90 text-white rounded-full shadow-lg shadow-tandym-cobalt/30 whitespace-nowrap flex items-center transition-all duration-300 hover:scale-105">
-                  <ExternalLink className="w-4 h-4 mr-2" />
-                  View Your Twin Page
-                </Button>
-              </Link>
-            </div>
-          </div>
+          {/* Dashboard Greeting */}
+          <DashboardGreeting
+            creator={{
+              display_name: effectiveCreator?.display_name,
+              username: effectiveCreator?.username,
+              profile_image: effectiveCreator?.profile_image,
+            }}
+            stats={{
+              followers: followerCount,
+              messages: totalMessages,
+              videos: effectiveCreator?._count?.videos || 0,
+            }}
+          />
         </>
       ) : (
         <>

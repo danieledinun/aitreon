@@ -22,7 +22,8 @@ import {
   IconBrain,
   IconLogout,
   IconDatabase,
-  IconCode
+  IconCode,
+  IconCreditCard
 } from '@tabler/icons-react'
 import { Sparkles, Bot, Volume2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -57,7 +58,7 @@ export default function CreatorLayout({
       ),
     },
     {
-      label: "AI Settings", 
+      label: "AI Settings",
       href: "/creator/ai-config",
       icon: (
         <IconBrain className="text-neutral-700 dark:text-neutral-200 h-5 w-5 shrink-0" />
@@ -82,6 +83,13 @@ export default function CreatorLayout({
       href: "/creator/suggested-questions",
       icon: (
         <IconQuestionMark className="text-neutral-700 dark:text-neutral-200 h-5 w-5 shrink-0" />
+      ),
+    },
+    {
+      label: "Subscription",
+      href: "/creator/subscription",
+      icon: (
+        <IconCreditCard className="text-neutral-700 dark:text-neutral-200 h-5 w-5 shrink-0" />
       ),
     },
   ]
@@ -135,6 +143,19 @@ export default function CreatorLayout({
                 </div>
               )}
             </div>
+
+            <Link href="/creator/account">
+              <Button
+                variant="ghost"
+                className={cn(
+                  "w-full gap-3 text-gray-700 dark:text-neutral-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-neutral-800 p-3",
+                  open ? "justify-start" : "justify-center p-2"
+                )}
+              >
+                <IconSettings className="h-4 w-4 shrink-0" />
+                {open && <span className="text-sm">Account Settings</span>}
+              </Button>
+            </Link>
 
             <Button
               onClick={handleLogout}
