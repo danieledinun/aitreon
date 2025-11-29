@@ -51,7 +51,7 @@ export default function HomePage() {
 
               {/* CTAs */}
               <div className="flex flex-col sm:flex-row gap-4">
-                <Link href="/auth/signin?userType=creator">
+                <Link href="/auth/signin?userType=creator&mode=signup">
                   <Button
                     size="lg"
                     className="px-8 py-6 text-lg bg-tandym-cobalt hover:bg-tandym-cobalt/90 text-white rounded-full shadow-lg shadow-tandym-cobalt/50 transition-all duration-300 hover:scale-105 hover:shadow-tandym-cobalt/70"
@@ -542,7 +542,7 @@ export default function HomePage() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/auth/signin?userType=creator">
+            <Link href="/auth/signin?userType=creator&mode=signup">
               <Button
                 size="lg"
                 className="px-10 py-7 text-lg bg-tandym-cobalt hover:bg-tandym-cobalt/90 text-white rounded-full shadow-lg shadow-tandym-cobalt/50 transition-all duration-300 hover:scale-105"
@@ -552,7 +552,7 @@ export default function HomePage() {
               </Button>
             </Link>
 
-            <Link href="/auth/signin?userType=creator">
+            <Link href="/auth/signin?userType=creator&mode=signup">
               <Button
                 size="lg"
                 variant="outline"
