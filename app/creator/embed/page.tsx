@@ -188,8 +188,8 @@ export default function EmbedPage() {
 
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Live Preview - Left Side */}
-        <div className="space-y-6">
-          <Card>
+        <div className="flex flex-col">
+          <Card className="flex-1 flex flex-col">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Layout className="w-5 h-5" />
@@ -199,22 +199,22 @@ export default function EmbedPage() {
                 See how your widget will look
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex-1 flex items-center justify-center">
               {creatorUsername ? (
-                <div className="bg-gray-100 dark:bg-neutral-800 rounded-lg p-4 min-h-[600px] relative">
+                <div className="bg-gray-100 dark:bg-neutral-800 rounded-lg p-4 w-full flex items-center justify-center min-h-[600px]">
                   <iframe
                     key={previewUrl}
                     src={previewUrl}
                     width={widgetConfig.width}
                     height={widgetConfig.height}
-                    className="mx-auto rounded-lg shadow-lg border-0"
+                    className="rounded-lg shadow-lg border-0"
                     style={{ maxWidth: '100%' }}
                     allow="microphone"
                     title="Widget Preview"
                   />
                 </div>
               ) : (
-                <div className="bg-gray-100 dark:bg-neutral-800 rounded-lg p-8 text-center text-gray-500">
+                <div className="bg-gray-100 dark:bg-neutral-800 rounded-lg p-8 text-center text-gray-500 w-full min-h-[600px] flex items-center justify-center">
                   <p>Loading preview...</p>
                 </div>
               )}
@@ -223,8 +223,8 @@ export default function EmbedPage() {
         </div>
 
         {/* Widget Customization - Right Side */}
-        <div className="space-y-6">
-          <Card>
+        <div className="flex flex-col">
+          <Card className="flex-1 flex flex-col">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Palette className="w-5 h-5" />
@@ -234,7 +234,7 @@ export default function EmbedPage() {
                 Customize how your chat widget looks and behaves
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="flex-1 space-y-4 overflow-y-auto">
               <div className="space-y-2">
                 <Label htmlFor="position">Widget Position</Label>
                 <Select
