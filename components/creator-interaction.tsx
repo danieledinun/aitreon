@@ -1959,8 +1959,10 @@ export default function CreatorInteraction({
 
                     {/* Inline Video Player - shows after assistant message if video is active for this message */}
                     {inlineVideo && inlineVideo.messageId === message.id && (
-                      <div className="mt-4" id={`video-player-${message.id}`}>
-                        {console.log(`✅ RENDERING VIDEO for message ${message.id} (index ${index})`)}
+                      <div className="mt-4 border-4 border-green-500 p-2 rounded-lg" id={`video-player-${message.id}`}>
+                        <div className="bg-green-100 text-green-800 px-3 py-1 rounded text-sm mb-2 font-bold">
+                          ✅ VIDEO ATTACHED TO MESSAGE #{index + 1} (ID: {message.id.toString().substring(0, 12)}...)
+                        </div>
                         <InlineVideoPlayer
                           videoId={inlineVideo.videoId}
                           startTime={inlineVideo.startTime}
@@ -1969,7 +1971,6 @@ export default function CreatorInteraction({
                         />
                       </div>
                     )}
-                    {inlineVideo && inlineVideo.messageId !== message.id && index === 0 && console.log(`❌ Video NOT rendering for message ${message.id} (wanted ${inlineVideo.messageId})`)}
                   </div>
                 </div>
               )}
