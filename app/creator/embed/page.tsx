@@ -176,7 +176,62 @@ export default function EmbedPage() {
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6">
-        {/* Configuration Panel */}
+        {/* Live Preview - Left Side */}
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Layout className="w-5 h-5" />
+                Live Preview
+              </CardTitle>
+              <CardDescription>
+                See how your widget will look
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {creatorUsername ? (
+                <div className="bg-gray-100 dark:bg-neutral-800 rounded-lg p-4 min-h-[600px] relative">
+                  <iframe
+                    key={previewUrl}
+                    src={previewUrl}
+                    width={widgetConfig.width}
+                    height={widgetConfig.height}
+                    className="mx-auto rounded-lg shadow-lg border-0"
+                    style={{ maxWidth: '100%' }}
+                    allow="microphone"
+                    title="Widget Preview"
+                  />
+                </div>
+              ) : (
+                <div className="bg-gray-100 dark:bg-neutral-800 rounded-lg p-8 text-center text-gray-500">
+                  <p>Loading preview...</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Test Your Widget</CardTitle>
+              <CardDescription>
+                Open your widget in a new tab to test it
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button
+                className="w-full"
+                variant="outline"
+                onClick={() => window.open(previewUrl, '_blank')}
+                disabled={!creatorUsername}
+              >
+                <ExternalLink className="w-4 h-4 mr-2" />
+                Open Widget in New Tab
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Widget Customization - Right Side */}
         <div className="space-y-6">
           <Card>
             <CardHeader>
@@ -418,199 +473,138 @@ export default function EmbedPage() {
               </div>
             </CardContent>
           </Card>
-
-          {/* Preview */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Layout className="w-5 h-5" />
-                Live Preview
-              </CardTitle>
-              <CardDescription>
-                See how your widget will look
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {creatorUsername ? (
-                <div className="bg-gray-100 dark:bg-neutral-800 rounded-lg p-4 min-h-[400px] relative">
-                  <iframe
-                    key={previewUrl}
-                    src={previewUrl}
-                    width={widgetConfig.width}
-                    height={widgetConfig.height}
-                    className="mx-auto rounded-lg shadow-lg border-0"
-                    style={{ maxWidth: '100%' }}
-                    allow="microphone"
-                    title="Widget Preview"
-                  />
-                </div>
-              ) : (
-                <div className="bg-gray-100 dark:bg-neutral-800 rounded-lg p-8 text-center text-gray-500">
-                  <p>Loading preview...</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Embed Codes */}
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Code2 className="w-5 h-5" />
-                Embed Code
-              </CardTitle>
-              <CardDescription>
-                Choose your preferred integration method
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Tabs defaultValue="widget" className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="widget">Widget (Recommended)</TabsTrigger>
-                  <TabsTrigger value="iframe">iFrame</TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="widget" className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>Installation Instructions</Label>
-                    <ol className="list-decimal list-inside space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                      <li>Copy the code snippet below</li>
-                      <li>Paste it before the closing {'</body>'} tag in your HTML</li>
-                      <li>The widget will appear automatically on your site</li>
-                    </ol>
-                  </div>
-
-                  <div className="relative">
-                    <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto text-xs">
-                      <code>{generateEmbedCode()}</code>
-                    </pre>
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      className="absolute top-2 right-2"
-                      onClick={() => copyToClipboard(generateEmbedCode())}
-                    >
-                      {copied ? (
-                        <>
-                          <Check className="w-4 h-4 mr-2" />
-                          Copied!
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="w-4 h-4 mr-2" />
-                          Copy Code
-                        </>
-                      )}
-                    </Button>
-                  </div>
-
-                  <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                    <p className="text-sm text-blue-800 dark:text-blue-300">
-                      <strong>Pro Tip:</strong> The widget script is lightweight (&lt;10KB) and loads asynchronously,
-                      so it won't slow down your website.
-                    </p>
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="iframe" className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>Installation Instructions</Label>
-                    <ol className="list-decimal list-inside space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                      <li>Copy the iframe code below</li>
-                      <li>Paste it where you want the chat to appear on your page</li>
-                      <li>Adjust width and height as needed</li>
-                    </ol>
-                  </div>
-
-                  <div className="relative">
-                    <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto text-xs">
-                      <code>{generateIframeCode()}</code>
-                    </pre>
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      className="absolute top-2 right-2"
-                      onClick={() => copyToClipboard(generateIframeCode())}
-                    >
-                      {copied ? (
-                        <>
-                          <Check className="w-4 h-4 mr-2" />
-                          Copied!
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="w-4 h-4 mr-2" />
-                          Copy Code
-                        </>
-                      )}
-                    </Button>
-                  </div>
-
-                  <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
-                    <p className="text-sm text-amber-800 dark:text-amber-300">
-                      <strong>Note:</strong> The iframe method gives you precise control over placement,
-                      but the widget method offers better responsiveness and user experience.
-                    </p>
-                  </div>
-                </TabsContent>
-              </Tabs>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Test Your Widget</CardTitle>
-              <CardDescription>
-                Open your widget in a new tab to test it
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button
-                className="w-full"
-                variant="outline"
-                onClick={() => window.open(previewUrl, '_blank')}
-                disabled={!creatorUsername}
-              >
-                <ExternalLink className="w-4 h-4 mr-2" />
-                Open Widget in New Tab
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Platform Guides</CardTitle>
-              <CardDescription>
-                Need help installing on your platform?
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <div className="grid grid-cols-2 gap-2">
-                <Button variant="outline" size="sm" className="justify-start">
-                  WordPress
-                </Button>
-                <Button variant="outline" size="sm" className="justify-start">
-                  Wix
-                </Button>
-                <Button variant="outline" size="sm" className="justify-start">
-                  Squarespace
-                </Button>
-                <Button variant="outline" size="sm" className="justify-start">
-                  Webflow
-                </Button>
-                <Button variant="outline" size="sm" className="justify-start">
-                  Shopify
-                </Button>
-                <Button variant="outline" size="sm" className="justify-start">
-                  Custom HTML
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </div>
+
+      {/* Embed Code Instructions - Full Width Bottom */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Code2 className="w-5 h-5" />
+            Embed Code & Installation
+          </CardTitle>
+          <CardDescription>
+            Choose your preferred integration method and copy the code
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue="widget" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 max-w-md">
+              <TabsTrigger value="widget">Widget (Recommended)</TabsTrigger>
+              <TabsTrigger value="iframe">iFrame</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="widget" className="mt-6">
+              <div className="grid lg:grid-cols-3 gap-6">
+                <div className="space-y-3">
+                  <h4 className="font-semibold text-sm">Installation Steps</h4>
+                  <ol className="list-decimal list-inside space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                    <li>Copy the code snippet</li>
+                    <li>Paste before closing &lt;/body&gt; tag</li>
+                    <li>Widget appears automatically</li>
+                  </ol>
+                  <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+                    <p className="text-xs text-blue-800 dark:text-blue-300">
+                      <strong>Pro Tip:</strong> Lightweight (&lt;10KB) and loads asynchronously.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="lg:col-span-2 relative">
+                  <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto text-xs max-h-[300px]">
+                    <code>{generateEmbedCode()}</code>
+                  </pre>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    className="absolute top-2 right-2"
+                    onClick={() => copyToClipboard(generateEmbedCode())}
+                  >
+                    {copied ? (
+                      <>
+                        <Check className="w-4 h-4 mr-2" />
+                        Copied!
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-4 h-4 mr-2" />
+                        Copy Code
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="iframe" className="mt-6">
+              <div className="grid lg:grid-cols-3 gap-6">
+                <div className="space-y-3">
+                  <h4 className="font-semibold text-sm">Installation Steps</h4>
+                  <ol className="list-decimal list-inside space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                    <li>Copy the iframe code</li>
+                    <li>Paste where you want chat</li>
+                    <li>Adjust width and height</li>
+                  </ol>
+                  <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
+                    <p className="text-xs text-amber-800 dark:text-amber-300">
+                      <strong>Note:</strong> Precise placement control, but widget offers better UX.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="lg:col-span-2 relative">
+                  <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto text-xs max-h-[300px]">
+                    <code>{generateIframeCode()}</code>
+                  </pre>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    className="absolute top-2 right-2"
+                    onClick={() => copyToClipboard(generateIframeCode())}
+                  >
+                    {copied ? (
+                      <>
+                        <Check className="w-4 h-4 mr-2" />
+                        Copied!
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-4 h-4 mr-2" />
+                        Copy Code
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
+
+          {/* Platform Guides */}
+          <div className="mt-6 pt-6 border-t">
+            <h4 className="font-semibold text-sm mb-3">Platform-Specific Guides</h4>
+            <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+              <Button variant="outline" size="sm" className="justify-start">
+                WordPress
+              </Button>
+              <Button variant="outline" size="sm" className="justify-start">
+                Wix
+              </Button>
+              <Button variant="outline" size="sm" className="justify-start">
+                Squarespace
+              </Button>
+              <Button variant="outline" size="sm" className="justify-start">
+                Webflow
+              </Button>
+              <Button variant="outline" size="sm" className="justify-start">
+                Shopify
+              </Button>
+              <Button variant="outline" size="sm" className="justify-start">
+                Custom HTML
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }
