@@ -476,27 +476,27 @@ export default function HomePage() {
 
           <div className="grid md:grid-cols-4 gap-6 mb-12">
             {/* Free Plan */}
-            <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 hover:border-tandym-cobalt/50 transition-all flex flex-col">
-              <div className="mb-4 min-h-[140px]">
-                <h3 className="text-xl font-bold font-poppins text-white mb-2 h-7">Free</h3>
-                <div className="flex items-baseline gap-1 mb-3">
+            <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 hover:border-tandym-cobalt/50 transition-all flex flex-col text-center">
+              <div className="mb-6 min-h-[150px] flex flex-col">
+                <h3 className="text-xl font-bold font-poppins text-white mb-3 h-7">Free</h3>
+                <div className="flex items-baseline justify-center gap-1 mb-3">
                   <span className="text-4xl font-bold text-white">$0</span>
                   <span className="text-gray-400">/mo</span>
                 </div>
-                <p className="text-sm text-gray-400">Perfect for testing</p>
+                <p className="text-sm text-gray-400 min-h-[40px] flex items-center justify-center">Perfect for testing</p>
               </div>
               <ul className="space-y-3 mb-6 flex-1 min-h-[120px]">
-                <li className="flex items-start gap-2 text-sm text-gray-300">
-                  <CheckCircle className="w-4 h-4 text-tandym-cobalt flex-shrink-0 mt-0.5" />
-                  Up to 5 videos
+                <li className="flex items-center gap-2 text-sm text-gray-300 justify-center">
+                  <CheckCircle className="w-4 h-4 text-tandym-cobalt flex-shrink-0" />
+                  <span>Up to 5 videos</span>
                 </li>
-                <li className="flex items-start gap-2 text-sm text-gray-300">
-                  <CheckCircle className="w-4 h-4 text-tandym-cobalt flex-shrink-0 mt-0.5" />
-                  50 messages/month
+                <li className="flex items-center gap-2 text-sm text-gray-300 justify-center">
+                  <CheckCircle className="w-4 h-4 text-tandym-cobalt flex-shrink-0" />
+                  <span>50 messages/month</span>
                 </li>
-                <li className="flex items-start gap-2 text-sm text-gray-300">
-                  <CheckCircle className="w-4 h-4 text-tandym-cobalt flex-shrink-0 mt-0.5" />
-                  Tandym watermark
+                <li className="flex items-center gap-2 text-sm text-gray-300 justify-center">
+                  <CheckCircle className="w-4 h-4 text-tandym-cobalt flex-shrink-0" />
+                  <span>Tandym watermark</span>
                 </li>
               </ul>
               <Link href="/auth/signin?userType=creator&mode=signup" className="mt-auto">
@@ -507,27 +507,27 @@ export default function HomePage() {
             </div>
 
             {/* Creator Lite */}
-            <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 hover:border-tandym-lilac/50 transition-all flex flex-col">
-              <div className="mb-4 min-h-[140px]">
-                <h3 className="text-xl font-bold font-poppins text-white mb-2 h-7">Creator Lite</h3>
-                <div className="flex items-baseline gap-1 mb-3">
+            <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 hover:border-tandym-lilac/50 transition-all flex flex-col text-center">
+              <div className="mb-6 min-h-[150px] flex flex-col">
+                <h3 className="text-xl font-bold font-poppins text-white mb-3 h-7">Creator Lite</h3>
+                <div className="flex items-baseline justify-center gap-1 mb-3">
                   <span className="text-4xl font-bold text-white">$29</span>
                   <span className="text-gray-400">/mo</span>
                 </div>
-                <p className="text-sm text-gray-400">For growing creators</p>
+                <p className="text-sm text-gray-400 min-h-[40px] flex items-center justify-center">For growing creators</p>
               </div>
               <ul className="space-y-3 mb-6 flex-1 min-h-[120px]">
-                <li className="flex items-start gap-2 text-sm text-gray-300">
-                  <CheckCircle className="w-4 h-4 text-tandym-lilac flex-shrink-0 mt-0.5" />
-                  Up to 50 videos
+                <li className="flex items-center gap-2 text-sm text-gray-300 justify-center">
+                  <CheckCircle className="w-4 h-4 text-tandym-lilac flex-shrink-0" />
+                  <span>Up to 50 videos</span>
                 </li>
-                <li className="flex items-start gap-2 text-sm text-gray-300">
-                  <CheckCircle className="w-4 h-4 text-tandym-lilac flex-shrink-0 mt-0.5" />
-                  1,000 messages/month
+                <li className="flex items-center gap-2 text-sm text-gray-300 justify-center">
+                  <CheckCircle className="w-4 h-4 text-tandym-lilac flex-shrink-0" />
+                  <span>1,000 messages/month</span>
                 </li>
-                <li className="flex items-start gap-2 text-sm text-gray-300">
-                  <CheckCircle className="w-4 h-4 text-tandym-lilac flex-shrink-0 mt-0.5" />
-                  Manual sync
+                <li className="flex items-center gap-2 text-sm text-gray-300 justify-center">
+                  <CheckCircle className="w-4 h-4 text-tandym-lilac flex-shrink-0" />
+                  <span>Manual sync</span>
                 </li>
               </ul>
               <Link href="/pricing" className="mt-auto">
@@ -538,36 +538,36 @@ export default function HomePage() {
             </div>
 
             {/* Creator Pro - Most Popular */}
-            <div className="bg-gradient-to-br from-tandym-cobalt/20 to-tandym-lilac/20 backdrop-blur-sm rounded-2xl p-6 border-2 border-tandym-lilac relative flex flex-col">
+            <div className="bg-gradient-to-br from-tandym-cobalt/20 to-tandym-lilac/20 backdrop-blur-sm rounded-2xl p-6 border-2 border-tandym-lilac relative flex flex-col text-center">
               <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                 <span className="bg-gradient-to-r from-tandym-lilac to-tandym-coral text-white text-xs font-bold px-4 py-1 rounded-full">
                   MOST POPULAR
                 </span>
               </div>
-              <div className="mb-4 min-h-[140px]">
-                <h3 className="text-xl font-bold font-poppins text-white mb-2 h-7">Creator Pro</h3>
-                <div className="flex items-baseline gap-1 mb-3">
+              <div className="mb-6 min-h-[150px] flex flex-col">
+                <h3 className="text-xl font-bold font-poppins text-white mb-3 h-7">Creator Pro</h3>
+                <div className="flex items-baseline justify-center gap-1 mb-3">
                   <span className="text-4xl font-bold text-white">$69</span>
                   <span className="text-gray-400">/mo</span>
                 </div>
-                <p className="text-sm text-gray-400">For serious creators</p>
+                <p className="text-sm text-gray-400 min-h-[40px] flex items-center justify-center">For serious creators</p>
               </div>
               <ul className="space-y-3 mb-6 flex-1 min-h-[120px]">
-                <li className="flex items-start gap-2 text-sm text-gray-300">
-                  <CheckCircle className="w-4 h-4 text-tandym-lilac flex-shrink-0 mt-0.5" />
-                  Up to 100 videos
+                <li className="flex items-center gap-2 text-sm text-gray-300 justify-center">
+                  <CheckCircle className="w-4 h-4 text-tandym-lilac flex-shrink-0" />
+                  <span>Up to 100 videos</span>
                 </li>
-                <li className="flex items-start gap-2 text-sm text-gray-300">
-                  <CheckCircle className="w-4 h-4 text-tandym-lilac flex-shrink-0 mt-0.5" />
-                  2,500 messages/month
+                <li className="flex items-center gap-2 text-sm text-gray-300 justify-center">
+                  <CheckCircle className="w-4 h-4 text-tandym-lilac flex-shrink-0" />
+                  <span>2,500 messages/month</span>
                 </li>
-                <li className="flex items-start gap-2 text-sm text-gray-300">
-                  <CheckCircle className="w-4 h-4 text-tandym-lilac flex-shrink-0 mt-0.5" />
-                  Auto weekly sync
+                <li className="flex items-center gap-2 text-sm text-gray-300 justify-center">
+                  <CheckCircle className="w-4 h-4 text-tandym-lilac flex-shrink-0" />
+                  <span>Auto weekly sync</span>
                 </li>
-                <li className="flex items-start gap-2 text-sm text-gray-300">
-                  <CheckCircle className="w-4 h-4 text-tandym-lilac flex-shrink-0 mt-0.5" />
-                  No watermark
+                <li className="flex items-center gap-2 text-sm text-gray-300 justify-center">
+                  <CheckCircle className="w-4 h-4 text-tandym-lilac flex-shrink-0" />
+                  <span>No watermark</span>
                 </li>
               </ul>
               <Link href="/pricing" className="mt-auto">
@@ -578,31 +578,31 @@ export default function HomePage() {
             </div>
 
             {/* Creator Ultimate */}
-            <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 hover:border-tandym-coral/50 transition-all flex flex-col">
-              <div className="mb-4 min-h-[140px]">
-                <h3 className="text-xl font-bold font-poppins text-white mb-2 h-7">Creator Ultimate</h3>
-                <div className="flex items-baseline gap-1 mb-3">
+            <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 hover:border-tandym-coral/50 transition-all flex flex-col text-center">
+              <div className="mb-6 min-h-[150px] flex flex-col">
+                <h3 className="text-xl font-bold font-poppins text-white mb-3 h-7">Creator Ultimate</h3>
+                <div className="flex items-baseline justify-center gap-1 mb-3">
                   <span className="text-4xl font-bold text-white">$149</span>
                   <span className="text-gray-400">/mo</span>
                 </div>
-                <p className="text-sm text-gray-400">For power users</p>
+                <p className="text-sm text-gray-400 min-h-[40px] flex items-center justify-center">For power users</p>
               </div>
               <ul className="space-y-3 mb-6 flex-1 min-h-[120px]">
-                <li className="flex items-start gap-2 text-sm text-gray-300">
-                  <CheckCircle className="w-4 h-4 text-tandym-coral flex-shrink-0 mt-0.5" />
-                  Unlimited videos
+                <li className="flex items-center gap-2 text-sm text-gray-300 justify-center">
+                  <CheckCircle className="w-4 h-4 text-tandym-coral flex-shrink-0" />
+                  <span>Unlimited videos</span>
                 </li>
-                <li className="flex items-start gap-2 text-sm text-gray-300">
-                  <CheckCircle className="w-4 h-4 text-tandym-coral flex-shrink-0 mt-0.5" />
-                  10,000 messages/month
+                <li className="flex items-center gap-2 text-sm text-gray-300 justify-center">
+                  <CheckCircle className="w-4 h-4 text-tandym-coral flex-shrink-0" />
+                  <span>10,000 messages/month</span>
                 </li>
-                <li className="flex items-start gap-2 text-sm text-gray-300">
-                  <CheckCircle className="w-4 h-4 text-tandym-coral flex-shrink-0 mt-0.5" />
-                  Auto daily sync
+                <li className="flex items-center gap-2 text-sm text-gray-300 justify-center">
+                  <CheckCircle className="w-4 h-4 text-tandym-coral flex-shrink-0" />
+                  <span>Auto daily sync</span>
                 </li>
-                <li className="flex items-start gap-2 text-sm text-gray-300">
-                  <CheckCircle className="w-4 h-4 text-tandym-coral flex-shrink-0 mt-0.5" />
-                  Priority support
+                <li className="flex items-center gap-2 text-sm text-gray-300 justify-center">
+                  <CheckCircle className="w-4 h-4 text-tandym-coral flex-shrink-0" />
+                  <span>Priority support</span>
                 </li>
               </ul>
               <Link href="/pricing" className="mt-auto">
