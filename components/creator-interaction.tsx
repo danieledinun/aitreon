@@ -1063,7 +1063,6 @@ export default function CreatorInteraction({
 
   // Handle citation click - open inline embedded video
   const handleCitationClick = (citation: Citation, index: number, messageId: string) => {
-    console.log('🎬 Opening video for message:', messageId, 'Video:', citation.videoTitle)
     setInlineVideo({
       videoId: citation.videoId,
       startTime: citation.startTime || 0,
@@ -1501,12 +1500,11 @@ export default function CreatorInteraction({
         const citationIndex = parseInt(target.getAttribute('data-citation-index') || '0')
         const messageId = target.getAttribute('data-message-id') || ''
 
-        // Find the specific message by ID (not just first with citations!)
+        // Find the specific message by ID
         const messageWithCitations = messages.find(m => m.id === messageId)
         if (messageWithCitations?.citations?.[citationIndex]) {
           const citation = messageWithCitations.citations[citationIndex]
-          console.log('🎬 Global handler - Opening video for message:', messageId, 'Citation:', citation.videoTitle)
-          // Open inline embedded video instead of PiP
+          // Open inline embedded video
           setInlineVideo({
             videoId: citation.videoId,
             startTime: citation.startTime || 0,
@@ -1530,21 +1528,17 @@ export default function CreatorInteraction({
     if (inlineVideo) {
       // Small delay to ensure the video player has rendered
       setTimeout(() => {
-        // Try to scroll to the video player first, fall back to message
         const videoPlayerElement = document.getElementById(`video-player-${inlineVideo.messageId}`)
         const messageElement = document.getElementById(`message-${inlineVideo.messageId}`)
         const targetElement = videoPlayerElement || messageElement
 
         if (targetElement) {
-          console.log('📜 Scrolling to video for message:', inlineVideo.messageId)
           targetElement.scrollIntoView({
             behavior: 'smooth',
-            block: 'center'  // Changed to 'center' so video is visible in middle of screen
+            block: 'center'
           })
-        } else {
-          console.warn('⚠️ Could not find element to scroll to for message:', inlineVideo.messageId)
         }
-      }, 150)  // Slightly longer delay to ensure video player has rendered
+      }, 150)
     }
   }, [inlineVideo])
 
@@ -1962,10 +1956,7 @@ export default function CreatorInteraction({
 
                     {/* Inline Video Player - shows after assistant message if video is active for this message */}
                     {inlineVideo && inlineVideo.messageId === message.id && (
-                      <div className="mt-4 border-4 border-green-500 p-2 rounded-lg" id={`video-player-${message.id}`}>
-                        <div className="bg-green-100 text-green-800 px-3 py-1 rounded text-sm mb-2 font-bold">
-                          ✅ VIDEO ATTACHED TO MESSAGE #{index + 1} (ID: {message.id.toString().substring(0, 12)}...)
-                        </div>
+                      <div className="mt-4" id={`video-player-${message.id}`}>
                         <InlineVideoPlayer
                           videoId={inlineVideo.videoId}
                           startTime={inlineVideo.startTime}
