@@ -234,232 +234,235 @@ export default function EmbedPage() {
                 Customize how your chat widget looks and behaves
               </CardDescription>
             </CardHeader>
-            <CardContent className="flex-1 space-y-4 overflow-y-auto">
-              <div className="space-y-2">
-                <Label htmlFor="position">Widget Position</Label>
-                <Select
-                  value={widgetConfig.position}
-                  onValueChange={(value) => setWidgetConfig({ ...widgetConfig, position: value })}
-                >
-                  <SelectTrigger id="position">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="bottom-right">Bottom Right</SelectItem>
-                    <SelectItem value="bottom-left">Bottom Left</SelectItem>
-                    <SelectItem value="top-right">Top Right</SelectItem>
-                    <SelectItem value="top-left">Top Left</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="theme">Theme</Label>
-                <Select
-                  value={widgetConfig.theme}
-                  onValueChange={(value) => setWidgetConfig({ ...widgetConfig, theme: value })}
-                >
-                  <SelectTrigger id="theme">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="light">Light</SelectItem>
-                    <SelectItem value="dark">Dark</SelectItem>
-                    <SelectItem value="auto">Auto (follows system)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="primaryColor">Primary Color</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="primaryColor"
-                    type="color"
-                    value={widgetConfig.primaryColor}
-                    onChange={(e) => setWidgetConfig({ ...widgetConfig, primaryColor: e.target.value })}
-                    className="w-20 h-10"
-                  />
-                  <Input
-                    type="text"
-                    value={widgetConfig.primaryColor}
-                    onChange={(e) => setWidgetConfig({ ...widgetConfig, primaryColor: e.target.value })}
-                    className="flex-1"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="widgetMode">Widget Mode</Label>
-                <Select
-                  value={widgetConfig.widgetMode}
-                  onValueChange={(value) => setWidgetConfig({ ...widgetConfig, widgetMode: value })}
-                >
-                  <SelectTrigger id="widgetMode">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="full">Full Chat Window</SelectItem>
-                    <SelectItem value="compact">Compact with Popup Questions</SelectItem>
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-gray-500">Compact mode shows suggested questions above the button</p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="buttonText">Button Text</Label>
-                <Input
-                  id="buttonText"
-                  value={widgetConfig.buttonText}
-                  onChange={(e) => setWidgetConfig({ ...widgetConfig, buttonText: e.target.value })}
-                  placeholder="Chat with me"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="greetingText">Greeting Text</Label>
-                <Input
-                  id="greetingText"
-                  value={widgetConfig.greetingText}
-                  onChange={(e) => setWidgetConfig({ ...widgetConfig, greetingText: e.target.value })}
-                  placeholder="Chat with {name}"
-                />
-                <p className="text-xs text-gray-500">Use {'{name}'} as a placeholder for your display name</p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="welcomeMessage">Welcome Message</Label>
-                <Input
-                  id="welcomeMessage"
-                  value={widgetConfig.welcomeMessage}
-                  onChange={(e) => setWidgetConfig({ ...widgetConfig, welcomeMessage: e.target.value })}
-                  placeholder="Ask me anything!"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="customAvatar">Custom Avatar</Label>
-                {widgetConfig.customAvatar ? (
-                  <div className="flex items-center gap-2 p-3 border rounded-lg bg-gray-50 dark:bg-gray-800">
-                    <img
-                      src={widgetConfig.customAvatar}
-                      alt="Avatar preview"
-                      className="w-12 h-12 rounded-full object-cover"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">Avatar uploaded</p>
-                      <p className="text-xs text-gray-500">Click remove to change</p>
-                    </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeFile('avatar')}
-                      className="shrink-0"
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="relative">
-                    <input
-                      id="customAvatar"
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => handleFileSelect(e, 'avatar')}
-                      className="hidden"
-                      disabled={uploadingAvatar}
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="w-full"
-                      onClick={() => document.getElementById('customAvatar')?.click()}
-                      disabled={uploadingAvatar}
-                    >
-                      <Upload className="w-4 h-4 mr-2" />
-                      {uploadingAvatar ? 'Uploading...' : 'Upload Avatar'}
-                    </Button>
-                  </div>
-                )}
-                <p className="text-xs text-gray-500">Leave empty to use your profile image. Max 5MB.</p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="customLogo">Custom Logo</Label>
-                {widgetConfig.customLogo ? (
-                  <div className="flex items-center gap-2 p-3 border rounded-lg bg-gray-50 dark:bg-gray-800">
-                    <img
-                      src={widgetConfig.customLogo}
-                      alt="Logo preview"
-                      className="h-8 w-auto max-w-[120px] object-contain"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">Logo uploaded</p>
-                      <p className="text-xs text-gray-500">Click remove to change</p>
-                    </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeFile('logo')}
-                      className="shrink-0"
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="relative">
-                    <input
-                      id="customLogo"
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => handleFileSelect(e, 'logo')}
-                      className="hidden"
-                      disabled={uploadingLogo}
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="w-full"
-                      onClick={() => document.getElementById('customLogo')?.click()}
-                      disabled={uploadingLogo}
-                    >
-                      <Upload className="w-4 h-4 mr-2" />
-                      {uploadingLogo ? 'Uploading...' : 'Upload Logo'}
-                    </Button>
-                  </div>
-                )}
-                <p className="text-xs text-gray-500">Shown in the widget header. Max 5MB.</p>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <Label htmlFor="showAvatar">Show Avatar</Label>
-                <Switch
-                  id="showAvatar"
-                  checked={widgetConfig.showAvatar}
-                  onCheckedChange={(checked) => setWidgetConfig({ ...widgetConfig, showAvatar: checked })}
-                />
-              </div>
-
+            <CardContent className="flex-1 overflow-y-auto">
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="width">Width (px)</Label>
-                  <Input
-                    id="width"
-                    type="number"
-                    value={widgetConfig.width}
-                    onChange={(e) => setWidgetConfig({ ...widgetConfig, width: e.target.value })}
-                  />
+                {/* Left Column */}
+                <div className="space-y-3">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="widgetMode" className="text-sm">Widget Mode</Label>
+                    <Select
+                      value={widgetConfig.widgetMode}
+                      onValueChange={(value) => setWidgetConfig({ ...widgetConfig, widgetMode: value })}
+                    >
+                      <SelectTrigger id="widgetMode" className="h-9">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="full">Full Chat</SelectItem>
+                        <SelectItem value="compact">Compact</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="theme" className="text-sm">Theme</Label>
+                    <Select
+                      value={widgetConfig.theme}
+                      onValueChange={(value) => setWidgetConfig({ ...widgetConfig, theme: value })}
+                    >
+                      <SelectTrigger id="theme" className="h-9">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="light">Light</SelectItem>
+                        <SelectItem value="dark">Dark</SelectItem>
+                        <SelectItem value="auto">Auto</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="primaryColor" className="text-sm">Primary Color</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="primaryColor"
+                        type="color"
+                        value={widgetConfig.primaryColor}
+                        onChange={(e) => setWidgetConfig({ ...widgetConfig, primaryColor: e.target.value })}
+                        className="w-16 h-9"
+                      />
+                      <Input
+                        type="text"
+                        value={widgetConfig.primaryColor}
+                        onChange={(e) => setWidgetConfig({ ...widgetConfig, primaryColor: e.target.value })}
+                        className="flex-1 h-9"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="buttonText" className="text-sm">Button Text</Label>
+                    <Input
+                      id="buttonText"
+                      value={widgetConfig.buttonText}
+                      onChange={(e) => setWidgetConfig({ ...widgetConfig, buttonText: e.target.value })}
+                      placeholder="Chat with me"
+                      className="h-9"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="greetingText" className="text-sm">Greeting Text</Label>
+                    <Input
+                      id="greetingText"
+                      value={widgetConfig.greetingText}
+                      onChange={(e) => setWidgetConfig({ ...widgetConfig, greetingText: e.target.value })}
+                      placeholder="Chat with {name}"
+                      className="h-9"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="welcomeMessage" className="text-sm">Welcome Message</Label>
+                    <Input
+                      id="welcomeMessage"
+                      value={widgetConfig.welcomeMessage}
+                      onChange={(e) => setWidgetConfig({ ...widgetConfig, welcomeMessage: e.target.value })}
+                      placeholder="Ask me anything!"
+                      className="h-9"
+                    />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="height">Height (px)</Label>
-                  <Input
-                    id="height"
-                    type="number"
-                    value={widgetConfig.height}
-                    onChange={(e) => setWidgetConfig({ ...widgetConfig, height: e.target.value })}
-                  />
+
+                {/* Right Column */}
+                <div className="space-y-3">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="customAvatar" className="text-sm">Custom Avatar</Label>
+                    {widgetConfig.customAvatar ? (
+                      <div className="flex items-center gap-2 p-2 border rounded-lg bg-gray-50 dark:bg-gray-800">
+                        <img
+                          src={widgetConfig.customAvatar}
+                          alt="Avatar"
+                          className="w-8 h-8 rounded-full object-cover"
+                        />
+                        <p className="text-xs flex-1 truncate">Uploaded</p>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeFile('avatar')}
+                          className="h-6 w-6 p-0"
+                        >
+                          <X className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="relative">
+                        <input
+                          id="customAvatar"
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleFileSelect(e, 'avatar')}
+                          className="hidden"
+                          disabled={uploadingAvatar}
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="w-full h-9"
+                          onClick={() => document.getElementById('customAvatar')?.click()}
+                          disabled={uploadingAvatar}
+                        >
+                          <Upload className="w-3 h-3 mr-1.5" />
+                          {uploadingAvatar ? 'Uploading...' : 'Upload'}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="customLogo" className="text-sm">Custom Logo</Label>
+                    {widgetConfig.customLogo ? (
+                      <div className="flex items-center gap-2 p-2 border rounded-lg bg-gray-50 dark:bg-gray-800">
+                        <img
+                          src={widgetConfig.customLogo}
+                          alt="Logo"
+                          className="h-6 w-auto max-w-[80px] object-contain"
+                        />
+                        <p className="text-xs flex-1 truncate">Uploaded</p>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeFile('logo')}
+                          className="h-6 w-6 p-0"
+                        >
+                          <X className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="relative">
+                        <input
+                          id="customLogo"
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleFileSelect(e, 'logo')}
+                          className="hidden"
+                          disabled={uploadingLogo}
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="w-full h-9"
+                          onClick={() => document.getElementById('customLogo')?.click()}
+                          disabled={uploadingLogo}
+                        >
+                          <Upload className="w-3 h-3 mr-1.5" />
+                          {uploadingLogo ? 'Uploading...' : 'Upload'}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex items-center justify-between py-1.5">
+                    <Label htmlFor="showAvatar" className="text-sm">Show Avatar</Label>
+                    <Switch
+                      id="showAvatar"
+                      checked={widgetConfig.showAvatar}
+                      onCheckedChange={(checked) => setWidgetConfig({ ...widgetConfig, showAvatar: checked })}
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="position" className="text-sm">Position</Label>
+                    <Select
+                      value={widgetConfig.position}
+                      onValueChange={(value) => setWidgetConfig({ ...widgetConfig, position: value })}
+                    >
+                      <SelectTrigger id="position" className="h-9">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="bottom-right">Bottom Right</SelectItem>
+                        <SelectItem value="bottom-left">Bottom Left</SelectItem>
+                        <SelectItem value="top-right">Top Right</SelectItem>
+                        <SelectItem value="top-left">Top Left</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="width" className="text-sm">Width</Label>
+                      <Input
+                        id="width"
+                        type="number"
+                        value={widgetConfig.width}
+                        onChange={(e) => setWidgetConfig({ ...widgetConfig, width: e.target.value })}
+                        className="h-9"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="height" className="text-sm">Height</Label>
+                      <Input
+                        id="height"
+                        type="number"
+                        value={widgetConfig.height}
+                        onChange={(e) => setWidgetConfig({ ...widgetConfig, height: e.target.value })}
+                        className="h-9"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
             </CardContent>
