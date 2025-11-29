@@ -26,40 +26,18 @@ export default function SubscriptionPage() {
   const searchParams = useSearchParams()
   const suggestedUpgrade = searchParams.get('upgrade') as PlanTier | null
 
-  const [creatorId, setCreatorId] = useState<string | null>(null)
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly')
   const [upgrading, setUpgrading] = useState<PlanTier | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  const { plan, isLoading: planLoading, refetch } = useCreatorPlan(creatorId || undefined)
-
-  useEffect(() => {
-    // Fetch creator ID for current user
-    const fetchCreatorId = async () => {
-      if (!session?.user?.id) return
-
-      try {
-        const res = await fetch(`/api/user/creator`)
-        if (res.ok) {
-          const data = await res.json()
-          setCreatorId(data.creatorId)
-        }
-      } catch (err) {
-        console.error('Failed to fetch creator ID:', err)
-      }
-    }
-
-    fetchCreatorId()
-  }, [session])
+  const { plan, isLoading: planLoading, refetch } = useCreatorPlan()
 
   const handleUpgrade = async (targetTier: PlanTier) => {
-    if (!creatorId) return
-
     setUpgrading(targetTier)
     setError(null)
 
     try {
-      const response = await fetch(`/api/creators/${creatorId}/subscription/upgrade`, {
+      const response = await fetch(`/api/user/subscription/upgrade`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ targetTier, billingPeriod }),
@@ -87,10 +65,10 @@ export default function SubscriptionPage() {
   }
 
   const handleCancelSubscription = async () => {
-    if (!creatorId || !confirm('Are you sure you want to cancel your subscription?')) return
+    if (!confirm('Are you sure you want to cancel your subscription?')) return
 
     try {
-      const response = await fetch(`/api/creators/${creatorId}/subscription/cancel`, {
+      const response = await fetch(`/api/user/subscription/cancel`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ cancelImmediately: false }),
