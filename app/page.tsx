@@ -488,11 +488,11 @@ export default function HomePage() {
               <ul className="space-y-3 mb-6 flex-1 min-h-[120px]">
                 <li className="flex items-start gap-2 text-sm text-gray-300">
                   <CheckCircle className="w-4 h-4 text-tandym-cobalt flex-shrink-0 mt-0.5" />
-                  Up to 10 videos
+                  Up to 5 videos
                 </li>
                 <li className="flex items-start gap-2 text-sm text-gray-300">
                   <CheckCircle className="w-4 h-4 text-tandym-cobalt flex-shrink-0 mt-0.5" />
-                  100 messages/month
+                  50 messages/month
                 </li>
                 <li className="flex items-start gap-2 text-sm text-gray-300">
                   <CheckCircle className="w-4 h-4 text-tandym-cobalt flex-shrink-0 mt-0.5" />

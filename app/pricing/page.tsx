@@ -266,21 +266,21 @@ export default function PricingPage() {
                 )}
 
                 <div className={cn("p-8 flex flex-col flex-1", plan.popular && "pt-16")}>
-                  {/* Icon */}
+                  {/* Icon - Fixed height */}
                   <div className={cn(
-                    "inline-flex p-3 rounded-xl bg-gradient-to-br mb-4",
+                    "inline-flex p-3 rounded-xl bg-gradient-to-br mb-4 h-[60px] w-[60px]",
                     plan.color
                   )}>
                     <plan.icon className="w-6 h-6 text-white" />
                   </div>
 
-                  {/* Plan Name */}
-                  <h3 className="text-2xl font-bold font-poppins text-tandym-text-dark mb-2">
+                  {/* Plan Name - Fixed height */}
+                  <h3 className="text-2xl font-bold font-poppins text-tandym-text-dark mb-2 h-8">
                     {plan.name}
                   </h3>
 
-                  {/* Price */}
-                  <div className="mb-4">
+                  {/* Price - Fixed minimum height */}
+                  <div className="mb-4 min-h-[100px]">
                     <div className="flex items-baseline gap-2">
                       <span className="text-4xl font-bold text-tandym-text-dark">
                         ${billingPeriod === 'monthly' ? plan.price.monthly : plan.price.yearly}
@@ -294,17 +294,17 @@ export default function PricingPage() {
                     )}
                   </div>
 
-                  {/* Description */}
-                  <p className="text-tandym-text-muted mb-6">
+                  {/* Description - Fixed minimum height */}
+                  <p className="text-tandym-text-muted mb-6 min-h-[48px]">
                     {plan.description}
                   </p>
 
                   {/* CTA */}
-                  <Link href="/auth/signin?userType=creator&mode=signup">
+                  <Link href="/auth/signin?userType=creator&mode=signup" className="mb-6">
                     <Button
                       variant={plan.ctaVariant}
                       className={cn(
-                        "w-full mb-6 rounded-full font-semibold",
+                        "w-full rounded-full font-semibold",
                         plan.ctaVariant === 'default' && cn(
                           "bg-gradient-to-r text-white shadow-lg",
                           plan.color,
@@ -317,8 +317,8 @@ export default function PricingPage() {
                     </Button>
                   </Link>
 
-                  {/* Features */}
-                  <div className="space-y-3 mb-6 flex-1">
+                  {/* Features - Grows to fill space */}
+                  <div className="space-y-3 mb-6 flex-1 min-h-[180px]">
                     {plan.features.map((feature, idx) => (
                       <div key={idx} className="flex items-start gap-2">
                         <Check className="w-5 h-5 text-green-500 shrink-0 mt-0.5" />
@@ -327,30 +327,32 @@ export default function PricingPage() {
                     ))}
                   </div>
 
-                  {/* Coming Soon Features */}
-                  {plan.comingSoon && (
-                    <div className="mb-6 p-3 bg-tandym-coral/10 rounded-lg border border-tandym-coral/20">
-                      <p className="text-xs font-semibold text-tandym-coral mb-2">COMING SOON:</p>
-                      {plan.comingSoon.map((feature, idx) => (
-                        <div key={idx} className="flex items-start gap-2">
-                          <Sparkles className="w-4 h-4 text-tandym-coral shrink-0 mt-0.5" />
-                          <span className="text-xs text-tandym-text-dark">{feature}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                  {/* Coming Soon Features - Fixed minimum height */}
+                  <div className="mb-6 min-h-[80px]">
+                    {plan.comingSoon && (
+                      <div className="p-3 bg-tandym-coral/10 rounded-lg border border-tandym-coral/20">
+                        <p className="text-xs font-semibold text-tandym-coral mb-2">COMING SOON:</p>
+                        {plan.comingSoon.map((feature, idx) => (
+                          <div key={idx} className="flex items-start gap-2">
+                            <Sparkles className="w-4 h-4 text-tandym-coral shrink-0 mt-0.5" />
+                            <span className="text-xs text-tandym-text-dark">{feature}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
 
-                  {/* Limits */}
+                  {/* Limits - Pushed to bottom */}
                   <div className="pt-6 border-t border-gray-200 mt-auto">
                     <p className="text-xs font-semibold text-tandym-text-muted mb-3 uppercase">Knowledge Base:</p>
-                    <div className="space-y-2">
+                    <div className="space-y-2 mb-4">
                       <p className="text-sm text-tandym-text-dark">📹 {plan.limits.videos}</p>
                       <p className="text-sm text-tandym-text-dark">🔄 {plan.limits.videoManagement}</p>
                       {plan.limits.sync && (
                         <p className="text-sm text-tandym-text-dark">⚡ {plan.limits.sync}</p>
                       )}
                     </div>
-                    <p className="text-xs font-semibold text-tandym-text-muted mb-2 mt-4 uppercase">Chat Capacity:</p>
+                    <p className="text-xs font-semibold text-tandym-text-muted mb-2 uppercase">Chat Capacity:</p>
                     <p className="text-sm text-tandym-text-dark">💬 {plan.limits.messages}</p>
                   </div>
                 </div>
