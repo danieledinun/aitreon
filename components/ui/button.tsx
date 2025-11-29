@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils'
 
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'default' | 'secondary' | 'outline' | 'ghost'
+  variant?: 'default' | 'secondary' | 'outline' | 'ghost' | 'destructive'
   size?: 'default' | 'sm' | 'lg'
 }
 
@@ -18,6 +18,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md': variant === 'secondary',
             'border border-gray-300 hover:bg-gray-50 hover:text-gray-900': variant === 'outline',
             'hover:bg-gray-100 hover:text-gray-900': variant === 'ghost',
+            'bg-red-600 text-white hover:bg-red-700 shadow-sm hover:shadow-md': variant === 'destructive',
           },
           {
             'h-12 py-3 px-6 text-sm': size === 'default',
