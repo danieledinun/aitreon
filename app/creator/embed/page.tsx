@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Code2, Copy, Check, ExternalLink, Palette, Layout } from 'lucide-react'
+import { Code2, Copy, Check, ExternalLink, Palette, Layout, Upload, X } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
@@ -15,6 +15,8 @@ export default function EmbedPage() {
   const { data: session } = useSession()
   const [copied, setCopied] = useState(false)
   const [creatorUsername, setCreatorUsername] = useState('')
+  const [uploadingAvatar, setUploadingAvatar] = useState(false)
+  const [uploadingLogo, setUploadingLogo] = useState(false)
 
   // Widget customization options
   const [widgetConfig, setWidgetConfig] = useState({
@@ -92,6 +94,62 @@ export default function EmbedPage() {
     navigator.clipboard.writeText(text)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+  }
+
+  const handleFileUpload = async (file: File, type: 'avatar' | 'logo') => {
+    if (type === 'avatar') {
+      setUploadingAvatar(true)
+    } else {
+      setUploadingLogo(true)
+    }
+
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('type', type)
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Upload failed')
+      }
+
+      const data = await response.json()
+
+      if (type === 'avatar') {
+        setWidgetConfig({ ...widgetConfig, customAvatar: data.url })
+      } else {
+        setWidgetConfig({ ...widgetConfig, customLogo: data.url })
+      }
+    } catch (error) {
+      console.error('Upload error:', error)
+      alert('Failed to upload file. Please try again.')
+    } finally {
+      if (type === 'avatar') {
+        setUploadingAvatar(false)
+      } else {
+        setUploadingLogo(false)
+      }
+    }
+  }
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>, type: 'avatar' | 'logo') => {
+    const file = e.target.files?.[0]
+    if (file) {
+      handleFileUpload(file, type)
+    }
+  }
+
+  const removeFile = (type: 'avatar' | 'logo') => {
+    if (type === 'avatar') {
+      setWidgetConfig({ ...widgetConfig, customAvatar: '' })
+    } else {
+      setWidgetConfig({ ...widgetConfig, customLogo: '' })
+    }
   }
 
   const previewUrl = creatorUsername
@@ -234,25 +292,99 @@ export default function EmbedPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="customAvatar">Custom Avatar URL</Label>
-                <Input
-                  id="customAvatar"
-                  value={widgetConfig.customAvatar}
-                  onChange={(e) => setWidgetConfig({ ...widgetConfig, customAvatar: e.target.value })}
-                  placeholder="https://example.com/avatar.png"
-                />
-                <p className="text-xs text-gray-500">Leave empty to use your profile image</p>
+                <Label htmlFor="customAvatar">Custom Avatar</Label>
+                {widgetConfig.customAvatar ? (
+                  <div className="flex items-center gap-2 p-3 border rounded-lg bg-gray-50 dark:bg-gray-800">
+                    <img
+                      src={widgetConfig.customAvatar}
+                      alt="Avatar preview"
+                      className="w-12 h-12 rounded-full object-cover"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">Avatar uploaded</p>
+                      <p className="text-xs text-gray-500">Click remove to change</p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeFile('avatar')}
+                      className="shrink-0"
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="relative">
+                    <input
+                      id="customAvatar"
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleFileSelect(e, 'avatar')}
+                      className="hidden"
+                      disabled={uploadingAvatar}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => document.getElementById('customAvatar')?.click()}
+                      disabled={uploadingAvatar}
+                    >
+                      <Upload className="w-4 h-4 mr-2" />
+                      {uploadingAvatar ? 'Uploading...' : 'Upload Avatar'}
+                    </Button>
+                  </div>
+                )}
+                <p className="text-xs text-gray-500">Leave empty to use your profile image. Max 5MB.</p>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="customLogo">Custom Logo URL</Label>
-                <Input
-                  id="customLogo"
-                  value={widgetConfig.customLogo}
-                  onChange={(e) => setWidgetConfig({ ...widgetConfig, customLogo: e.target.value })}
-                  placeholder="https://example.com/logo.png"
-                />
-                <p className="text-xs text-gray-500">Shown in the widget header</p>
+                <Label htmlFor="customLogo">Custom Logo</Label>
+                {widgetConfig.customLogo ? (
+                  <div className="flex items-center gap-2 p-3 border rounded-lg bg-gray-50 dark:bg-gray-800">
+                    <img
+                      src={widgetConfig.customLogo}
+                      alt="Logo preview"
+                      className="h-8 w-auto max-w-[120px] object-contain"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">Logo uploaded</p>
+                      <p className="text-xs text-gray-500">Click remove to change</p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeFile('logo')}
+                      className="shrink-0"
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="relative">
+                    <input
+                      id="customLogo"
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleFileSelect(e, 'logo')}
+                      className="hidden"
+                      disabled={uploadingLogo}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => document.getElementById('customLogo')?.click()}
+                      disabled={uploadingLogo}
+                    >
+                      <Upload className="w-4 h-4 mr-2" />
+                      {uploadingLogo ? 'Uploading...' : 'Upload Logo'}
+                    </Button>
+                  </div>
+                )}
+                <p className="text-xs text-gray-500">Shown in the widget header. Max 5MB.</p>
               </div>
 
               <div className="flex items-center justify-between">
@@ -302,6 +434,7 @@ export default function EmbedPage() {
               {creatorUsername ? (
                 <div className="bg-gray-100 dark:bg-neutral-800 rounded-lg p-4 min-h-[400px] relative">
                   <iframe
+                    key={previewUrl}
                     src={previewUrl}
                     width={widgetConfig.width}
                     height={widgetConfig.height}
