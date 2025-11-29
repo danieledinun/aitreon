@@ -1063,6 +1063,7 @@ export default function CreatorInteraction({
 
   // Handle citation click - open inline embedded video
   const handleCitationClick = (citation: Citation, index: number, messageId: string) => {
+    console.log('🎬 Opening video for message:', messageId, 'Video:', citation.videoTitle)
     setInlineVideo({
       videoId: citation.videoId,
       startTime: citation.startTime || 0,
@@ -1526,14 +1527,21 @@ export default function CreatorInteraction({
     if (inlineVideo) {
       // Small delay to ensure the video player has rendered
       setTimeout(() => {
+        // Try to scroll to the video player first, fall back to message
+        const videoPlayerElement = document.getElementById(`video-player-${inlineVideo.messageId}`)
         const messageElement = document.getElementById(`message-${inlineVideo.messageId}`)
-        if (messageElement) {
-          messageElement.scrollIntoView({
+        const targetElement = videoPlayerElement || messageElement
+
+        if (targetElement) {
+          console.log('📜 Scrolling to video for message:', inlineVideo.messageId)
+          targetElement.scrollIntoView({
             behavior: 'smooth',
-            block: 'start'
+            block: 'center'  // Changed to 'center' so video is visible in middle of screen
           })
+        } else {
+          console.warn('⚠️ Could not find element to scroll to for message:', inlineVideo.messageId)
         }
-      }, 100)
+      }, 150)  // Slightly longer delay to ensure video player has rendered
     }
   }, [inlineVideo])
 
@@ -1951,7 +1959,7 @@ export default function CreatorInteraction({
 
                     {/* Inline Video Player - shows after assistant message if video is active for this message */}
                     {inlineVideo && inlineVideo.messageId === message.id && (
-                      <div className="mt-4">
+                      <div className="mt-4" id={`video-player-${message.id}`}>
                         <InlineVideoPlayer
                           videoId={inlineVideo.videoId}
                           startTime={inlineVideo.startTime}
