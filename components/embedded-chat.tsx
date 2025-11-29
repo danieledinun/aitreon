@@ -35,12 +35,22 @@ interface EmbeddedChatProps {
   }
   theme?: string
   primaryColor?: string
+  showAvatar?: boolean
+  greetingText?: string
+  welcomeMessage?: string
+  customAvatar?: string
+  customLogo?: string
 }
 
 export default function EmbeddedChat({
   creator,
   theme = 'light',
-  primaryColor = '#6366f1'
+  primaryColor = '#6366f1',
+  showAvatar = true,
+  greetingText,
+  welcomeMessage,
+  customAvatar,
+  customLogo
 }: EmbeddedChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState('')
@@ -51,7 +61,9 @@ export default function EmbeddedChat({
   const isDark = theme === 'dark' || (theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches)
 
   const displayName = creator.display_name || creator.displayName || creator.username
-  const profileImage = creator.profile_image || creator.profileImage
+  const profileImage = customAvatar || creator.profile_image || creator.profileImage
+  const actualGreeting = greetingText?.replace('{name}', displayName) || `Chat with ${displayName}`
+  const actualWelcome = welcomeMessage || 'Ask me anything! I\'ll do my best to help based on my knowledge.'
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -124,7 +136,7 @@ export default function EmbeddedChat({
         "flex items-center gap-3 px-4 py-3 border-b",
         isDark ? "border-gray-700 bg-gray-800" : "border-gray-200 bg-gray-50"
       )}>
-        {profileImage ? (
+        {showAvatar && (profileImage ? (
           <Image
             src={profileImage}
             alt={displayName}
@@ -136,15 +148,27 @@ export default function EmbeddedChat({
           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center">
             <Sparkles className="w-5 h-5 text-white" />
           </div>
-        )}
+        ))}
         <div className="flex-1">
-          <h3 className="font-semibold">{displayName}</h3>
-          <p className={cn(
-            "text-xs",
-            isDark ? "text-gray-400" : "text-gray-500"
-          )}>
-            AI Twin
-          </p>
+          {customLogo ? (
+            <Image
+              src={customLogo}
+              alt={displayName}
+              width={120}
+              height={30}
+              className="h-6 w-auto object-contain"
+            />
+          ) : (
+            <>
+              <h3 className="font-semibold">{displayName}</h3>
+              <p className={cn(
+                "text-xs",
+                isDark ? "text-gray-400" : "text-gray-500"
+              )}>
+                AI Twin
+              </p>
+            </>
+          )}
         </div>
         <div className="text-xs text-gray-400">
           Powered by <span className="font-semibold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">Tandym.ai</span>
@@ -155,7 +179,7 @@ export default function EmbeddedChat({
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center px-8">
-            {profileImage ? (
+            {showAvatar && (profileImage ? (
               <Image
                 src={profileImage}
                 alt={displayName}
@@ -167,13 +191,13 @@ export default function EmbeddedChat({
               <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center mb-4">
                 <Sparkles className="w-10 h-10 text-white" />
               </div>
-            )}
-            <h3 className="text-xl font-bold mb-2">Chat with {displayName}</h3>
+            ))}
+            <h3 className="text-xl font-bold mb-2">{actualGreeting}</h3>
             <p className={cn(
               "text-sm",
               isDark ? "text-gray-400" : "text-gray-500"
             )}>
-              Ask me anything! I'll do my best to help based on my knowledge.
+              {actualWelcome}
             </p>
           </div>
         )}
@@ -186,7 +210,7 @@ export default function EmbeddedChat({
               message.role === 'user' ? "justify-end" : "justify-start"
             )}
           >
-            {message.role === 'assistant' && (
+            {message.role === 'assistant' && showAvatar && (
               profileImage ? (
                 <Image
                   src={profileImage}
@@ -238,7 +262,7 @@ export default function EmbeddedChat({
 
         {loading && (
           <div className="flex gap-3 justify-start">
-            {profileImage ? (
+            {showAvatar && (profileImage ? (
               <Image
                 src={profileImage}
                 alt={displayName}
@@ -250,7 +274,7 @@ export default function EmbeddedChat({
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center shrink-0">
                 <Sparkles className="w-4 h-4 text-white" />
               </div>
-            )}
+            ))}
             <div className={cn(
               "rounded-2xl px-4 py-3",
               isDark ? "bg-gray-800" : "bg-gray-100"

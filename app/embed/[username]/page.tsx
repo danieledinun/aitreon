@@ -9,6 +9,11 @@ interface EmbedPageProps {
   searchParams: {
     theme?: string
     color?: string
+    showAvatar?: string
+    greeting?: string
+    welcome?: string
+    avatar?: string
+    logo?: string
   }
 }
 
@@ -41,12 +46,22 @@ export default async function EmbedPage({ params, searchParams }: EmbedPageProps
   // Theme configuration from URL params
   const theme = searchParams.theme || 'light'
   const primaryColor = searchParams.color ? `#${searchParams.color}` : '#6366f1'
+  const showAvatar = searchParams.showAvatar !== 'false'
+  const greetingText = searchParams.greeting
+  const welcomeMessage = searchParams.welcome
+  const customAvatar = searchParams.avatar
+  const customLogo = searchParams.logo
 
   return (
     <EmbeddedChat
       creator={creator}
       theme={theme}
       primaryColor={primaryColor}
+      showAvatar={showAvatar}
+      greetingText={greetingText}
+      welcomeMessage={welcomeMessage}
+      customAvatar={customAvatar}
+      customLogo={customLogo}
     />
   )
 }

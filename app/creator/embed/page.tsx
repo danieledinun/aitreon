@@ -25,6 +25,11 @@ export default function EmbedPage() {
     buttonText: 'Chat with me',
     width: '400',
     height: '600',
+    widgetMode: 'full', // 'full' or 'compact'
+    greetingText: 'Chat with {name}',
+    welcomeMessage: 'Ask me anything! I\'ll do my best to help based on my knowledge.',
+    customAvatar: '',
+    customLogo: '',
   })
 
   useEffect(() => {
@@ -90,7 +95,15 @@ export default function EmbedPage() {
   }
 
   const previewUrl = creatorUsername
-    ? `${typeof window !== 'undefined' ? window.location.origin : ''}/embed/${creatorUsername}?theme=${widgetConfig.theme}&color=${widgetConfig.primaryColor.replace('#', '')}`
+    ? `${typeof window !== 'undefined' ? window.location.origin : ''}/embed/${creatorUsername}?${new URLSearchParams({
+        theme: widgetConfig.theme,
+        color: widgetConfig.primaryColor.replace('#', ''),
+        showAvatar: widgetConfig.showAvatar.toString(),
+        greeting: widgetConfig.greetingText,
+        welcome: widgetConfig.welcomeMessage,
+        ...(widgetConfig.customAvatar && { avatar: widgetConfig.customAvatar }),
+        ...(widgetConfig.customLogo && { logo: widgetConfig.customLogo }),
+      }).toString()}`
     : ''
 
   return (
@@ -171,6 +184,23 @@ export default function EmbedPage() {
               </div>
 
               <div className="space-y-2">
+                <Label htmlFor="widgetMode">Widget Mode</Label>
+                <Select
+                  value={widgetConfig.widgetMode}
+                  onValueChange={(value) => setWidgetConfig({ ...widgetConfig, widgetMode: value })}
+                >
+                  <SelectTrigger id="widgetMode">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="full">Full Chat Window</SelectItem>
+                    <SelectItem value="compact">Compact with Popup Questions</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-gray-500">Compact mode shows suggested questions above the button</p>
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="buttonText">Button Text</Label>
                 <Input
                   id="buttonText"
@@ -178,6 +208,49 @@ export default function EmbedPage() {
                   onChange={(e) => setWidgetConfig({ ...widgetConfig, buttonText: e.target.value })}
                   placeholder="Chat with me"
                 />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="greetingText">Greeting Text</Label>
+                <Input
+                  id="greetingText"
+                  value={widgetConfig.greetingText}
+                  onChange={(e) => setWidgetConfig({ ...widgetConfig, greetingText: e.target.value })}
+                  placeholder="Chat with {name}"
+                />
+                <p className="text-xs text-gray-500">Use {'{name}'} as a placeholder for your display name</p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="welcomeMessage">Welcome Message</Label>
+                <Input
+                  id="welcomeMessage"
+                  value={widgetConfig.welcomeMessage}
+                  onChange={(e) => setWidgetConfig({ ...widgetConfig, welcomeMessage: e.target.value })}
+                  placeholder="Ask me anything!"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="customAvatar">Custom Avatar URL</Label>
+                <Input
+                  id="customAvatar"
+                  value={widgetConfig.customAvatar}
+                  onChange={(e) => setWidgetConfig({ ...widgetConfig, customAvatar: e.target.value })}
+                  placeholder="https://example.com/avatar.png"
+                />
+                <p className="text-xs text-gray-500">Leave empty to use your profile image</p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="customLogo">Custom Logo URL</Label>
+                <Input
+                  id="customLogo"
+                  value={widgetConfig.customLogo}
+                  onChange={(e) => setWidgetConfig({ ...widgetConfig, customLogo: e.target.value })}
+                  placeholder="https://example.com/logo.png"
+                />
+                <p className="text-xs text-gray-500">Shown in the widget header</p>
               </div>
 
               <div className="flex items-center justify-between">
