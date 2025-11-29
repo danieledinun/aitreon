@@ -230,8 +230,10 @@ export default function EmbedPage() {
                     src={previewUrl}
                     width={widgetConfig.width}
                     height={widgetConfig.height}
-                    className="mx-auto rounded-lg shadow-lg"
+                    className="mx-auto rounded-lg shadow-lg border-0"
                     style={{ maxWidth: '100%' }}
+                    allow="microphone"
+                    title="Widget Preview"
                   />
                 </div>
               ) : (
