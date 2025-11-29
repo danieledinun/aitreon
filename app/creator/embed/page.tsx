@@ -168,11 +168,22 @@ export default function EmbedPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Embed Widget</h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-2">
-          Add your AI twin to any website with our embeddable chat widget
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Embed Widget</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-2">
+            Add your AI twin to any website with our embeddable chat widget
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          onClick={() => window.open(previewUrl, '_blank')}
+          disabled={!creatorUsername}
+          className="shrink-0"
+        >
+          <ExternalLink className="w-4 h-4 mr-2" />
+          Open Widget in New Tab
+        </Button>
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6">
@@ -207,26 +218,6 @@ export default function EmbedPage() {
                   <p>Loading preview...</p>
                 </div>
               )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Test Your Widget</CardTitle>
-              <CardDescription>
-                Open your widget in a new tab to test it
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button
-                className="w-full"
-                variant="outline"
-                onClick={() => window.open(previewUrl, '_blank')}
-                disabled={!creatorUsername}
-              >
-                <ExternalLink className="w-4 h-4 mr-2" />
-                Open Widget in New Tab
-              </Button>
             </CardContent>
           </Card>
         </div>
