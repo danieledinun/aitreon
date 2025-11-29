@@ -198,40 +198,6 @@ export default function PricingPage() {
               </Link>
             </div>
           </div>
-
-          {/* Billing Toggle */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
-            <div className="flex items-center gap-4">
-              <span className={cn(
-                "text-sm font-medium transition-colors",
-                billingPeriod === 'monthly' ? "text-white" : "text-gray-400"
-              )}>
-                Monthly
-              </span>
-              <button
-                onClick={() => setBillingPeriod(billingPeriod === 'monthly' ? 'yearly' : 'monthly')}
-                className="relative inline-flex h-8 w-14 items-center rounded-full bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-tandym-cobalt focus:ring-offset-2 focus:ring-offset-tandym-midnight"
-              >
-                <span
-                  className={cn(
-                    "inline-block h-6 w-6 transform rounded-full bg-white transition-transform",
-                    billingPeriod === 'yearly' ? "translate-x-7" : "translate-x-1"
-                  )}
-                />
-              </button>
-              <span className={cn(
-                "text-sm font-medium transition-colors",
-                billingPeriod === 'yearly' ? "text-white" : "text-gray-400"
-              )}>
-                Yearly
-              </span>
-            </div>
-            {billingPeriod === 'yearly' && (
-              <span className="px-3 py-1 bg-tandym-coral text-white text-xs font-bold rounded-full">
-                2 MONTHS FREE
-              </span>
-            )}
-          </div>
         </div>
       </section>
 
@@ -242,10 +208,44 @@ export default function PricingPage() {
             <h2 className="text-3xl md:text-4xl font-bold font-poppins text-tandym-text-dark mb-4">
               Choose the plan that fits your channel
             </h2>
-            <p className="text-lg text-tandym-text-muted max-w-3xl mx-auto">
+            <p className="text-lg text-tandym-text-muted max-w-3xl mx-auto mb-8">
               One AI twin. Clear video intelligence. Clear monthly message limits.<br />
               Start for free — upgrade anytime.
             </p>
+
+            {/* Billing Toggle */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <div className="flex items-center gap-4">
+                <span className={cn(
+                  "text-sm font-medium transition-colors",
+                  billingPeriod === 'monthly' ? "text-tandym-text-dark" : "text-tandym-text-muted"
+                )}>
+                  Monthly
+                </span>
+                <button
+                  onClick={() => setBillingPeriod(billingPeriod === 'monthly' ? 'yearly' : 'monthly')}
+                  className="relative inline-flex h-8 w-14 items-center rounded-full bg-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-tandym-cobalt focus:ring-offset-2"
+                >
+                  <span
+                    className={cn(
+                      "inline-block h-6 w-6 transform rounded-full bg-gradient-to-r from-tandym-cobalt to-tandym-lilac transition-transform shadow-md",
+                      billingPeriod === 'yearly' ? "translate-x-7" : "translate-x-1"
+                    )}
+                  />
+                </button>
+                <span className={cn(
+                  "text-sm font-medium transition-colors",
+                  billingPeriod === 'yearly' ? "text-tandym-text-dark" : "text-tandym-text-muted"
+                )}>
+                  Yearly
+                </span>
+              </div>
+              {billingPeriod === 'yearly' && (
+                <span className="px-3 py-1 bg-tandym-coral text-white text-xs font-bold rounded-full">
+                  2 MONTHS FREE
+                </span>
+              )}
+            </div>
           </div>
 
           <div className="grid lg:grid-cols-4 gap-8 mb-16">
