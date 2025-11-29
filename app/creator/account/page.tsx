@@ -68,9 +68,8 @@ export default function AccountSettingsPage() {
     confirmPassword: '',
   })
 
-  // Creator ID and plan
-  const [creatorId, setCreatorId] = useState<string | null>(null)
-  const { plan, isLoading: planLoading, refetch } = useCreatorPlan(creatorId || undefined)
+  // Plan data
+  const { plan, isLoading: planLoading, refetch } = useCreatorPlan()
 
   const currentPlan = plan ? getPlanConfig(plan.planTier) : null
   const currentTier = (plan?.planTier || 'FREE') as PlanTier
@@ -103,7 +102,6 @@ export default function AccountSettingsPage() {
 
       if (creatorRes.ok) {
         const creatorData = await creatorRes.json()
-        setCreatorId(creatorData.creatorId)
         setProfileData(prev => ({
           ...prev,
           displayName: creatorData.displayName || prev.displayName,
@@ -212,13 +210,11 @@ export default function AccountSettingsPage() {
   }
 
   const handleUpgrade = async (targetTier: PlanTier) => {
-    if (!creatorId) return
-
     setUpgrading(targetTier)
     setError('')
 
     try {
-      const response = await fetch(`/api/creators/${creatorId}/subscription/upgrade`, {
+      const response = await fetch(`/api/user/subscription/upgrade`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ targetTier, billingPeriod }),
@@ -247,13 +243,13 @@ export default function AccountSettingsPage() {
   }
 
   const handleCancelSubscription = async () => {
-    if (!creatorId || !confirm('Are you sure you want to cancel your subscription?')) return
+    if (!confirm('Are you sure you want to cancel your subscription?')) return
 
     setLoading(true)
     setError('')
 
     try {
-      const response = await fetch(`/api/creators/${creatorId}/subscription/cancel`, {
+      const response = await fetch(`/api/user/subscription/cancel`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ cancelImmediately: false }),

@@ -33,9 +33,9 @@ export interface PlanLimitStatus {
 }
 
 /**
- * Hook to check plan limits for a creator
+ * Hook to check plan limits for the current user's creator profile
  */
-export function usePlanLimits(creatorId?: string): PlanLimitStatus {
+export function usePlanLimits(): PlanLimitStatus {
   const [status, setStatus] = useState<PlanLimitStatus>({
     canAddVideos: false,
     canSendMessages: false,
@@ -46,21 +46,9 @@ export function usePlanLimits(creatorId?: string): PlanLimitStatus {
   })
 
   useEffect(() => {
-    if (!creatorId) {
-      setStatus({
-        canAddVideos: false,
-        canSendMessages: false,
-        remainingVideos: null,
-        remainingMessages: null,
-        isLoading: false,
-        error: 'No creator ID provided',
-      })
-      return
-    }
-
     async function fetchPlanLimits() {
       try {
-        const response = await fetch(`/api/creators/${creatorId}/plan-limits`)
+        const response = await fetch(`/api/user/plan-limits`)
         if (!response.ok) {
           throw new Error('Failed to fetch plan limits')
         }
@@ -88,16 +76,15 @@ export function usePlanLimits(creatorId?: string): PlanLimitStatus {
     }
 
     fetchPlanLimits()
-  }, [creatorId])
+  }, [])
 
   return status
 }
 
 /**
- * Hook to check if a creator has access to a specific feature
+ * Hook to check if current user's creator has access to a specific feature
  */
 export function useFeatureAccess(
-  creatorId?: string,
   feature?: keyof Omit<
     ReturnType<typeof getPlanConfig>['limits'],
     | 'maxVideos'
@@ -125,14 +112,14 @@ export function useFeatureAccess(
   })
 
   useEffect(() => {
-    if (!creatorId || !feature) {
+    if (!feature) {
       setState({ hasAccess: false, isLoading: false, planTier: null })
       return
     }
 
     async function checkFeatureAccess() {
       try {
-        const response = await fetch(`/api/creators/${creatorId}/plan-limits`)
+        const response = await fetch(`/api/user/plan-limits`)
         if (!response.ok) {
           throw new Error('Failed to fetch plan info')
         }
@@ -154,15 +141,15 @@ export function useFeatureAccess(
     }
 
     checkFeatureAccess()
-  }, [creatorId, feature])
+  }, [feature])
 
   return state
 }
 
 /**
- * Hook to get full creator plan information
+ * Hook to get full creator plan information for the current user
  */
-export function useCreatorPlan(creatorId?: string): {
+export function useCreatorPlan(): {
   plan: CreatorPlanInfo | null
   isLoading: boolean
   error: string | null
@@ -179,15 +166,10 @@ export function useCreatorPlan(creatorId?: string): {
   })
 
   const fetchPlan = async () => {
-    if (!creatorId) {
-      setState({ plan: null, isLoading: false, error: 'No creator ID provided' })
-      return
-    }
-
     setState(prev => ({ ...prev, isLoading: true }))
 
     try {
-      const response = await fetch(`/api/creators/${creatorId}/plan-limits`)
+      const response = await fetch(`/api/user/plan-limits`)
       if (!response.ok) {
         throw new Error('Failed to fetch plan information')
       }
@@ -205,7 +187,7 @@ export function useCreatorPlan(creatorId?: string): {
 
   useEffect(() => {
     fetchPlan()
-  }, [creatorId])
+  }, [])
 
   return {
     ...state,
