@@ -138,6 +138,11 @@ export function useFeatureAccess(
         }
 
         const data: CreatorPlanInfo = await response.json()
+        // Type guard: feature is guaranteed to be defined here due to early return above
+        if (!feature) {
+          setState({ hasAccess: false, isLoading: false, planTier: null })
+          return
+        }
         setState({
           hasAccess: hasFeatureAccess(data.planTier, feature),
           isLoading: false,
