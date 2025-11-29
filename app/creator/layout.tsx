@@ -9,7 +9,7 @@ import {
   SidebarBody, 
   SidebarLink 
 } from '@/components/ui/sidebar'
-import { 
+import {
   IconDashboard,
   IconSettings,
   IconUser,
@@ -21,7 +21,8 @@ import {
   IconQuestionMark,
   IconBrain,
   IconLogout,
-  IconDatabase
+  IconDatabase,
+  IconCode
 } from '@tabler/icons-react'
 import { Sparkles, Bot, Volume2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -67,6 +68,13 @@ export default function CreatorLayout({
       href: "/creator/voice-settings",
       icon: (
         <Volume2 className="text-neutral-700 dark:text-neutral-200 h-5 w-5 shrink-0" />
+      ),
+    },
+    {
+      label: "Embed Widget",
+      href: "/creator/embed",
+      icon: (
+        <IconCode className="text-neutral-700 dark:text-neutral-200 h-5 w-5 shrink-0" />
       ),
     },
     {
