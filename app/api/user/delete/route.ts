@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { createClient } from '@supabase/supabase-js'
+import { stripe } from '@/lib/stripe'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -24,10 +25,27 @@ export async function DELETE(request: NextRequest) {
       .eq('user_id', userId)
       .single()
 
-    // TODO: Cancel Stripe subscription if exists
-    // if (creator?.stripe_subscription_id) {
-    //   await stripe.subscriptions.cancel(creator.stripe_subscription_id)
-    // }
+    // Cancel Stripe subscription if exists
+    if (creator?.stripe_subscription_id) {
+      try {
+        await stripe.subscriptions.cancel(creator.stripe_subscription_id)
+        console.log(`Canceled Stripe subscription ${creator.stripe_subscription_id} for user ${userId}`)
+      } catch (stripeError) {
+        console.error('Error canceling Stripe subscription during account deletion:', stripeError)
+        // Continue with deletion even if Stripe fails
+      }
+    }
+
+    // Optionally delete Stripe customer (to remove payment methods)
+    if (creator?.stripe_customer_id) {
+      try {
+        await stripe.customers.del(creator.stripe_customer_id)
+        console.log(`Deleted Stripe customer ${creator.stripe_customer_id} for user ${userId}`)
+      } catch (stripeError) {
+        console.error('Error deleting Stripe customer during account deletion:', stripeError)
+        // Continue with deletion even if Stripe fails
+      }
+    }
 
     // Delete all related data (cascading deletes should handle most)
     if (creator) {

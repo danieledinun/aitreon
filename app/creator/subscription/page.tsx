@@ -15,6 +15,8 @@ import {
   AlertCircle,
   ArrowRight,
   Loader2,
+  CreditCard,
+  RefreshCw,
 } from 'lucide-react'
 import { PLANS, getPlanConfig, type PlanTier } from '@/lib/plans'
 import { useCreatorPlan } from '@/lib/hooks/use-plan-limits'
@@ -25,12 +27,25 @@ export default function SubscriptionPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const suggestedUpgrade = searchParams.get('upgrade') as PlanTier | null
+  const checkoutCanceled = searchParams.get('canceled') === 'true'
 
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly')
   const [upgrading, setUpgrading] = useState<PlanTier | null>(null)
+  const [portalLoading, setPortalLoading] = useState(false)
+  const [resuming, setResuming] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
   const { plan, isLoading: planLoading, refetch } = useCreatorPlan()
+
+  // Show checkout canceled message
+  useEffect(() => {
+    if (checkoutCanceled) {
+      setError('Checkout was canceled. You can try again when ready.')
+      // Clear the query param
+      router.replace('/creator/subscription', { scroll: false })
+    }
+  }, [checkoutCanceled, router])
 
   const handleUpgrade = async (targetTier: PlanTier) => {
     setUpgrading(targetTier)
@@ -65,7 +80,7 @@ export default function SubscriptionPage() {
   }
 
   const handleCancelSubscription = async () => {
-    if (!confirm('Are you sure you want to cancel your subscription?')) return
+    if (!confirm('Are you sure you want to cancel your subscription? You will retain access until the end of your billing period.')) return
 
     try {
       const response = await fetch(`/api/user/subscription/cancel`, {
@@ -81,9 +96,60 @@ export default function SubscriptionPage() {
       }
 
       await refetch()
-      alert(data.message)
+      setSuccessMessage(data.message)
+      setError(null)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to cancel subscription')
+    }
+  }
+
+  const handleResumeSubscription = async () => {
+    setResuming(true)
+    setError(null)
+
+    try {
+      const response = await fetch(`/api/user/subscription/cancel`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to resume subscription')
+      }
+
+      await refetch()
+      setSuccessMessage(data.message)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to resume subscription')
+    } finally {
+      setResuming(false)
+    }
+  }
+
+  const openBillingPortal = async () => {
+    setPortalLoading(true)
+    setError(null)
+
+    try {
+      const response = await fetch('/api/user/subscription/portal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to open billing portal')
+      }
+
+      // Redirect to Stripe Customer Portal
+      window.location.href = data.url
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to open billing portal')
+    } finally {
+      setPortalLoading(false)
     }
   }
 
@@ -117,7 +183,7 @@ export default function SubscriptionPage() {
       {!planLoading && plan && (
         <Card className="mb-8">
           <CardHeader>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap gap-4">
               <div>
                 <CardTitle className="flex items-center gap-2">
                   Current Plan: {currentPlan.displayName}
@@ -125,7 +191,10 @@ export default function SubscriptionPage() {
                     <Badge variant="secondary">Trial</Badge>
                   )}
                   {plan.subscriptionStatus === 'canceled' && (
-                    <Badge variant="destructive">Canceled</Badge>
+                    <Badge variant="destructive">Canceling</Badge>
+                  )}
+                  {plan.subscriptionStatus === 'past_due' && (
+                    <Badge variant="destructive">Past Due</Badge>
                   )}
                 </CardTitle>
                 <CardDescription>
@@ -137,16 +206,56 @@ export default function SubscriptionPage() {
                           : currentPlan.monthlyPrice
                       }/month${plan.billingPeriod === 'yearly' ? ' (billed yearly)' : ''}`}
                 </CardDescription>
+                {plan.subscriptionStatus === 'canceled' && plan.currentPeriodEndsAt && (
+                  <p className="text-sm text-amber-600 mt-1">
+                    Access until {new Date(plan.currentPeriodEndsAt).toLocaleDateString()}
+                  </p>
+                )}
               </div>
-              {currentTier !== 'FREE' && plan.subscriptionStatus === 'active' && (
-                <Button variant="outline" onClick={handleCancelSubscription}>
-                  Cancel Plan
-                </Button>
-              )}
+              <div className="flex gap-2 flex-wrap">
+                {/* Billing Portal Button */}
+                {currentTier !== 'FREE' && (
+                  <Button
+                    variant="outline"
+                    onClick={openBillingPortal}
+                    disabled={portalLoading}
+                  >
+                    {portalLoading ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <CreditCard className="w-4 h-4 mr-2" />
+                    )}
+                    Manage Billing
+                  </Button>
+                )}
+
+                {/* Resume Button for canceled subscriptions */}
+                {plan.subscriptionStatus === 'canceled' && currentTier !== 'FREE' && (
+                  <Button
+                    variant="default"
+                    onClick={handleResumeSubscription}
+                    disabled={resuming}
+                  >
+                    {resuming ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <RefreshCw className="w-4 h-4 mr-2" />
+                    )}
+                    Resume Subscription
+                  </Button>
+                )}
+
+                {/* Cancel Button for active subscriptions */}
+                {currentTier !== 'FREE' && plan.subscriptionStatus === 'active' && (
+                  <Button variant="outline" onClick={handleCancelSubscription}>
+                    Cancel Plan
+                  </Button>
+                )}
+              </div>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="grid md:grid-cols-3 gap-4">
+            <div className="grid md:grid-cols-4 gap-4">
               <div>
                 <p className="text-sm text-tandym-text-muted mb-1">Videos</p>
                 <p className="text-lg font-semibold">
@@ -171,9 +280,25 @@ export default function SubscriptionPage() {
                   {currentPlan.limits.autoSync}
                 </p>
               </div>
+              {plan.currentPeriodEndsAt && plan.subscriptionStatus !== 'canceled' && (
+                <div>
+                  <p className="text-sm text-tandym-text-muted mb-1">Next Billing</p>
+                  <p className="text-lg font-semibold">
+                    {new Date(plan.currentPeriodEndsAt).toLocaleDateString()}
+                  </p>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {/* Success Message */}
+      {successMessage && (
+        <Alert className="mb-8 border-green-200 bg-green-50">
+          <Check className="h-4 w-4 text-green-600" />
+          <AlertDescription className="text-green-800">{successMessage}</AlertDescription>
+        </Alert>
       )}
 
       {/* Error Alert */}
