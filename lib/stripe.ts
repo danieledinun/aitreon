@@ -8,16 +8,17 @@
 import Stripe from 'stripe'
 import { PLANS, PlanTier, getPlanConfig } from './plans'
 
-// Validate environment variables
-if (!process.env.STRIPE_SECRET_KEY) {
-  console.warn('STRIPE_SECRET_KEY is not set. Stripe functionality will be limited.')
-}
-
 // Initialize Stripe client (server-side only)
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
+// Use a dummy key during build if not set - actual requests will fail but build will succeed
+const stripeSecretKey = process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder'
+
+export const stripe = new Stripe(stripeSecretKey, {
   apiVersion: '2025-12-15.clover',
   typescript: true,
 })
+
+// Flag to check if Stripe is properly configured
+export const isStripeConfigured = !!process.env.STRIPE_SECRET_KEY
 
 // Stripe Price IDs for each plan
 // These should be created in your Stripe Dashboard and updated here
