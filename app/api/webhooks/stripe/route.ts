@@ -322,10 +322,3 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
   // Here you could also send an email to the creator about the failed payment
   console.log(`Payment failed for creator ${creator.id}`)
 }
-
-// Disable body parsing for webhook
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-}
