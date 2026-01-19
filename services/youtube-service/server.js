@@ -520,6 +520,117 @@ app.post('/api/video/info', async (req, res) => {
   }
 })
 
+// Get video transcript directly (on-demand, not via job queue)
+app.post('/api/video/transcript', async (req, res) => {
+  const { execSync } = require('child_process')
+  const fs = require('fs')
+  const path = require('path')
+  const os = require('os')
+
+  try {
+    const { videoId, lang = 'en' } = req.body
+
+    if (!videoId) {
+      return res.status(400).json({ error: 'videoId is required' })
+    }
+
+    console.log(`📝 Fetching transcript for video: ${videoId} (lang: ${lang})`)
+
+    const tempDir = os.tmpdir()
+
+    // Clean up any existing files first
+    const patterns = [`${videoId}.${lang}.json3`, `${videoId}.${lang}-US.json3`, `${videoId}.${lang}-GB.json3`]
+    patterns.forEach(p => {
+      const filePath = path.join(tempDir, p)
+      if (fs.existsSync(filePath)) fs.unlinkSync(filePath)
+    })
+
+    // Download subtitles using yt-dlp
+    try {
+      execSync(
+        `cd "${tempDir}" && yt-dlp --write-auto-subs --sub-lang ${lang} --sub-format json3 --skip-download --extractor-args "youtube:player_client=default,-web" --socket-timeout 30 --proxy "${PROXY_URL}" --no-check-certificates -o "${videoId}" "https://www.youtube.com/watch?v=${videoId}" 2>&1`,
+        { encoding: 'utf-8', timeout: 120000 }
+      )
+      console.log(`✅ Subtitle download completed`)
+    } catch (execError) {
+      console.warn(`⚠️ yt-dlp warning:`, execError.message?.slice(0, 200))
+      // Continue anyway - file might still have been created
+    }
+
+    // Find and parse the subtitle file
+    const subtitlePatterns = [
+      path.join(tempDir, `${videoId}.${lang}.json3`),
+      path.join(tempDir, `${videoId}.${lang}-US.json3`),
+      path.join(tempDir, `${videoId}.${lang}-GB.json3`),
+      path.join(tempDir, `${videoId}.${lang}-orig.json3`)
+    ]
+
+    for (const subtitlePath of subtitlePatterns) {
+      if (fs.existsSync(subtitlePath)) {
+        console.log(`📖 Found subtitle file: ${path.basename(subtitlePath)}`)
+
+        const subContent = fs.readFileSync(subtitlePath, 'utf-8')
+        const subData = JSON.parse(subContent)
+
+        // Clean up temp file
+        fs.unlinkSync(subtitlePath)
+
+        // Parse JSON3 format
+        if (subData.events) {
+          const segments = subData.events
+            .filter(event => event.segs)
+            .map(event => {
+              const text = event.segs.map(seg => seg.utf8 || '').join('')
+              return {
+                start: event.tStartMs / 1000,
+                duration: (event.dDurationMs || 0) / 1000,
+                text: text.trim()
+              }
+            })
+            .filter(seg => seg.text)
+
+          const transcript = segments.map(s => s.text).join(' ')
+
+          console.log(`✅ Extracted transcript: ${segments.length} segments, ${transcript.split(/\s+/).length} words`)
+
+          return res.json({
+            success: true,
+            videoId,
+            language: lang,
+            segmentCount: segments.length,
+            wordCount: transcript.split(/\s+/).length,
+            segments,
+            transcript
+          })
+        }
+      }
+    }
+
+    // No subtitle file found
+    console.warn(`⚠️ No subtitle file found for ${videoId}`)
+
+    // List what files were created for debugging
+    const allFiles = fs.readdirSync(tempDir).filter(f => f.includes(videoId))
+    console.log(`🔍 Files in temp dir for ${videoId}:`, allFiles)
+
+    res.status(404).json({
+      success: false,
+      videoId,
+      error: 'No subtitles found',
+      message: 'This video may not have captions available',
+      filesFound: allFiles
+    })
+
+  } catch (error) {
+    console.error('Error fetching transcript:', error)
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch transcript',
+      details: error.message
+    })
+  }
+})
+
 // Manual trigger for creator recovery (for testing/admin use)
 app.post('/api/recovery/trigger', async (req, res) => {
   try {
