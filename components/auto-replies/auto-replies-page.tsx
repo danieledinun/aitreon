@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { SettingsForm } from './settings-form'
-import { RecentRepliesFeed } from './recent-replies-feed'
+import { CommentsDashboard } from './comments-dashboard'
 import { AnalyticsCard } from './analytics-card'
 import { YouTubeConnectCard } from './youtube-connect-card'
 import { Loader2, MessageCircle, ArrowLeft, Settings, MessageSquare, BarChart3, RefreshCw } from 'lucide-react'
@@ -121,7 +121,7 @@ export default function AutoRepliesPage({ creatorId }: AutoRepliesPageProps) {
             </TabsTrigger>
             <TabsTrigger value="replies" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:dark:bg-neutral-800 data-[state=active]:text-gray-900 data-[state=active]:dark:text-white">
               <MessageSquare className="h-4 w-4" />
-              Recent Replies
+              Comments
             </TabsTrigger>
             <TabsTrigger value="analytics" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:dark:bg-neutral-800 data-[state=active]:text-gray-900 data-[state=active]:dark:text-white">
               <BarChart3 className="h-4 w-4" />
@@ -134,7 +134,7 @@ export default function AutoRepliesPage({ creatorId }: AutoRepliesPageProps) {
           </TabsContent>
 
           <TabsContent value="replies">
-            <RecentRepliesFeed creatorId={creatorId} />
+            <CommentsDashboard creatorId={creatorId} />
           </TabsContent>
 
           <TabsContent value="analytics">

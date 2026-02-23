@@ -68,6 +68,14 @@ export interface SocialReplyAnalytics {
   lastPollAt: string | null
 }
 
+export interface CommentStats {
+  total: number
+  pending: number
+  ready: number
+  posted: number
+  failed: number
+}
+
 // Helper to map DB row (snake_case) to app type (camelCase)
 export function mapSettingsFromDb(row: Record<string, unknown>): SocialReplySettings {
   return {

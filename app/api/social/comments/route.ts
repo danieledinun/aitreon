@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { supabase } from '@/lib/supabase'
 import { mapCommentFromDb } from '@/lib/types/social'
+import type { CommentStats } from '@/lib/types/social'
 
 export const dynamic = 'force-dynamic'
 
@@ -57,8 +58,34 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
+    // Fetch status counts for stats
+    const { data: allStatuses } = await supabase
+      .from('social_comments')
+      .select('status')
+      .eq('creator_id', creator.id)
+
+    const stats: CommentStats = {
+      total: 0,
+      pending: 0,
+      ready: 0,
+      posted: 0,
+      failed: 0,
+    }
+
+    if (allStatuses) {
+      stats.total = allStatuses.length
+      for (const row of allStatuses) {
+        const s = row.status as string
+        if (s === 'pending' || s === 'generating') stats.pending++
+        else if (s === 'ready') stats.ready++
+        else if (s === 'posted') stats.posted++
+        else if (s === 'failed') stats.failed++
+      }
+    }
+
     return NextResponse.json({
       comments: (data || []).map(mapCommentFromDb),
+      stats,
     })
   } catch (error) {
     console.error('Error in GET /api/social/comments:', error)
