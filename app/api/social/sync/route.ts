@@ -109,6 +109,7 @@ export async function POST() {
 
     // Step 1: Find recent videos (last 24h)
     const searchRes = await youtube.search.list({
+      part: ['snippet'],
       channelId: creator.youtube_channel_id,
       type: ['video'],
       publishedAfter: twentyFourHoursAgo,
@@ -123,6 +124,7 @@ export async function POST() {
     // If no recent videos, also check the channel's latest videos for new comments
     if (videoIds.length === 0) {
       const latestRes = await youtube.search.list({
+        part: ['snippet'],
         channelId: creator.youtube_channel_id,
         type: ['video'],
         maxResults: 5,
