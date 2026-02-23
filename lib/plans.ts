@@ -31,6 +31,10 @@ export interface PlanLimits {
   responseQuality: 'basic' | 'standard' | 'enhanced' | 'premium'
   memoryWindow: 'short' | 'medium' | 'long' | 'extended'
 
+  // Social Auto-Replies
+  autoReply: boolean
+  autoReplyMaxPerDay: number
+
   // Support
   supportLevel: 'community' | 'email' | 'priority' | 'dedicated'
 }
@@ -76,6 +80,8 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
       maxConcurrentChats: 1,
       responseQuality: 'basic',
       memoryWindow: 'short',
+      autoReply: false,
+      autoReplyMaxPerDay: 0,
       supportLevel: 'community',
     },
   },
@@ -104,6 +110,8 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
       maxConcurrentChats: 3,
       responseQuality: 'standard',
       memoryWindow: 'medium',
+      autoReply: false,
+      autoReplyMaxPerDay: 0,
       supportLevel: 'email',
     },
   },
@@ -133,6 +141,8 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
       maxConcurrentChats: 10,
       responseQuality: 'enhanced',
       memoryWindow: 'long',
+      autoReply: true,
+      autoReplyMaxPerDay: 50,
       supportLevel: 'priority',
     },
   },
@@ -161,6 +171,8 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
       maxConcurrentChats: 25,
       responseQuality: 'premium',
       memoryWindow: 'extended',
+      autoReply: true,
+      autoReplyMaxPerDay: 200,
       supportLevel: 'priority',
     },
   },
@@ -189,6 +201,8 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
       maxConcurrentChats: 100,
       responseQuality: 'premium',
       memoryWindow: 'extended',
+      autoReply: true,
+      autoReplyMaxPerDay: 1000,
       supportLevel: 'dedicated',
     },
   },
@@ -261,7 +275,7 @@ export function getRemainingMessages(
  */
 export function hasFeatureAccess(
   planTier: PlanTier,
-  feature: keyof Omit<PlanLimits, 'maxVideos' | 'maxMessagesPerMonth' | 'autoSync' | 'maxConcurrentChats' | 'responseQuality' | 'memoryWindow' | 'supportLevel' | 'analytics'>
+  feature: keyof Omit<PlanLimits, 'maxVideos' | 'maxMessagesPerMonth' | 'autoSync' | 'maxConcurrentChats' | 'responseQuality' | 'memoryWindow' | 'supportLevel' | 'analytics' | 'autoReplyMaxPerDay'>
 ): boolean {
   const plan = getPlanConfig(planTier)
   return plan.limits[feature] === true
@@ -401,6 +415,13 @@ export function getPlanComparisons(): PlanComparison[] {
       lite: false,
       pro: false,
       ultimate: true,
+    },
+    {
+      feature: 'Auto-Replies',
+      free: false,
+      lite: false,
+      pro: '50/day',
+      ultimate: '200/day',
     },
   ]
 }

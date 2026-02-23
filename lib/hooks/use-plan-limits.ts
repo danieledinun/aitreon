@@ -95,6 +95,7 @@ export function useFeatureAccess(
     | 'memoryWindow'
     | 'supportLevel'
     | 'analytics'
+    | 'autoReplyMaxPerDay'
   >
 ): {
   hasAccess: boolean

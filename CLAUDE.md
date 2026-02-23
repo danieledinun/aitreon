@@ -4,12 +4,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Important Guidelines
 
-This is a **production application** serving real users and creators. All code changes and solutions must be:
+This is **Tandym.ai** — a production platform where YouTube creators launch AI twins of themselves that fans can interact with via text and voice. Tagline: *"You and your twin — in Tandym."*
+
+All code changes and solutions must be:
 - Production-ready and robust
 - Applicable to any YouTube channel, not tailored to specific creators
 - Scalable and performant for multiple concurrent users
 - Secure and following best practices
 - Use shadcn/ui design components and patterns for consistent, modern UI/UX
+- Follow Tandym brand guidelines (Electric Cobalt #3256FF, Soft Lilac #C8B7FF, Coral #FF6F61; Poppins headlines, Inter body text)
 
 ## CRITICAL: Database Requirements
 
@@ -72,12 +75,7 @@ npx tsc --noEmit     # TypeScript type checking
 ```
 
 ### Database Operations
-```bash
-npm run db:generate  # Generate Prisma client
-npm run db:push      # Push schema changes to database
-npm run db:migrate   # Create and run database migrations
-npm run db:studio    # Open Prisma Studio for database management
-```
+Database is managed via Supabase. Use the Supabase MCP tools for inspection/debugging, and the Supabase JS client in application code. Schema changes are applied via Supabase migrations.
 
 ### GraphRAG Services
 ```bash
@@ -89,13 +87,13 @@ npm run graphrag:stop       # Stop GraphRAG Docker containers
 
 ## Architecture Overview
 
-This is **Aitrion** - a Patreon-style platform where creators host AI replicas of themselves that fans can interact with via text and voice.
+This is **Tandym.ai** — a platform where YouTube creators launch AI twins of themselves that fans can interact with via dedicated pages, embeddable widgets, and voice chat. Creators connect their YouTube channel, and Tandym ingests their content to power an always-on AI twin.
 
 ### Core Architecture
 
 **Frontend**: Next.js 14 App Router with TypeScript, Tailwind CSS, and shadcn/ui components (shadcn MCP available)
 
-**Backend**: Next.js API routes with Prisma ORM, PostgreSQL/SQLite database
+**Backend**: Next.js API routes with Supabase (PostgreSQL)
 
 **AI System**: Multi-layered approach:
 - OpenAI GPT-4 for chat responses
@@ -144,8 +142,7 @@ app/                    # Next.js app router
 └── admin/             # Platform admin dashboard
 
 components/            # Reusable React components
-lib/                   # Core services and utilities  
-prisma/               # Database schema and migrations
+lib/                   # Core services and utilities
 services/graphrag/    # Python GraphRAG service
 scripts/              # Utility scripts and database operations
 ```
@@ -169,9 +166,10 @@ Essential environment variables (see `.env.example`):
 
 ### Development Notes
 
-- Database uses SQLite for development, PostgreSQL for production
+- Database is PostgreSQL via Supabase (both dev and production)
 - Creator content is processed into chunks for AI training
 - Free users get 5 messages/day per creator, premium unlimited
 - All AI responses must cite actual creator content
 - Voice features are premium-only
 - Platform takes 10% commission on subscriptions
+- See `TANDYM_REBRAND.md` for full brand guidelines, color palette, typography, and component patterns

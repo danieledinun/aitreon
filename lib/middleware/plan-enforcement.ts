@@ -152,6 +152,7 @@ export async function enforceFeatureAccess(
     | 'memoryWindow'
     | 'supportLevel'
     | 'analytics'
+    | 'autoReplyMaxPerDay'
   >
 ): Promise<EnforcementResult> {
   try {

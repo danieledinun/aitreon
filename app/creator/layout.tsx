@@ -86,6 +86,13 @@ export default function CreatorLayout({
       ),
     },
     {
+      label: "Auto-Replies",
+      href: "/creator/auto-replies",
+      icon: (
+        <IconMessageCircle className="text-neutral-700 dark:text-neutral-200 h-5 w-5 shrink-0" />
+      ),
+    },
+    {
       label: "Subscription",
       href: "/creator/subscription",
       icon: (

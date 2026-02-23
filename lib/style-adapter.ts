@@ -318,6 +318,39 @@ ${chatStyle.personality_notes.map(note => `• ${note}`).join('\n')}`
   }
 
   /**
+   * Generate enhanced social reply prompt with style adaptation (no citations)
+   */
+  static async generateSocialReplyPrompt(
+    creatorId: string,
+    basePrompt: string,
+    agentName: string
+  ): Promise<string> {
+    const styleCard = await this.getCreatorStyleCard(creatorId)
+
+    if (!styleCard) {
+      return basePrompt
+    }
+
+    const chatStyle = this.adaptForChat(styleCard)
+
+    let enhancedPrompt = basePrompt
+
+    if (chatStyle.signature_phrases.length > 0) {
+      enhancedPrompt += `\n\nSPEECH PATTERNS - Use these naturally when they fit:
+${chatStyle.signature_phrases.slice(0, 5).map(phrase => `- "${phrase}"`).join('\n')}`
+    }
+
+    if (chatStyle.personality_notes.length > 0) {
+      enhancedPrompt += `\n\nPERSONALITY:
+${chatStyle.personality_notes.map(note => `- ${note}`).join('\n')}`
+    }
+
+    enhancedPrompt += `\n\nTONE: ${chatStyle.tone_guidance}. Sound like ${agentName} — authentic and natural.`
+
+    return enhancedPrompt
+  }
+
+  /**
    * Update AI config with style card reference
    */
   static async updateAiConfigWithStyleCard(creatorId: string, styleCardId: string): Promise<void> {
