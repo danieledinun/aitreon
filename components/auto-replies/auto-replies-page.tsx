@@ -7,7 +7,8 @@ import { SettingsForm } from './settings-form'
 import { RecentRepliesFeed } from './recent-replies-feed'
 import { AnalyticsCard } from './analytics-card'
 import { YouTubeConnectCard } from './youtube-connect-card'
-import { Loader2, MessageCircle, ArrowLeft, Settings, MessageSquare, BarChart3 } from 'lucide-react'
+import { Loader2, MessageCircle, ArrowLeft, Settings, MessageSquare, BarChart3, RefreshCw } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 
 interface AutoRepliesPageProps {
@@ -18,6 +19,7 @@ export default function AutoRepliesPage({ creatorId }: AutoRepliesPageProps) {
   const [activeTab, setActiveTab] = useState('settings')
   const [youtubeConnected, setYoutubeConnected] = useState<boolean | null>(null)
   const [loading, setLoading] = useState(true)
+  const [syncing, setSyncing] = useState(false)
 
   useEffect(() => {
     async function checkYouTubeStatus() {
@@ -38,6 +40,25 @@ export default function AutoRepliesPage({ creatorId }: AutoRepliesPageProps) {
 
     checkYouTubeStatus()
   }, [])
+
+  async function handleSync() {
+    setSyncing(true)
+    try {
+      const res = await fetch('/api/social/sync', { method: 'POST' })
+      const data = await res.json()
+
+      if (!res.ok) {
+        alert(data.error || 'Sync failed')
+        return
+      }
+
+      alert(`Fetched ${data.commentsFetched} comments, generated ${data.repliesGenerated} replies`)
+    } catch {
+      alert('Sync failed. Please try again.')
+    } finally {
+      setSyncing(false)
+    }
+  }
 
   if (loading) {
     return (
@@ -69,9 +90,21 @@ export default function AutoRepliesPage({ creatorId }: AutoRepliesPageProps) {
           </p>
         </div>
         {youtubeConnected && (
-          <Badge className="bg-tandym-cobalt text-white">
-            YouTube Connected
-          </Badge>
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSync}
+              disabled={syncing}
+              className="border-tandym-cobalt/30 text-tandym-cobalt hover:bg-tandym-cobalt/10"
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
+              {syncing ? 'Syncing...' : 'Sync Now'}
+            </Button>
+            <Badge className="bg-tandym-cobalt text-white">
+              YouTube Connected
+            </Badge>
+          </div>
         )}
       </div>
 
