@@ -293,8 +293,11 @@ export async function POST() {
       commentsFetched: newComments.length,
       repliesGenerated,
     })
-  } catch (error) {
-    console.error('Error in POST /api/social/sync:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error)
+    const stack = error instanceof Error ? error.stack : undefined
+    console.error('Error in POST /api/social/sync:', message)
+    if (stack) console.error('Stack:', stack)
+    return NextResponse.json({ error: message || 'Internal server error' }, { status: 500 })
   }
 }
