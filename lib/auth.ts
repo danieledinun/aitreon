@@ -398,12 +398,34 @@ export const authOptions: NextAuthOptions = {
       })
       
       try {
-        // Skip automatic YouTube processing - let the dashboard handle it based on user choice
-        if (account?.provider === 'google' && account.access_token) {
-          console.log('📺 Google sign-in detected - access token saved for later use')
-          console.log('🔑 Access token length:', account.access_token.length)
-          console.log('⏰ Token expires at:', new Date(account.expires_at! * 1000))
-          console.log('⏭️ Skipping automatic YouTube processing - will be handled based on user choice')
+        // Update stored tokens in DB on every Google sign-in so refresh_token stays fresh
+        if (account?.provider === 'google' && account.access_token && user.id) {
+          console.log('📺 Google sign-in detected - updating stored tokens')
+          const supabase = getSupabaseClient()
+
+          const updateFields: Record<string, unknown> = {
+            access_token: account.access_token,
+            expires_at: account.expires_at,
+            token_type: account.token_type,
+            scope: account.scope,
+            id_token: account.id_token,
+          }
+          // Google only sends refresh_token on first consent or re-consent
+          if (account.refresh_token) {
+            updateFields.refresh_token = account.refresh_token
+          }
+
+          const { error: updateError } = await supabase
+            .from('accounts')
+            .update(updateFields)
+            .eq('user_id', user.id)
+            .eq('provider', 'google')
+
+          if (updateError) {
+            console.error('❌ Failed to update Google tokens:', updateError)
+          } else {
+            console.log('✅ Google tokens updated in DB')
+          }
         }
         console.log('✅ SignIn callback returning true')
         return true

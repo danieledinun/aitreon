@@ -188,28 +188,31 @@ export function SupabaseAdapter(): Adapter {
       try {
         // Remove refresh_token_expires_in since it's not in our schema
         const { refresh_token_expires_in, ...accountData } = account as any
-        
+
+        const row = {
+          user_id: accountData.userId,
+          type: accountData.type,
+          provider: accountData.provider,
+          provider_account_id: accountData.providerAccountId,
+          refresh_token: accountData.refresh_token,
+          access_token: accountData.access_token,
+          expires_at: accountData.expires_at,
+          token_type: accountData.token_type,
+          scope: accountData.scope,
+          id_token: accountData.id_token,
+          session_state: accountData.session_state,
+        }
+
+        // Try insert first; if account already exists, update tokens
         const { data, error } = await supabase
           .from('accounts')
-          .insert({
-            user_id: accountData.userId,
-            type: accountData.type,
-            provider: accountData.provider,
-            provider_account_id: accountData.providerAccountId,
-            refresh_token: accountData.refresh_token,
-            access_token: accountData.access_token,
-            expires_at: accountData.expires_at,
-            token_type: accountData.token_type,
-            scope: accountData.scope,
-            id_token: accountData.id_token,
-            session_state: accountData.session_state,
-          })
+          .upsert(row, { onConflict: 'provider,provider_account_id' })
           .select()
           .single()
-        
+
         if (error) throw error
-        
-        console.log('✅ Supabase adapter linkAccount success')
+
+        console.log('✅ Supabase adapter linkAccount success (upsert)')
         return {
           id: data.id,
           userId: data.user_id,
