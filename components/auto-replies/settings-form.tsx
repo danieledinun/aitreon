@@ -10,6 +10,7 @@ import { Slider } from '@/components/ui/slider'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
+import { Zap, Filter, Clock, MessageSquare, CheckCircle } from 'lucide-react'
 import type { SocialReplySettings, ToneOverride, VideoFilter } from '@/lib/types/social'
 
 interface SettingsFormProps {
@@ -142,40 +143,55 @@ export function SettingsForm({ creatorId }: SettingsFormProps) {
       )}
 
       {success && (
-        <Alert>
-          <AlertDescription>Settings saved successfully.</AlertDescription>
+        <Alert className="border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950">
+          <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+          <AlertDescription className="text-green-800 dark:text-green-200">
+            Settings saved successfully.
+          </AlertDescription>
         </Alert>
       )}
 
       {/* Master Toggle */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Auto-Reply Status</CardTitle>
-          <CardDescription>
-            Enable or disable automatic YouTube comment replies.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-3">
-            <Switch
-              checked={settings.isEnabled}
-              onCheckedChange={(checked) =>
-                setSettings({ ...settings, isEnabled: checked })
-              }
-            />
-            <Label>{settings.isEnabled ? 'Enabled' : 'Disabled'}</Label>
+      <Card className="bg-gradient-to-br from-tandym-cobalt/5 to-tandym-lilac/5 dark:from-tandym-cobalt/20 dark:to-tandym-lilac/20 border-tandym-cobalt/20 dark:border-tandym-cobalt/30">
+        <div className="p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Zap className="h-6 w-6 text-tandym-cobalt" />
+              <div>
+                <h2 className="text-xl font-semibold font-poppins text-gray-900 dark:text-white">
+                  Auto-Reply Status
+                </h2>
+                <p className="text-sm text-gray-600 dark:text-neutral-400">
+                  Enable or disable automatic YouTube comment replies.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <Label className="text-sm font-medium">
+                {settings.isEnabled ? 'Enabled' : 'Disabled'}
+              </Label>
+              <Switch
+                checked={settings.isEnabled}
+                onCheckedChange={(checked) =>
+                  setSettings({ ...settings, isEnabled: checked })
+                }
+              />
+            </div>
           </div>
-        </CardContent>
+        </div>
       </Card>
 
       {/* Reply Behavior */}
       <Card>
         <CardHeader>
-          <CardTitle>Reply Behavior</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <MessageSquare className="h-5 w-5 text-tandym-cobalt" />
+            Reply Behavior
+          </CardTitle>
           <CardDescription>Control how your AI twin replies.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="space-y-2">
+          <div className="bg-white/70 dark:bg-neutral-800/70 rounded-lg border border-gray-200 dark:border-neutral-700 p-4 space-y-2">
             <Label>Tone</Label>
             <Select
               value={settings.toneOverride}
@@ -195,7 +211,7 @@ export function SettingsForm({ creatorId }: SettingsFormProps) {
             </Select>
           </div>
 
-          <div className="space-y-2">
+          <div className="bg-white/70 dark:bg-neutral-800/70 rounded-lg border border-gray-200 dark:border-neutral-700 p-4 space-y-2">
             <Label>Max Reply Length: {settings.maxReplyLength} characters</Label>
             <Slider
               value={[settings.maxReplyLength || 300]}
@@ -208,7 +224,7 @@ export function SettingsForm({ creatorId }: SettingsFormProps) {
             />
           </div>
 
-          <div className="space-y-2">
+          <div className="bg-white/70 dark:bg-neutral-800/70 rounded-lg border border-gray-200 dark:border-neutral-700 p-4 space-y-2">
             <Label>Max Replies Per Day: {settings.maxRepliesPerDay}</Label>
             <Slider
               value={[settings.maxRepliesPerDay || 50]}
@@ -220,9 +236,21 @@ export function SettingsForm({ creatorId }: SettingsFormProps) {
               step={5}
             />
           </div>
+        </CardContent>
+      </Card>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
+      {/* Timing */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Clock className="h-5 w-5 text-tandym-cobalt" />
+            Reply Timing
+          </CardTitle>
+          <CardDescription>Set delays between replies for a natural feel.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-white/70 dark:bg-neutral-800/70 rounded-lg border border-gray-200 dark:border-neutral-700 p-4 space-y-2">
               <Label>Min Delay (seconds): {settings.minDelaySeconds}</Label>
               <Slider
                 value={[settings.minDelaySeconds || 30]}
@@ -234,7 +262,7 @@ export function SettingsForm({ creatorId }: SettingsFormProps) {
                 step={10}
               />
             </div>
-            <div className="space-y-2">
+            <div className="bg-white/70 dark:bg-neutral-800/70 rounded-lg border border-gray-200 dark:border-neutral-700 p-4 space-y-2">
               <Label>Max Delay (seconds): {settings.maxDelaySeconds}</Label>
               <Slider
                 value={[settings.maxDelaySeconds || 120]}
@@ -253,21 +281,26 @@ export function SettingsForm({ creatorId }: SettingsFormProps) {
       {/* Filters */}
       <Card>
         <CardHeader>
-          <CardTitle>Filters</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Filter className="h-5 w-5 text-tandym-cobalt" />
+            Filters
+          </CardTitle>
           <CardDescription>Control which comments get replies.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="flex items-center gap-3">
-            <Switch
-              checked={settings.skipNegative}
-              onCheckedChange={(checked) =>
-                setSettings({ ...settings, skipNegative: checked })
-              }
-            />
-            <Label>Skip negative / toxic comments</Label>
+          <div className="bg-white/70 dark:bg-neutral-800/70 rounded-lg border border-gray-200 dark:border-neutral-700 p-4">
+            <div className="flex items-center gap-3">
+              <Switch
+                checked={settings.skipNegative}
+                onCheckedChange={(checked) =>
+                  setSettings({ ...settings, skipNegative: checked })
+                }
+              />
+              <Label>Skip negative / toxic comments</Label>
+            </div>
           </div>
 
-          <div className="space-y-2">
+          <div className="bg-white/70 dark:bg-neutral-800/70 rounded-lg border border-gray-200 dark:border-neutral-700 p-4 space-y-3">
             <Label>Exclude comments containing these words</Label>
             <div className="flex gap-2">
               <Input
@@ -280,7 +313,7 @@ export function SettingsForm({ creatorId }: SettingsFormProps) {
                 Add
               </Button>
             </div>
-            <div className="flex flex-wrap gap-1 mt-2">
+            <div className="flex flex-wrap gap-1">
               {(settings.filterKeywords || []).map((kw) => (
                 <Badge
                   key={kw}
@@ -294,7 +327,7 @@ export function SettingsForm({ creatorId }: SettingsFormProps) {
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div className="bg-white/70 dark:bg-neutral-800/70 rounded-lg border border-gray-200 dark:border-neutral-700 p-4 space-y-3">
             <Label>Only reply to comments containing these words (leave empty for all)</Label>
             <div className="flex gap-2">
               <Input
@@ -307,7 +340,7 @@ export function SettingsForm({ creatorId }: SettingsFormProps) {
                 Add
               </Button>
             </div>
-            <div className="flex flex-wrap gap-1 mt-2">
+            <div className="flex flex-wrap gap-1">
               {(settings.requireKeywords || []).map((kw) => (
                 <Badge
                   key={kw}
@@ -321,7 +354,7 @@ export function SettingsForm({ creatorId }: SettingsFormProps) {
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div className="bg-white/70 dark:bg-neutral-800/70 rounded-lg border border-gray-200 dark:border-neutral-700 p-4 space-y-3">
             <Label>Video Filter</Label>
             <Select
               value={settings.videoFilter}
@@ -338,26 +371,30 @@ export function SettingsForm({ creatorId }: SettingsFormProps) {
                 <SelectItem value="selected">Selected videos only</SelectItem>
               </SelectContent>
             </Select>
-          </div>
 
-          {settings.videoFilter === 'recent' && (
-            <div className="space-y-2">
-              <Label>Recent: last {settings.recentDays} days</Label>
-              <Slider
-                value={[settings.recentDays || 7]}
-                onValueChange={([val]) =>
-                  setSettings({ ...settings, recentDays: val })
-                }
-                min={1}
-                max={30}
-                step={1}
-              />
-            </div>
-          )}
+            {settings.videoFilter === 'recent' && (
+              <div className="space-y-2 pt-2">
+                <Label>Recent: last {settings.recentDays} days</Label>
+                <Slider
+                  value={[settings.recentDays || 7]}
+                  onValueChange={([val]) =>
+                    setSettings({ ...settings, recentDays: val })
+                  }
+                  min={1}
+                  max={30}
+                  step={1}
+                />
+              </div>
+            )}
+          </div>
         </CardContent>
       </Card>
 
-      <Button onClick={handleSave} disabled={saving} className="w-full sm:w-auto">
+      <Button
+        onClick={handleSave}
+        disabled={saving}
+        className="w-full sm:w-auto bg-gradient-to-r from-tandym-cobalt to-tandym-lilac text-white hover:opacity-90 transition-opacity"
+      >
         {saving ? 'Saving...' : 'Save Settings'}
       </Button>
     </div>

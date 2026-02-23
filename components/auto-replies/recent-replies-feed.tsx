@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { MessageSquare } from 'lucide-react'
 import type { SocialComment, CommentStatus } from '@/lib/types/social'
 
 interface RecentRepliesFeedProps {
@@ -68,7 +69,10 @@ export function RecentRepliesFeed({ creatorId }: RecentRepliesFeedProps) {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Recent Comments & Replies</CardTitle>
+        <CardTitle className="flex items-center gap-2">
+          <MessageSquare className="h-5 w-5 text-tandym-cobalt" />
+          Recent Comments & Replies
+        </CardTitle>
         <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setPage(0) }}>
           <SelectTrigger className="w-[150px]">
             <SelectValue placeholder="Filter status" />
@@ -92,9 +96,15 @@ export function RecentRepliesFeed({ creatorId }: RecentRepliesFeedProps) {
             ))}
           </div>
         ) : comments.length === 0 ? (
-          <p className="text-sm text-gray-500 dark:text-gray-400 py-8 text-center">
-            No comments yet. Comments will appear here once the automation service starts polling.
-          </p>
+          <div className="py-12 text-center">
+            <MessageSquare className="h-12 w-12 text-gray-300 dark:text-neutral-600 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold font-poppins text-gray-900 dark:text-white mb-1">
+              No comments yet
+            </h3>
+            <p className="text-sm text-gray-500 dark:text-neutral-400 max-w-sm mx-auto">
+              Comments will appear here once the automation service starts polling your YouTube videos.
+            </p>
+          </div>
         ) : (
           <>
             <Table>

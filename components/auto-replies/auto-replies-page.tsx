@@ -1,10 +1,14 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Badge } from '@/components/ui/badge'
 import { SettingsForm } from './settings-form'
 import { RecentRepliesFeed } from './recent-replies-feed'
 import { AnalyticsCard } from './analytics-card'
+import { YouTubeConnectCard } from './youtube-connect-card'
+import { Loader2, MessageCircle, ArrowLeft, Settings, MessageSquare, BarChart3 } from 'lucide-react'
+import Link from 'next/link'
 
 interface AutoRepliesPageProps {
   creatorId: string
@@ -12,37 +16,99 @@ interface AutoRepliesPageProps {
 
 export default function AutoRepliesPage({ creatorId }: AutoRepliesPageProps) {
   const [activeTab, setActiveTab] = useState('settings')
+  const [youtubeConnected, setYoutubeConnected] = useState<boolean | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function checkYouTubeStatus() {
+      try {
+        const res = await fetch('/api/social/youtube-status')
+        if (res.ok) {
+          const data = await res.json()
+          setYoutubeConnected(data.connected)
+        } else {
+          setYoutubeConnected(false)
+        }
+      } catch {
+        setYoutubeConnected(false)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    checkYouTubeStatus()
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center space-y-3">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto text-tandym-cobalt" />
+          <p className="text-gray-600 dark:text-neutral-400">Loading auto-replies...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold font-poppins text-gray-900 dark:text-white">
-          Auto-Replies
-        </h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          Let your AI twin automatically reply to YouTube comments.
-        </p>
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="flex items-center gap-3 mb-2">
+            <Link href="/creator" className="text-gray-600 dark:text-neutral-400 hover:text-tandym-cobalt dark:hover:text-white">
+              <ArrowLeft className="h-5 w-5" />
+            </Link>
+            <h1 className="text-3xl font-bold font-poppins flex items-center gap-3 text-gray-900 dark:text-white">
+              <MessageCircle className="h-7 w-7 text-tandym-cobalt" />
+              Auto-Replies
+            </h1>
+          </div>
+          <p className="text-gray-600 dark:text-neutral-400 text-lg">
+            Let your AI twin automatically reply to YouTube comments
+          </p>
+        </div>
+        {youtubeConnected && (
+          <Badge className="bg-tandym-cobalt text-white">
+            YouTube Connected
+          </Badge>
+        )}
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList>
-          <TabsTrigger value="settings">Settings</TabsTrigger>
-          <TabsTrigger value="replies">Recent Replies</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
-        </TabsList>
+      {/* Gate: YouTube not connected */}
+      {!youtubeConnected ? (
+        <YouTubeConnectCard />
+      ) : (
+        /* Connected: show tabs */
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full max-w-lg grid-cols-3 mb-8 bg-gray-100 dark:bg-neutral-900 border-gray-300 dark:border-neutral-700">
+            <TabsTrigger value="settings" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:dark:bg-neutral-800 data-[state=active]:text-gray-900 data-[state=active]:dark:text-white">
+              <Settings className="h-4 w-4" />
+              Settings
+            </TabsTrigger>
+            <TabsTrigger value="replies" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:dark:bg-neutral-800 data-[state=active]:text-gray-900 data-[state=active]:dark:text-white">
+              <MessageSquare className="h-4 w-4" />
+              Recent Replies
+            </TabsTrigger>
+            <TabsTrigger value="analytics" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:dark:bg-neutral-800 data-[state=active]:text-gray-900 data-[state=active]:dark:text-white">
+              <BarChart3 className="h-4 w-4" />
+              Analytics
+            </TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="settings" className="mt-6">
-          <SettingsForm creatorId={creatorId} />
-        </TabsContent>
+          <TabsContent value="settings">
+            <SettingsForm creatorId={creatorId} />
+          </TabsContent>
 
-        <TabsContent value="replies" className="mt-6">
-          <RecentRepliesFeed creatorId={creatorId} />
-        </TabsContent>
+          <TabsContent value="replies">
+            <RecentRepliesFeed creatorId={creatorId} />
+          </TabsContent>
 
-        <TabsContent value="analytics" className="mt-6">
-          <AnalyticsCard creatorId={creatorId} />
-        </TabsContent>
-      </Tabs>
+          <TabsContent value="analytics">
+            <AnalyticsCard creatorId={creatorId} />
+          </TabsContent>
+        </Tabs>
+      )}
     </div>
   )
 }
