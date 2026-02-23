@@ -1,11 +1,69 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 import { supabase } from '@/lib/supabase'
+import { mapCommentFromDb } from '@/lib/types/social'
 
 export const dynamic = 'force-dynamic'
 
 function verifyApiKey(request: NextRequest): boolean {
   const apiKey = request.headers.get('x-api-key')
   return apiKey === process.env.AUTOMATION_API_KEY
+}
+
+/**
+ * GET /api/social/comments
+ * Session-authenticated endpoint for the creator dashboard to list comments.
+ */
+export async function GET(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions)
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Look up creator for this user
+    const { data: creator } = await supabase
+      .from('creators')
+      .select('id')
+      .eq('user_id', session.user.id)
+      .single()
+
+    if (!creator) {
+      return NextResponse.json({ error: 'Creator not found' }, { status: 404 })
+    }
+
+    const url = new URL(request.url)
+    const status = url.searchParams.get('status')
+    const limit = parseInt(url.searchParams.get('limit') || '20', 10)
+    const offset = parseInt(url.searchParams.get('offset') || '0', 10)
+
+    let query = supabase
+      .from('social_comments')
+      .select('*')
+      .eq('creator_id', creator.id)
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1)
+
+    if (status && status !== 'all') {
+      query = query.eq('status', status)
+    }
+
+    const { data, error } = await query
+
+    if (error) {
+      console.error('Error fetching comments:', error)
+      return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+
+    return NextResponse.json({
+      comments: (data || []).map(mapCommentFromDb),
+    })
+  } catch (error) {
+    console.error('Error in GET /api/social/comments:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
 }
 
 /**
